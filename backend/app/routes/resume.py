@@ -1,0 +1,131 @@
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from sqlalchemy.orm import Session
+from ..database import get_db
+from ..models import models
+from ..schemas import schemas
+from .auth import get_current_user
+from ..parsers.resume_parser import extract_text_from_pdf, parse_resume_text
+from ..ai.gemini import generate_feedback
+from ..parsers.ocr import local_ocr_image, local_ocr_pdf
+import os
+import shutil
+import uuid
+
+router = APIRouter(prefix="/api/resume", tags=["resume"])
+
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+def extract_text_from_file(file_path: str, file_bytes: bytes) -> str:
+    """Return extracted text from a resume file, falling back to OCR for scanned PDFs."""
+    lower = file_path.lower()
+    if lower.endswith((".jpg", ".jpeg", ".png")):
+        return local_ocr_image(file_bytes)
+    elif lower.endswith(".pdf"):
+        text = extract_text_from_pdf(file_bytes)
+        if len(text.strip()) < 100:
+            text = local_ocr_pdf(file_bytes)
+        return text
+    return "DOCX extraction not fully implemented yet."
+
+
+@router.post("/upload", response_model=schemas.ResumeResponse)
+async def upload_resume(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if not file.filename.lower().endswith((".pdf", ".docx", ".jpg", ".jpeg", ".png")):
+        raise HTTPException(status_code=400, detail="Only PDF, DOCX, JPG, and PNG files are allowed")
+        
+    file_id = str(uuid.uuid4())
+    file_extension = os.path.splitext(file.filename)[1]
+    file_path = os.path.join(UPLOAD_DIR, f"{file_id}{file_extension}")
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    new_resume = models.Resume(
+        id=file_id,
+        user_id=current_user.id,
+        original_file_path=file_path
+    )
+    db.add(new_resume)
+    db.commit()
+    db.refresh(new_resume)
+    
+    with open(file_path, "rb") as f:
+        file_bytes = f.read()
+
+    raw_text = extract_text_from_file(file_path, file_bytes)
+    parsed_json = parse_resume_text(raw_text)
+    
+    parsed_data = models.ParsedData(
+        resume_id=new_resume.id,
+        parsed_json=parsed_json
+    )
+    db.add(parsed_data)
+    db.commit()
+    
+    return new_resume
+
+@router.get("/{id}/parsed", response_model=schemas.ParsedDataResponse)
+def get_parsed_data(
+    id: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    resume = db.query(models.Resume).filter(models.Resume.id == id, models.Resume.user_id == current_user.id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+        
+    parsed = db.query(models.ParsedData).filter(models.ParsedData.resume_id == id).first()
+    if not parsed:
+        raise HTTPException(status_code=404, detail="Parsed data not found")
+        
+    return parsed
+
+@router.get("/", response_model=list[schemas.ResumeResponse])
+def get_user_resumes(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    resumes = db.query(models.Resume).filter(models.Resume.user_id == current_user.id).order_by(models.Resume.uploaded_at.desc()).all()
+    return resumes
+
+@router.post("/{id}/feedback", response_model=schemas.FeedbackResponse)
+def generate_resume_feedback(
+    id: str,
+    req: schemas.FeedbackRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    resume = db.query(models.Resume).filter(models.Resume.id == id, models.Resume.user_id == current_user.id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+        
+    parsed = db.query(models.ParsedData).filter(models.ParsedData.resume_id == id).first()
+    
+    with open(resume.original_file_path, "rb") as f:
+        file_bytes = f.read()
+
+    raw_text = extract_text_from_file(resume.original_file_path, file_bytes)
+    feedback_result = generate_feedback(parsed.parsed_json if parsed else {}, raw_text, target_role=req.target_role)
+    
+    feedback = db.query(models.Feedback).filter(models.Feedback.resume_id == id).first()
+    if not feedback:
+        feedback = models.Feedback(
+            resume_id=id,
+            feedback_text=feedback_result["feedback_text"],
+            score=feedback_result["score"]
+        )
+        db.add(feedback)
+    else:
+        feedback.feedback_text = feedback_result["feedback_text"]
+        feedback.score = feedback_result["score"]
+        
+    db.commit()
+    db.refresh(feedback)
+    
+    return feedback
