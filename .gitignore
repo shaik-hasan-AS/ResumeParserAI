@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+
+# Uploaded resumes (runtime data, not source code)
+backend/uploads/
+
+# SQLite (migrated to Postgres)
+*.db
+*.sqlite3
+
+# Environment secrets
+.env
+.env.local
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
