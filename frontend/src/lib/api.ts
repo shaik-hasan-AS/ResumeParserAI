@@ -5,6 +5,9 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+  // Log the exact URL being requested for debugging
+  console.log(`[API Request] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+  
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('token');
     if (token) {
