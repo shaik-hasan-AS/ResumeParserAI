@@ -32,6 +32,33 @@ def extract_text_from_file(file_path: str, file_bytes: bytes) -> str:
 
 # NOTE: Static routes (GET /) must come BEFORE dynamic routes (GET /{id}/...)
 # to prevent FastAPI from matching "/" as an id parameter.
+@router.get("/debug")
+def debug_server_env():
+    import shutil
+    import os
+    import pytesseract
+    
+    tess_path = shutil.which("tesseract")
+    custom_path = pytesseract.pytesseract.tesseract_cmd
+    
+    # Check common locations manually
+    locations = [
+        "/usr/bin/tesseract",
+        "/app/.apt/usr/bin/tesseract",
+        "/workspace/.apt/usr/bin/tesseract",
+        "/nix/store"
+    ]
+    
+    found = {loc: os.path.exists(loc) for loc in locations}
+    
+    return {
+        "shutil_which": tess_path,
+        "pytesseract_cmd": custom_path,
+        "locations": found,
+        "env_path": os.environ.get("PATH"),
+        "tessdata_prefix": os.environ.get("TESSDATA_PREFIX")
+    }
+
 @router.get("/", response_model=list[schemas.ResumeResponse])
 def get_user_resumes(
     db: Session = Depends(get_db),
