@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
@@ -8,13 +9,21 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="ResumeIQ API")
 
+# Build CORS origins list — always include localhost for dev,
+# plus the deployed Vercel frontend URL from environment variable.
+_frontend_url = os.getenv("FRONTEND_URL", "").strip().rstrip("/")
+
+allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+if _frontend_url:
+    allowed_origins.append(_frontend_url)
+
 # Configure CORS for Next.js frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

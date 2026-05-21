@@ -33,6 +33,7 @@ class ParsedDataResponse(BaseModel):
     id: str
     resume_id: str
     parsed_json: Dict[str, Any]
+    raw_text: Optional[str] = None
     class Config:
         from_attributes = True
 

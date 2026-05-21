@@ -30,6 +30,7 @@ class ParsedData(Base):
     id = Column(String, primary_key=True, default=generate_uuid)
     resume_id = Column(String, ForeignKey("resumes.id"))
     parsed_json = Column(JSON)
+    raw_text = Column(Text, nullable=True)  # Stores extracted text so file re-reads aren't needed
     resume = relationship("Resume", back_populates="parsed_data")
 
 class Feedback(Base):

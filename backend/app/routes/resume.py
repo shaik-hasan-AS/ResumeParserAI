@@ -30,6 +30,17 @@ def extract_text_from_file(file_path: str, file_bytes: bytes) -> str:
     return "DOCX extraction not fully implemented yet."
 
 
+# NOTE: Static routes (GET /) must come BEFORE dynamic routes (GET /{id}/...)
+# to prevent FastAPI from matching "/" as an id parameter.
+@router.get("/", response_model=list[schemas.ResumeResponse])
+def get_user_resumes(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    resumes = db.query(models.Resume).filter(models.Resume.user_id == current_user.id).order_by(models.Resume.uploaded_at.desc()).all()
+    return resumes
+
+
 @router.post("/upload", response_model=schemas.ResumeResponse)
 async def upload_resume(
     file: UploadFile = File(...),
@@ -43,8 +54,11 @@ async def upload_resume(
     file_extension = os.path.splitext(file.filename)[1]
     file_path = os.path.join(UPLOAD_DIR, f"{file_id}{file_extension}")
     
+    file_bytes = await file.read()
+
+    # Save to disk (best-effort; Railway filesystem is ephemeral)
     with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+        buffer.write(file_bytes)
         
     new_resume = models.Resume(
         id=file_id,
@@ -54,21 +68,20 @@ async def upload_resume(
     db.add(new_resume)
     db.commit()
     db.refresh(new_resume)
-    
-    with open(file_path, "rb") as f:
-        file_bytes = f.read()
 
     raw_text = extract_text_from_file(file_path, file_bytes)
     parsed_json = parse_resume_text(raw_text)
     
     parsed_data = models.ParsedData(
         resume_id=new_resume.id,
-        parsed_json=parsed_json
+        parsed_json=parsed_json,
+        raw_text=raw_text  # Store text so we don't need the file later
     )
     db.add(parsed_data)
     db.commit()
     
     return new_resume
+
 
 @router.get("/{id}/parsed", response_model=schemas.ParsedDataResponse)
 def get_parsed_data(
@@ -86,13 +99,6 @@ def get_parsed_data(
         
     return parsed
 
-@router.get("/", response_model=list[schemas.ResumeResponse])
-def get_user_resumes(
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
-):
-    resumes = db.query(models.Resume).filter(models.Resume.user_id == current_user.id).order_by(models.Resume.uploaded_at.desc()).all()
-    return resumes
 
 @router.post("/{id}/feedback", response_model=schemas.FeedbackResponse)
 def generate_resume_feedback(
@@ -106,11 +112,16 @@ def generate_resume_feedback(
         raise HTTPException(status_code=404, detail="Resume not found")
         
     parsed = db.query(models.ParsedData).filter(models.ParsedData.resume_id == id).first()
-    
-    with open(resume.original_file_path, "rb") as f:
-        file_bytes = f.read()
+    if not parsed:
+        raise HTTPException(status_code=404, detail="Parsed data not found")
 
-    raw_text = extract_text_from_file(resume.original_file_path, file_bytes)
+    # Prefer stored raw_text (survives Railway restarts); fall back to reading file from disk
+    raw_text = getattr(parsed, "raw_text", None) or ""
+    if not raw_text and os.path.exists(resume.original_file_path):
+        with open(resume.original_file_path, "rb") as f:
+            file_bytes = f.read()
+        raw_text = extract_text_from_file(resume.original_file_path, file_bytes)
+
     feedback_result = generate_feedback(parsed.parsed_json if parsed else {}, raw_text, target_role=req.target_role)
     
     feedback = db.query(models.Feedback).filter(models.Feedback.resume_id == id).first()

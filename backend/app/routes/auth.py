@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
@@ -11,10 +12,16 @@ from datetime import timedelta
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+
 @router.post("/google", response_model=schemas.Token)
 def google_auth(request: schemas.GoogleAuthRequest, db: Session = Depends(get_db)):
     try:
-        idinfo = id_token.verify_oauth2_token(request.credential, requests.Request())
+        idinfo = id_token.verify_oauth2_token(
+            request.credential,
+            requests.Request(),
+            audience=GOOGLE_CLIENT_ID if GOOGLE_CLIENT_ID else None,
+        )
         email = idinfo.get("email")
         name = idinfo.get("name", "Google User")
         
