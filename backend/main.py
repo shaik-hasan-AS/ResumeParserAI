@@ -4,8 +4,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 from app.routes import auth, resume
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+# Create database tables safely so app doesn't crash on startup if DB is down
+try:
+    Base.metadata.create_all(bind=engine)
+    print("Database tables created successfully or already exist.")
+except Exception as e:
+    print(f"Error creating database tables: {e}")
 
 app = FastAPI(title="ResumeIQ API")
 
@@ -24,6 +28,7 @@ if _frontend_url:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
