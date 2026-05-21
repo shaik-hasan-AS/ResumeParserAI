@@ -1,5 +1,5 @@
 [build]
-  builder = "railpack"
+  builder = "nixpacks"
   rootDirectory = "backend"
 
 [deploy]

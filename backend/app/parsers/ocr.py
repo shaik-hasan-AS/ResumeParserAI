@@ -2,6 +2,19 @@ import fitz  # PyMuPDF
 import pytesseract
 from PIL import Image
 from io import BytesIO
+import shutil
+import os
+
+# Try to automatically find Tesseract in various common deployment locations
+tess_cmd = shutil.which("tesseract")
+if tess_cmd:
+    pytesseract.pytesseract.tesseract_cmd = tess_cmd
+elif os.path.exists("/usr/bin/tesseract"):
+    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+elif os.path.exists("/app/.apt/usr/bin/tesseract"):
+    pytesseract.pytesseract.tesseract_cmd = "/app/.apt/usr/bin/tesseract"
+elif os.path.exists("/workspace/.apt/usr/bin/tesseract"):
+    pytesseract.pytesseract.tesseract_cmd = "/workspace/.apt/usr/bin/tesseract"
 
 def local_ocr_image(image_bytes: bytes) -> str:
     """
@@ -11,8 +24,10 @@ def local_ocr_image(image_bytes: bytes) -> str:
         image = Image.open(BytesIO(image_bytes))
         text = pytesseract.image_to_string(image)
         return text
+    except pytesseract.TesseractNotFoundError:
+        return f"Error: Tesseract OCR is not installed or not in PATH (Checked {pytesseract.pytesseract.tesseract_cmd})"
     except Exception as e:
-        return f"Error extracting text from image locally: {str(e)}"
+        return f"Error extracting text from image locally: {type(e).__name__} - {str(e)}"
 
 def local_ocr_pdf(pdf_bytes: bytes) -> str:
     """
@@ -39,5 +54,7 @@ def local_ocr_pdf(pdf_bytes: bytes) -> str:
             full_text += f"\n--- Page {page_num + 1} ---\n" + page_text
             
         return full_text
+    except pytesseract.TesseractNotFoundError:
+        return f"Error: Tesseract OCR is not installed or not in PATH (Checked {pytesseract.pytesseract.tesseract_cmd})"
     except Exception as e:
-        return f"Error performing local OCR on PDF: {str(e)}"
+        return f"Error performing local OCR on PDF: {type(e).__name__} - {str(e)}"
