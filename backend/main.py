@@ -11,7 +11,7 @@ try:
 except Exception as e:
     print(f"Error creating database tables: {e}")
 
-app = FastAPI(title="ResumeIQ API")
+app = FastAPI(title="MyAIProfile API")
 
 # Build CORS origins list — always include localhost for dev,
 # plus the deployed Vercel frontend URL from environment variable.
@@ -39,4 +39,4 @@ app.include_router(resume.router)
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to ResumeIQ API"}
+    return {"message": "Welcome to MyAIProfile API"}

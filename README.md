@@ -1,11 +1,11 @@
-# ResumeIQ (ResumeParserAI)
+# MyAIProfile (ResumeParserAI)
 
-![ResumeIQ](https://img.shields.io/badge/Status-Active-brightgreen)
+![MyAIProfile](https://img.shields.io/badge/Status-Active-brightgreen)
 ![Next.js](https://img.shields.io/badge/Frontend-Next.js-black?logo=next.js)
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi)
 ![Gemini](https://img.shields.io/badge/AI-Gemini_2.5_Flash-blue)
 
-ResumeIQ is an advanced AI-powered Applicant Tracking System (ATS) simulator and resume parsing platform. It helps candidates optimize their resumes by accurately parsing data (even from images using OCR) and leveraging Google's Gemini AI to provide actionable, strict ATS-level feedback tailored to specific job roles.
+MyAIProfile is an advanced AI-powered Applicant Tracking System (ATS) simulator and resume parsing platform. It helps candidates optimize their resumes by accurately parsing data (even from images using OCR) and leveraging Google's Gemini AI to provide actionable, strict ATS-level feedback tailored to specific job roles.
 
 ## ✨ Features
 

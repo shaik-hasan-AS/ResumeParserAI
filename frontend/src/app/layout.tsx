@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import GoogleOAuthWrapper from "@/components/GoogleOAuthWrapper";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ResumeIQ - AI Resume Builder",
+  title: "MyAIProfile - AI Resume Builder",
   description: "AI-powered resume parsing and ATS optimization platform.",
 };
 
@@ -26,12 +27,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <GoogleOAuthWrapper>
-          {children}
-        </GoogleOAuthWrapper>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <GoogleOAuthWrapper>
+            {children}
+          </GoogleOAuthWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

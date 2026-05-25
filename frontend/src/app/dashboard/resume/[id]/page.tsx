@@ -4,6 +4,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, User, Mail, Phone, Briefcase, Sparkles, GraduationCap, ArrowRight, CheckCircle2, AlertTriangle, ListOrdered, Edit3, Target, ArrowRightCircle } from 'lucide-react';
 import api from '@/lib/api';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 // Simple Circular Progress Component
 const CircularProgress = ({ value, color, size = 120, strokeWidth = 10 }: { value: number, color: string, size?: number, strokeWidth?: number }) => {
@@ -22,7 +23,7 @@ const CircularProgress = ({ value, color, size = 120, strokeWidth = 10 }: { valu
           stroke="currentColor"
           strokeWidth={strokeWidth}
           fill="transparent"
-          className="text-white/5"
+          className="text-foreground/5"
         />
         {/* Progress circle */}
         <circle
@@ -39,7 +40,7 @@ const CircularProgress = ({ value, color, size = 120, strokeWidth = 10 }: { valu
         />
       </svg>
       <div className="absolute flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold text-white leading-none">{value}</span>
+        <span className="text-3xl font-bold text-foreground leading-none">{value}</span>
       </div>
     </div>
   );
@@ -102,10 +103,10 @@ export default function ResumeViewer() {
   };
 
   if (!parsedData) return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-        <p className="text-zinc-400 font-medium">Loading Analysis...</p>
+        <p className="text-muted-foreground font-medium">Loading Analysis...</p>
       </div>
     </div>
   );
@@ -113,23 +114,26 @@ export default function ResumeViewer() {
   const structData = feedback?.structured_data;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] relative p-4 md:p-8 pb-24 font-sans text-[16px] overflow-hidden">
+    <div className="min-h-screen bg-background relative p-4 md:p-8 pb-24 font-sans text-[16px] overflow-hidden">
       {/* Decorative Elements */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto space-y-8 relative z-10">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#12121a] p-6 rounded-2xl shadow-sm border border-white/5">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-6 rounded-2xl shadow-sm border border-border">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard')} className="rounded-full hover:bg-white/5 text-zinc-400 hover:text-white">
+            <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard')} className="rounded-full hover:bg-muted/50 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">
                 Resume Insights
               </h1>
-              <p className="text-zinc-400 mt-1 text-sm">Review extracted details and AI evaluation</p>
+              <p className="text-muted-foreground mt-1 text-sm">Review extracted details and AI evaluation</p>
             </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
           </div>
         </header>
 
@@ -137,41 +141,41 @@ export default function ResumeViewer() {
           
           {/* Left Column: Candidate Profile & Skills */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-[#12121a] border border-white/5 rounded-3xl p-6 shadow-xl">
-              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+            <div className="bg-card border border-border rounded-3xl p-6 shadow-xl">
+              <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
                 <User className="w-5 h-5 text-primary" /> Candidate Profile
               </h2>
               
               <div className="space-y-5">
                 <div className="flex items-start gap-4">
-                  <div className="p-2.5 bg-white/5 rounded-xl border border-white/5"><User className="w-4 h-4 text-zinc-400" /></div>
+                  <div className="p-2.5 bg-muted/50 rounded-xl border border-border"><User className="w-4 h-4 text-muted-foreground" /></div>
                   <div>
-                    <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Full Name</p>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Full Name</p>
                     <p className="font-medium text-zinc-200">{parsedData.name || 'Not detected'}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="p-2.5 bg-white/5 rounded-xl border border-white/5"><Mail className="w-4 h-4 text-zinc-400" /></div>
+                  <div className="p-2.5 bg-muted/50 rounded-xl border border-border"><Mail className="w-4 h-4 text-muted-foreground" /></div>
                   <div>
-                    <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Email Address</p>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Email Address</p>
                     <p className="font-medium text-zinc-200">{parsedData.email || 'Not detected'}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="p-2.5 bg-white/5 rounded-xl border border-white/5"><Phone className="w-4 h-4 text-zinc-400" /></div>
+                  <div className="p-2.5 bg-muted/50 rounded-xl border border-border"><Phone className="w-4 h-4 text-muted-foreground" /></div>
                   <div>
-                    <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Phone Number</p>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Phone Number</p>
                     <p className="font-medium text-zinc-200">{parsedData.phone || 'Not detected'}</p>
                   </div>
                 </div>
               </div>
 
               {parsedData.skills && parsedData.skills.length > 0 && (
-                <div className="mt-8 pt-8 border-t border-white/5">
-                  <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider mb-4">Detected Skills</h3>
+                <div className="mt-8 pt-8 border-t border-border">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Detected Skills</h3>
                   <div className="flex flex-wrap gap-2">
                     {parsedData.skills.map((skill: string, idx: number) => (
-                      <span key={idx} className="bg-white/5 border border-white/10 text-zinc-300 px-3 py-1.5 rounded-full text-sm font-medium">
+                      <span key={idx} className="bg-muted/50 border border-border text-muted-foreground px-3 py-1.5 rounded-full text-sm font-medium">
                         {skill}
                       </span>
                     ))}
@@ -180,22 +184,22 @@ export default function ResumeViewer() {
               )}
 
               {parsedData.experience && (
-                <div className="mt-8 pt-8 border-t border-white/5">
-                  <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <div className="mt-8 pt-8 border-t border-border">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Briefcase className="w-4 h-4" /> Experience
                   </h3>
-                  <div className="bg-[#0a0a0f] p-4 rounded-xl max-h-48 overflow-y-auto text-sm text-zinc-400 custom-scrollbar border border-white/5 leading-relaxed">
+                  <div className="bg-background p-4 rounded-xl max-h-48 overflow-y-auto text-sm text-muted-foreground custom-scrollbar border border-border leading-relaxed">
                     <pre className="whitespace-pre-wrap font-sans">{parsedData.experience}</pre>
                   </div>
                 </div>
               )}
               
               {parsedData.education && (
-                <div className="mt-8 pt-8 border-t border-white/5">
-                  <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <div className="mt-8 pt-8 border-t border-border">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
                     <GraduationCap className="w-4 h-4" /> Education
                   </h3>
-                  <div className="bg-[#0a0a0f] p-4 rounded-xl max-h-32 overflow-y-auto text-sm text-zinc-400 custom-scrollbar border border-white/5 leading-relaxed">
+                  <div className="bg-background p-4 rounded-xl max-h-32 overflow-y-auto text-sm text-muted-foreground custom-scrollbar border border-border leading-relaxed">
                     <pre className="whitespace-pre-wrap font-sans">{parsedData.education}</pre>
                   </div>
                 </div>
@@ -206,7 +210,7 @@ export default function ResumeViewer() {
           {/* Right Column: ATS Score & Feedback */}
           <div className="lg:col-span-8 space-y-6">
             {!feedback ? (
-              <div className="bg-[#12121a] border border-white/5 rounded-3xl p-12 text-center shadow-xl h-full flex flex-col justify-center min-h-[500px]">
+              <div className="bg-card border border-border rounded-3xl p-12 text-center shadow-xl h-full flex flex-col justify-center min-h-[500px]">
                 <div className="max-w-sm mx-auto space-y-6">
                   <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-primary/20 shadow-[0_0_30px_rgba(147,51,234,0.2)]">
                     {loadingFeedback ? (
@@ -216,10 +220,10 @@ export default function ResumeViewer() {
                     )}
                   </div>
                   
-                  <h2 className="text-2xl font-bold text-white">
+                  <h2 className="text-2xl font-bold text-foreground">
                     {loadingFeedback ? 'Simulating ATS...' : 'Run ATS Analysis'}
                   </h2>
-                  <p className="text-zinc-400 text-sm leading-relaxed">
+                  <p className="text-muted-foreground text-sm leading-relaxed">
                     {loadingFeedback 
                       ? 'Our AI is evaluating your resume against industry standards.'
                       : 'Provide a target role to get an exact match score, keyword analysis, and bullet point rewrites.'}
@@ -228,7 +232,7 @@ export default function ResumeViewer() {
                   {!loadingFeedback && (
                     <div className="space-y-4 pt-4">
                       <div className="text-left space-y-2">
-                        <label className="text-xs uppercase tracking-wider font-semibold text-zinc-400 flex items-center gap-2 ml-1">
+                        <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-2 ml-1">
                           <Target className="w-4 h-4 text-primary" /> Target Role
                         </label>
                         <input 
@@ -236,13 +240,13 @@ export default function ResumeViewer() {
                           placeholder="e.g. Senior Software Engineer"
                           value={targetRole}
                           onChange={(e) => setTargetRole(e.target.value)}
-                          className="w-full px-4 py-3 bg-[#1a1a24] border border-white/10 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-white font-medium placeholder:text-zinc-600"
+                          className="w-full px-4 py-3 bg-muted border border-border rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-foreground font-medium placeholder:text-muted-foreground"
                         />
                       </div>
                       <Button 
                         onClick={() => generateFeedback()} 
                         disabled={loadingFeedback}
-                        className="w-full bg-primary hover:bg-primary/90 text-white shadow-[0_0_20px_rgba(147,51,234,0.3)] h-12 rounded-xl font-semibold"
+                        className="w-full bg-primary hover:bg-primary/90 text-foreground shadow-[0_0_20px_rgba(147,51,234,0.3)] h-12 rounded-xl font-semibold"
                       >
                         Generate Score
                       </Button>
@@ -253,19 +257,19 @@ export default function ResumeViewer() {
             ) : (
               <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
                 {/* Score Rings Section */}
-                <div className="bg-[#12121a] border border-white/5 rounded-3xl p-8 shadow-xl flex flex-col md:flex-row items-center gap-8 justify-between relative overflow-hidden">
+                <div className="bg-card border border-border rounded-3xl p-8 shadow-xl flex flex-col md:flex-row items-center gap-8 justify-between relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
                   
                   <div className="flex-1 space-y-3 z-10 text-center md:text-left">
-                    <h2 className="text-2xl font-bold text-white">ATS Analysis Results</h2>
-                    {targetRole && <p className="text-zinc-400">Target Role: <span className="text-white font-medium">{targetRole}</span></p>}
-                    <p className="text-zinc-400 text-sm leading-relaxed max-w-md">
+                    <h2 className="text-2xl font-bold text-foreground">ATS Analysis Results</h2>
+                    {targetRole && <p className="text-muted-foreground">Target Role: <span className="text-foreground font-medium">{targetRole}</span></p>}
+                    <p className="text-muted-foreground text-sm leading-relaxed max-w-md">
                       {structData?.summary || 'We evaluated your resume layout, content, and potential impact against ATS systems.'}
                     </p>
                     <Button 
                       variant="outline" 
                       onClick={() => { setFeedback(null); setTargetRole(""); }} 
-                      className="mt-4 border-white/10 text-zinc-300 hover:bg-white/5 hover:text-white rounded-lg h-9 px-4 text-sm bg-transparent"
+                      className="mt-4 border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground rounded-lg h-9 px-4 text-sm bg-transparent"
                     >
                       Analyze Different Role
                     </Button>
@@ -274,12 +278,12 @@ export default function ResumeViewer() {
                   <div className="flex gap-8 z-10">
                     <div className="flex flex-col items-center gap-3">
                       <CircularProgress value={feedback.score} color="#a855f7" size={130} strokeWidth={12} />
-                      <span className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">ATS Score</span>
+                      <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">ATS Score</span>
                     </div>
                     {structData?.keyword_match_rate !== undefined && (
                       <div className="flex flex-col items-center gap-3">
                         <CircularProgress value={structData.keyword_match_rate} color="#14b8a6" size={130} strokeWidth={12} />
-                        <span className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">Keyword Match</span>
+                        <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Keyword Match</span>
                       </div>
                     )}
                   </div>
@@ -289,45 +293,45 @@ export default function ResumeViewer() {
                   <div className="space-y-6">
                     
                     {/* Tabs Navigation */}
-                    <div className="flex gap-2 p-1 bg-[#12121a] border border-white/5 rounded-xl overflow-x-auto custom-scrollbar">
+                    <div className="flex gap-2 p-1 bg-card border border-border rounded-xl overflow-x-auto custom-scrollbar">
                       <button 
                         onClick={() => setActiveTab('strengths')}
-                        className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${activeTab === 'strengths' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-zinc-300 hover:bg-white/5'}`}
+                        className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${activeTab === 'strengths' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-muted-foreground hover:bg-muted/50'}`}
                       >
                         Strengths
                       </button>
                       <button 
                         onClick={() => setActiveTab('improvements')}
-                        className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${activeTab === 'improvements' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-zinc-300 hover:bg-white/5'}`}
+                        className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${activeTab === 'improvements' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-muted-foreground hover:bg-muted/50'}`}
                       >
                         Areas to Improve
                       </button>
                       <button 
                         onClick={() => setActiveTab('action_plan')}
-                        className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${activeTab === 'action_plan' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-zinc-300 hover:bg-white/5'}`}
+                        className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${activeTab === 'action_plan' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-muted-foreground hover:bg-muted/50'}`}
                       >
                         Action Plan
                       </button>
                       <button 
                         onClick={() => setActiveTab('rewrites')}
-                        className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${activeTab === 'rewrites' ? 'bg-white/10 text-white flex items-center gap-2' : 'text-zinc-400 hover:text-zinc-300 hover:bg-white/5 flex items-center gap-2'}`}
+                        className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${activeTab === 'rewrites' ? 'bg-muted text-foreground flex items-center gap-2' : 'text-muted-foreground hover:text-muted-foreground hover:bg-muted/50 flex items-center gap-2'}`}
                       >
                         <Sparkles className="w-4 h-4" /> Bullet Rewrites
                       </button>
                     </div>
 
                     {/* Tab Content */}
-                    <div className="bg-[#12121a] border border-white/5 rounded-3xl p-6 md:p-8 shadow-xl min-h-[300px]">
+                    <div className="bg-card border border-border rounded-3xl p-6 md:p-8 shadow-xl min-h-[300px]">
                       
                       {activeTab === 'strengths' && (
                         <div className="space-y-6 animate-in fade-in duration-300">
-                          <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-6">
+                          <h3 className="text-lg font-bold text-foreground flex items-center gap-2 mb-6">
                             <CheckCircle2 className="w-5 h-5 text-emerald-500" /> Key Strengths
                           </h3>
                           <div className="grid gap-4">
                             {structData.strengths?.map((str: string, i: number) => (
-                              <div key={i} className="bg-[#1a1a24] border-l-4 border-l-emerald-500 rounded-r-xl p-5 border border-y-white/5 border-r-white/5 shadow-sm">
-                                <p className="text-zinc-300 leading-relaxed text-sm">{str}</p>
+                              <div key={i} className="bg-muted border-l-4 border-l-emerald-500 rounded-r-xl p-5 border border-y-white/5 border-r-white/5 shadow-sm">
+                                <p className="text-muted-foreground leading-relaxed text-sm">{str}</p>
                               </div>
                             ))}
                           </div>
@@ -336,20 +340,20 @@ export default function ResumeViewer() {
 
                       {activeTab === 'improvements' && (
                         <div className="space-y-6 animate-in fade-in duration-300">
-                          <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-6">
+                          <h3 className="text-lg font-bold text-foreground flex items-center gap-2 mb-6">
                             <AlertTriangle className="w-5 h-5 text-amber-500" /> Areas to Improve
                           </h3>
                           <div className="grid gap-4">
                             {structData.weaknesses?.map((weak: string, i: number) => (
-                              <div key={i} className="bg-[#1a1a24] border-l-4 border-l-amber-500 rounded-r-xl p-5 border border-y-white/5 border-r-white/5 shadow-sm">
-                                <p className="text-zinc-300 leading-relaxed text-sm">{weak}</p>
+                              <div key={i} className="bg-muted border-l-4 border-l-amber-500 rounded-r-xl p-5 border border-y-white/5 border-r-white/5 shadow-sm">
+                                <p className="text-muted-foreground leading-relaxed text-sm">{weak}</p>
                               </div>
                             ))}
                           </div>
                           
                           {structData.missing_skills && structData.missing_skills.length > 0 && (
-                            <div className="mt-8 pt-8 border-t border-white/5">
-                              <h4 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Suggested Skills to Add</h4>
+                            <div className="mt-8 pt-8 border-t border-border">
+                              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Suggested Skills to Add</h4>
                               <div className="flex flex-wrap gap-2">
                                 {structData.missing_skills.map((skill: string, i: number) => (
                                   <span key={i} className="bg-teal-500/10 text-teal-400 border border-teal-500/20 px-4 py-2 rounded-full text-sm font-medium">
@@ -364,16 +368,16 @@ export default function ResumeViewer() {
 
                       {activeTab === 'action_plan' && (
                         <div className="space-y-6 animate-in fade-in duration-300">
-                          <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-6">
+                          <h3 className="text-lg font-bold text-foreground flex items-center gap-2 mb-6">
                             <ListOrdered className="w-5 h-5 text-primary" /> Recommended Action Plan
                           </h3>
                           <div className="space-y-4">
                             {structData.actionable_improvements?.map((action: string, i: number) => (
-                              <div key={i} className="flex items-start gap-4 p-5 rounded-xl bg-[#1a1a24] border border-white/5">
+                              <div key={i} className="flex items-start gap-4 p-5 rounded-xl bg-muted border border-border">
                                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
                                   {i + 1}
                                 </div>
-                                <p className="text-zinc-300 leading-relaxed mt-1 text-sm">{action}</p>
+                                <p className="text-muted-foreground leading-relaxed mt-1 text-sm">{action}</p>
                               </div>
                             ))}
                           </div>
@@ -383,7 +387,7 @@ export default function ResumeViewer() {
                       {activeTab === 'rewrites' && (
                         <div className="space-y-8 animate-in fade-in duration-300">
                           <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                               <Edit3 className="w-5 h-5 text-indigo-400" /> AI Bullet Rewrites
                             </h3>
                             <span className="text-xs bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/20">
@@ -393,22 +397,22 @@ export default function ResumeViewer() {
                           
                           <div className="flex flex-col gap-5">
                             {structData.bullet_point_rewrites?.map((rewrite: any, i: number) => (
-                              <div key={i} className="flex flex-col md:flex-row gap-0 rounded-xl overflow-hidden border border-white/5 shadow-sm group hover:-translate-y-1 transition-transform duration-300">
+                              <div key={i} className="flex flex-col md:flex-row gap-0 rounded-xl overflow-hidden border border-border shadow-sm group hover:-translate-y-1 transition-transform duration-300">
                                 {/* Original Side */}
                                 <div className="flex-1 bg-rose-500/5 p-6 relative">
                                   <span className="text-xs font-bold text-rose-500/70 uppercase tracking-wider mb-2 block">Original</span>
-                                  <p className="text-zinc-400 italic text-sm leading-relaxed">"{rewrite.original}"</p>
+                                  <p className="text-muted-foreground italic text-sm leading-relaxed">"{rewrite.original}"</p>
                                 </div>
                                 
                                 {/* Divider with Icon */}
-                                <div className="hidden md:flex items-center justify-center bg-[#12121a] px-3 z-10 relative">
-                                  <div className="absolute top-0 bottom-0 w-px bg-white/5 left-1/2 transform -translate-x-1/2"></div>
-                                  <div className="w-8 h-8 rounded-full bg-[#1a1a24] border border-white/10 flex items-center justify-center relative z-10">
-                                    <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-primary transition-colors" />
+                                <div className="hidden md:flex items-center justify-center bg-card px-3 z-10 relative">
+                                  <div className="absolute top-0 bottom-0 w-px bg-muted/50 left-1/2 transform -translate-x-1/2"></div>
+                                  <div className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center relative z-10">
+                                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                                   </div>
                                 </div>
-                                <div className="md:hidden flex items-center justify-center h-8 bg-[#12121a]">
-                                  <ArrowRight className="w-4 h-4 text-zinc-500" />
+                                <div className="md:hidden flex items-center justify-center h-8 bg-card">
+                                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
                                 </div>
 
                                 {/* Improved Side */}
@@ -418,7 +422,7 @@ export default function ResumeViewer() {
                                     <p className="text-zinc-200 font-medium text-sm leading-relaxed">"{rewrite.improved}"</p>
                                   </div>
                                   <div className="mt-4 pt-4 border-t border-emerald-500/10">
-                                    <p className="text-xs text-zinc-400 leading-relaxed">
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
                                       <span className="text-primary font-bold mr-1">Why:</span>
                                       {rewrite.reasoning}
                                     </p>
@@ -427,7 +431,7 @@ export default function ResumeViewer() {
                               </div>
                             ))}
                             {(!structData.bullet_point_rewrites || structData.bullet_point_rewrites.length === 0) && (
-                              <div className="text-center py-12 text-zinc-500 bg-[#1a1a24] rounded-xl border border-dashed border-white/5">
+                              <div className="text-center py-12 text-muted-foreground bg-muted rounded-xl border border-dashed border-border">
                                 <p className="font-medium">No rewrites suggested.</p>
                                 <p className="text-sm mt-1">Your bullet points are already strong!</p>
                               </div>
@@ -441,9 +445,9 @@ export default function ResumeViewer() {
                 )}
                 
                 {!structData && (
-                  <div className="bg-[#12121a] border border-white/5 rounded-3xl p-8 shadow-xl">
-                    <h3 className="text-lg font-bold text-white mb-4">Detailed Feedback</h3>
-                    <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap">{feedback.feedback_text}</p>
+                  <div className="bg-card border border-border rounded-3xl p-8 shadow-xl">
+                    <h3 className="text-lg font-bold text-foreground mb-4">Detailed Feedback</h3>
+                    <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{feedback.feedback_text}</p>
                   </div>
                 )}
               </div>
