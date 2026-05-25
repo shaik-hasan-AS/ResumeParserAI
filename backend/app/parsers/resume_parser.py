@@ -169,43 +169,62 @@ def _extract_github(text: str) -> str | None:
 
 
 def _extract_location(text: str, doc) -> str | None:
-    """Extract a location using spaCy GPE/LOC entities near the top of the doc."""
-    # Only look at first ~500 chars to keep it near the header
-    top_text = text[:600]
-    top_doc = nlp(top_text)
-    for ent in top_doc.ents:
-        if ent.label_ in ("GPE", "LOC"):
-            return ent.text
-    # Fallback: look for "City, State" pattern
-    match = re.search(
-        r'\b([A-Z][a-z]+(?: [A-Z][a-z]+)*),\s*([A-Z]{2})\b',
+    """Extract a location from explicit labels or City, Country/State patterns.
+    Avoids spaCy NER on small models which misidentifies tech terms as GPE."""
+    top_text = text[:800]
+
+    # Priority 1: explicit label on its own line
+    label_match = re.search(
+        r'(?:location|address|city|based in)[:\s]+([A-Za-z ,\.\-]{3,50})',
+        top_text, re.IGNORECASE
+    )
+    if label_match:
+        candidate = label_match.group(1).strip().strip(',').strip()
+        if len(candidate) >= 3:
+            return candidate
+
+    # Priority 2: "City, ST" or "City, Country" — requires Title Case city
+    pattern = re.search(
+        r'\b([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})*),\s*([A-Z][a-z]{2,}|[A-Z]{2})\b',
         top_text
     )
-    if match:
-        return match.group(0)
+    if pattern:
+        return pattern.group(0)
+
     return None
 
 
+# Degree patterns — NO re.IGNORECASE to avoid matching 'be', 'ba', 'ms' in random words.
+# Abbreviations are anchored with \b and require a capital first letter OR a known full word.
+# Sorted longest-match first so M.Tech beats M., B.Tech beats B.E., etc.
 DEGREE_PATTERNS = [
-    r'Ph\.?D\.?(?:\s+in\s+[\w\s,&]+)?',
-    r'Doctor(?:ate)?(?:\s+of\s+[\w\s,&]+)?',
-    r'M\.?S\.?(?:\s+in\s+[\w\s,&]+)?',
-    r'M\.?Sc\.?(?:\s+in\s+[\w\s,&]+)?',
-    r'M\.?Tech\.?(?:\s+in\s+[\w\s,&]+)?',
-    r'M\.?B\.?A\.?(?:\s+in\s+[\w\s,&]+)?',
-    r'Master(?:\'s)?(?:\s+of\s+[\w\s,&]+)?',
-    r'B\.?S\.?(?:\s+in\s+[\w\s,&]+)?',
-    r'B\.?Sc\.?(?:\s+in\s+[\w\s,&]+)?',
-    r'B\.?Tech\.?(?:\s+in\s+[\w\s,&]+)?',
-    r'B\.?E\.?(?:\s+in\s+[\w\s,&]+)?',
-    r'B\.?A\.?(?:\s+in\s+[\w\s,&]+)?',
-    r'Bachelor(?:\'s)?(?:\s+of\s+[\w\s,&]+)?',
-    r'Associate(?:\'s)?(?:\s+of\s+[\w\s,&]+)?',
+    # Full words (case-insensitive is safe here — no ambiguity)
+    r'Doctor(?:ate)?\s+of\s+[\w\s,&]{2,40}',
+    r'Ph\.D\.?(?:\s+in\s+[\w\s,&]{2,40})?',
+    r'PhD(?:\s+in\s+[\w\s,&]{2,40})?',
+    r'Master(?:\'s)?\s+of\s+[\w\s,&]{2,40}',
+    r'Bachelor(?:\'s)?\s+of\s+[\w\s,&]{2,40}',
+    r'Associate(?:\'s)?\s+of\s+[\w\s,&]{2,40}',
     r'High School Diploma',
-    r'Diploma(?:\s+in\s+[\w\s,&]+)?',
-    r'Certificate(?:\s+in\s+[\w\s,&]+)?',
+    # Abbreviations — require UPPERCASE first letter, word boundary on both sides
+    r'\bM\.Tech\.?(?:\s+in\s+[\w\s,&]{2,40})?',
+    r'\bB\.Tech\.?(?:\s+in\s+[\w\s,&]{2,40})?',
+    r'\bM\.Sc\.?(?:\s+in\s+[\w\s,&]{2,40})?',
+    r'\bB\.Sc\.?(?:\s+in\s+[\w\s,&]{2,40})?',
+    r'\bM\.B\.A\.?(?:\s+in\s+[\w\s,&]{2,40})?',
+    r'\bMBA(?:\s+in\s+[\w\s,&]{2,40})?',
+    # Single-letter abbreviations — must be at start of line or after whitespace,
+    # followed by a period to avoid matching random uppercase letters mid-sentence
+    r'(?:^|(?<=\s))M\.S\.(?:\s+in\s+[\w\s,&]{2,40})?',
+    r'(?:^|(?<=\s))B\.S\.(?:\s+in\s+[\w\s,&]{2,40})?',
+    r'(?:^|(?<=\s))B\.E\.(?:\s+in\s+[\w\s,&]{2,40})?',
+    r'(?:^|(?<=\s))B\.A\.(?:\s+in\s+[\w\s,&]{2,40})?',
+    # Spelled-out with optional field
+    r'Diploma(?:\s+in\s+[\w\s,&]{2,40})?',
+    r'Certificate(?:\s+in\s+[\w\s,&]{2,40})?',
 ]
-DEGREE_RE = re.compile('|'.join(DEGREE_PATTERNS), re.IGNORECASE)
+# Do NOT use re.IGNORECASE — preserves case-sensitivity for ambiguous abbreviations
+DEGREE_RE = re.compile('|'.join(DEGREE_PATTERNS))
 YEAR_RE = re.compile(r'\b(19[89]\d|20[0-3]\d)\b')
 
 
