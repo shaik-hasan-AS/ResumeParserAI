@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, FileText, Target, CheckCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, Target, CheckCircle, Upload, Sparkles, Rocket, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -173,9 +173,143 @@ export default function Home() {
               <p className="text-zinc-400">AI-generated, impact-driven bullet points that highlight your exact achievements.</p>
             </div>
           </div>
+        {/* How It Works Section */}
+        <div id="how-it-works" className="mt-32 w-full max-w-6xl">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 font-serif">How it works</h2>
+            <p className="text-zinc-400 text-lg max-w-2xl mx-auto">Get your resume ATS-ready in three simple steps.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            {/* Connecting line for desktop */}
+            <div className="hidden md:block absolute top-1/2 left-[16.66%] right-[16.66%] h-0.5 bg-gradient-to-r from-primary/50 via-pink-500/50 to-primary/50 transform -translate-y-1/2 z-0"></div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="flex flex-col items-center text-center relative z-10"
+            >
+              <div className="w-16 h-16 rounded-full bg-[#12121a] border-2 border-primary flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(147,51,234,0.3)]">
+                <Upload className="w-7 h-7 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">1. Upload Resume</h3>
+              <p className="text-zinc-400">Upload your existing PDF or DOCX resume. We'll instantly parse your experience and skills.</p>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="flex flex-col items-center text-center relative z-10"
+            >
+              <div className="w-16 h-16 rounded-full bg-[#12121a] border-2 border-pink-500 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(236,72,153,0.3)]">
+                <Sparkles className="w-7 h-7 text-pink-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">2. AI Analysis</h3>
+              <p className="text-zinc-400">Specify your target role. Our AI simulates an ATS scan and grades your resume.</p>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+              className="flex flex-col items-center text-center relative z-10"
+            >
+              <div className="w-16 h-16 rounded-full bg-[#12121a] border-2 border-emerald-500 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                <Rocket className="w-7 h-7 text-emerald-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">3. Optimize & Apply</h3>
+              <p className="text-zinc-400">Apply our suggested AI bullet rewrites and skill additions to build the perfect resume.</p>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Pricing Section */}
+        <div id="pricing" className="mt-32 w-full max-w-5xl mb-20">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 font-serif">Simple, transparent pricing</h2>
+            <p className="text-zinc-400 text-lg max-w-2xl mx-auto">Start for free, upgrade when you need more power.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Tier */}
+            <div className="bg-[#12121a] border border-white/5 rounded-3xl p-8 shadow-xl flex flex-col hover:border-white/10 transition-all">
+              <h3 className="text-xl font-bold text-white mb-2">Basic</h3>
+              <p className="text-zinc-400 text-sm mb-6">Perfect for trying out ResumeIQ.</p>
+              <div className="mb-6">
+                <span className="text-4xl font-extrabold text-white">$0</span>
+                <span className="text-zinc-500"> / forever</span>
+              </div>
+              <ul className="space-y-4 mb-8 flex-1">
+                <li className="flex items-center gap-3 text-zinc-300">
+                  <CheckCircle className="w-5 h-5 text-emerald-500" /> 1 Resume parsing per day
+                </li>
+                <li className="flex items-center gap-3 text-zinc-300">
+                  <CheckCircle className="w-5 h-5 text-emerald-500" /> Basic ATS Score
+                </li>
+                <li className="flex items-center gap-3 text-zinc-500">
+                  <CheckCircle className="w-5 h-5 opacity-50" /> No AI Bullet Rewrites
+                </li>
+              </ul>
+              <Link href="/register">
+                <Button className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl h-12">Get Started</Button>
+              </Link>
+            </div>
+
+            {/* Pro Tier */}
+            <div className="bg-gradient-to-b from-[#1a1a24] to-[#12121a] border border-primary/50 rounded-3xl p-8 shadow-[0_0_30px_rgba(147,51,234,0.15)] flex flex-col relative overflow-hidden transform hover:-translate-y-1 transition-all">
+              <div className="absolute top-0 right-0 bg-primary text-white text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
+              <h3 className="text-xl font-bold text-white mb-2">Pro</h3>
+              <p className="text-zinc-400 text-sm mb-6">For serious job seekers.</p>
+              <div className="mb-6">
+                <span className="text-4xl font-extrabold text-white">$15</span>
+                <span className="text-zinc-500"> / month</span>
+              </div>
+              <ul className="space-y-4 mb-8 flex-1">
+                <li className="flex items-center gap-3 text-zinc-300">
+                  <CheckCircle className="w-5 h-5 text-emerald-500" /> Unlimited resume parsing
+                </li>
+                <li className="flex items-center gap-3 text-zinc-300">
+                  <CheckCircle className="w-5 h-5 text-emerald-500" /> Detailed ATS Feedback
+                </li>
+                <li className="flex items-center gap-3 text-zinc-300">
+                  <CheckCircle className="w-5 h-5 text-emerald-500" /> Unlimited AI Bullet Rewrites
+                </li>
+                <li className="flex items-center gap-3 text-zinc-300">
+                  <CheckCircle className="w-5 h-5 text-emerald-500" /> Cover letter generation
+                </li>
+              </ul>
+              <Link href="/register">
+                <Button className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-12 shadow-[0_0_20px_rgba(147,51,234,0.3)]">Upgrade to Pro</Button>
+              </Link>
+            </div>
+          </div>
         </div>
 
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-white/5 bg-[#0a0a0f] py-12 px-8 z-10 relative">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded border border-white/20 flex items-center justify-center">
+              <FileText className="w-3 h-3 text-zinc-400" />
+            </div>
+            <span className="text-sm font-semibold text-zinc-400">ResumeIQ</span>
+          </div>
+          
+          <div className="flex gap-6 text-sm text-zinc-500">
+            <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link href="#" className="hover:text-white transition-colors">Contact</Link>
+          </div>
+          
+          <p className="text-sm text-zinc-600">© 2026 ResumeIQ. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }
