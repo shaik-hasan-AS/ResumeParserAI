@@ -2,6 +2,24 @@ import json
 import re
 from google import genai
 from google.genai import types
+from pydantic import BaseModel, Field
+from typing import List
+
+class BulletPointRewrite(BaseModel):
+    original: str = Field(description="The original weak bullet point from the resume.")
+    improved: str = Field(description="The rewritten, impact-driven bullet point.")
+    reasoning: str = Field(description="Why the new bullet point is better.")
+
+class ResumeEvaluation(BaseModel):
+    score: int = Field(description="ATS match score from 0-100.")
+    keyword_match_rate: int = Field(description="Percentage (0-100) of how well the skills match the required keywords.")
+    summary: str = Field(description="Overall summary string evaluating their fit for the role.")
+    strengths: List[str] = Field(description="List of strengths found in the resume.")
+    weaknesses: List[str] = Field(description="List of weaknesses or areas to improve.")
+    missing_skills: List[str] = Field(description="Suggested skills to add for the role.")
+    recommended_certifications: List[str] = Field(description="Highly relevant certifications for this candidate.")
+    actionable_improvements: List[str] = Field(description="Concrete, step-by-step actions to fix the weaknesses.")
+    bullet_point_rewrites: List[BulletPointRewrite] = Field(description="Examples of how to rewrite weak experience bullets for maximum impact.")
 
 def redact_pii(text: str, parsed_data: dict) -> str:
     redacted_text = text
@@ -22,35 +40,24 @@ def redact_pii(text: str, parsed_data: dict) -> str:
 def generate_feedback(parsed_data: dict, raw_text: str, target_role: str = None) -> dict:
     redacted_text = redact_pii(raw_text, parsed_data)
     
+    # Redact PII from the parsed_data dict itself before sending to API
+    redacted_parsed_data = parsed_data.copy()
+    if redacted_parsed_data.get("name"):
+        redacted_parsed_data["name"] = "[REDACTED NAME]"
+    if redacted_parsed_data.get("email"):
+        redacted_parsed_data["email"] = "[REDACTED EMAIL]"
+    if redacted_parsed_data.get("phone"):
+        redacted_parsed_data["phone"] = "[REDACTED PHONE]"
+    
     role_context = f"The candidate is specifically applying for the role of: **{target_role}**." if target_role else "The candidate has not specified a target role, so evaluate based on general professional standards and the skills present."
     
     prompt = f"""
-    You are an advanced, strict Applicant Tracking System (ATS) and expert technical recruiter. 
     Review the following redacted resume text and parsed data.
     
     {role_context}
     
-    Your task is to evaluate the resume strictly against the target role (if provided). 
-    Calculate a realistic ATS match score (0-100) based on:
-    1. Keyword matching for the target role.
-    2. Presence of measurable achievements (numbers, metrics).
-    3. Action verbs and impact-driven descriptions.
-    4. Proper formatting and structure.
-    
-    Provide your output EXACTLY as a valid JSON object with the following schema:
-    {{
-        "score": number (0-100),
-        "summary": "overall summary string evaluating their fit for the role",
-        "strengths": ["list", "of", "strengths"],
-        "weaknesses": ["list", "of", "weaknesses"],
-        "missing_skills": ["list", "of", "suggested", "skills", "for", "the", "role"],
-        "recommended_certifications": ["list", "of", "highly", "relevant", "certifications", "for", "this", "candidate"]
-    }}
-    
-    Parsed Data: {parsed_data}
+    Parsed Data: {redacted_parsed_data}
     Raw Text: {redacted_text}
-    
-    Return ONLY the valid JSON object. Do not include markdown code blocks around the JSON.
     """
     
     try:
@@ -60,6 +67,9 @@ def generate_feedback(parsed_data: dict, raw_text: str, target_role: str = None)
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
+                response_schema=ResumeEvaluation,
+                temperature=0.2,
+                system_instruction="You are an advanced, strict Applicant Tracking System (ATS) and expert technical recruiter. Your task is to evaluate the resume strictly against the target role (if provided). Calculate a realistic ATS match score (0-100) based on keyword matching, measurable achievements, action verbs, and proper formatting. Provide actionable feedback to improve the resume."
             )
         )
         
@@ -80,10 +90,13 @@ def generate_feedback(parsed_data: dict, raw_text: str, target_role: str = None)
             "score": 0,
             "feedback_text": json.dumps({
                 "score": 0,
+                "keyword_match_rate": 0,
                 "summary": f"Error calling Gemini API: {str(e)}",
                 "strengths": [],
                 "weaknesses": [],
                 "missing_skills": [],
-                "recommended_certifications": []
+                "recommended_certifications": [],
+                "actionable_improvements": [],
+                "bullet_point_rewrites": []
             })
         }

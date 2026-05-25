@@ -4,7 +4,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, User, Mail, Phone, Briefcase, Sparkles, AlertTriangle, CheckCircle, TrendingUp, Zap, Target, BookOpen, GraduationCap, Award } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Briefcase, Sparkles, AlertTriangle, CheckCircle, TrendingUp, Zap, Target, BookOpen, GraduationCap, Award, Lightbulb, ArrowRight, PenTool } from 'lucide-react';
 import api from '@/lib/api';
 
 export default function ResumeViewer() {
@@ -239,9 +239,19 @@ export default function ResumeViewer() {
                         {feedback.structured_data?.summary || 'We evaluated your resume layout, content, and potential impact.'}
                       </p>
                     </div>
-                    <div className="flex flex-col items-center justify-center bg-black/40 backdrop-blur-md rounded-full w-32 h-32 border-4 border-primary/50 flex-shrink-0 shadow-[0_0_30px_rgba(147,51,234,0.4)]">
-                      <span className="text-4xl font-black text-white">{feedback.score}</span>
-                      <span className="text-white/70 text-sm font-medium">/ 100</span>
+                    <div className="flex gap-4">
+                      <div className="flex flex-col items-center justify-center bg-black/40 backdrop-blur-md rounded-full w-32 h-32 border-4 border-primary/50 flex-shrink-0 shadow-[0_0_30px_rgba(147,51,234,0.4)]">
+                        <span className="text-4xl font-black text-white">{feedback.score}</span>
+                        <span className="text-white/70 text-sm font-medium">/ 100</span>
+                        <span className="text-white/50 text-xs font-medium mt-1">ATS Score</span>
+                      </div>
+                      
+                      {feedback.structured_data?.keyword_match_rate !== undefined && (
+                        <div className="flex flex-col items-center justify-center bg-black/40 backdrop-blur-md rounded-full w-32 h-32 border-4 border-sky-400/50 flex-shrink-0 shadow-[0_0_30px_rgba(56,189,248,0.4)]">
+                          <span className="text-4xl font-black text-white">{feedback.structured_data.keyword_match_rate}%</span>
+                          <span className="text-white/70 text-xs text-center px-2 font-medium mt-1">Keyword Match</span>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -282,6 +292,56 @@ export default function ResumeViewer() {
                         </ul>
                       </CardContent>
                     </Card>
+
+                    {feedback.structured_data.actionable_improvements && feedback.structured_data.actionable_improvements.length > 0 && (
+                      <Card className="border-0 shadow-md rounded-2xl md:col-span-2 border-l-4 border-l-purple-500 glass-panel bg-black/20">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-lg flex items-center gap-2 text-white">
+                            <Lightbulb className="w-5 h-5 text-purple-400" /> Action Plan
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-3">
+                            {feedback.structured_data.actionable_improvements.map((action: string, i: number) => (
+                              <li key={i} className="flex items-start gap-3 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                                <div className="p-1.5 bg-purple-500/20 rounded-lg mt-0.5"><ArrowRight className="w-4 h-4 text-purple-400" /></div>
+                                <span className="text-sm text-zinc-300 leading-relaxed">{action}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {feedback.structured_data.bullet_point_rewrites && feedback.structured_data.bullet_point_rewrites.length > 0 && (
+                      <Card className="border-0 shadow-md rounded-2xl md:col-span-2 border-l-4 border-l-indigo-400 glass-panel bg-black/20">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-lg flex items-center gap-2 text-white">
+                            <PenTool className="w-5 h-5 text-indigo-400" /> Bullet Point Rewrites
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            {feedback.structured_data.bullet_point_rewrites.map((rewrite: any, i: number) => (
+                              <div key={i} className="flex flex-col md:flex-row gap-4 p-4 rounded-xl bg-white/5 border border-white/10 relative">
+                                <div className="flex-1 space-y-2">
+                                  <Badge variant="outline" className="text-rose-400 border-rose-400/30 bg-rose-500/10 mb-1">Original</Badge>
+                                  <p className="text-sm text-zinc-400 italic">"{rewrite.original}"</p>
+                                </div>
+                                <div className="hidden md:flex items-center justify-center">
+                                  <ArrowRight className="w-6 h-6 text-indigo-400" />
+                                </div>
+                                <div className="flex-1 space-y-2">
+                                  <Badge variant="outline" className="text-emerald-400 border-emerald-400/30 bg-emerald-500/10 mb-1">Improved</Badge>
+                                  <p className="text-sm text-white font-medium">"{rewrite.improved}"</p>
+                                  <p className="text-xs text-indigo-300 mt-2"><span className="font-semibold">Why:</span> {rewrite.reasoning}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
 
                     <Card className="border-0 shadow-md rounded-2xl md:col-span-2 border-l-4 border-l-sky-400 glass-panel bg-black/20">
                       <CardHeader className="pb-2">
