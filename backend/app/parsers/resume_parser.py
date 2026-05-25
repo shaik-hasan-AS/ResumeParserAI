@@ -147,15 +147,20 @@ def parse_resume_text(text: str) -> dict:
     
     exp_keywords = {
         "experience", "work experience", "employment history", "professional experience", 
-        "clinical experience", "teaching experience", "relevant experience", "work history"
+        "clinical experience", "teaching experience", "relevant experience", "work history",
+        "research guidance"
     }
     edu_keywords = {
-        "education", "academic background", "academic history", "qualifications", "training"
+        "education", "academic background", "academic history", "qualifications", "training",
+        "labview academy"
     }
     reset_keywords = {
         "skills", "projects", "certifications", "summary", "profile", "languages",
         "publications", "affiliations", "volunteer experience", "leadership", 
-        "awards", "honors", "references", "activities", "interests", "licenses"
+        "awards", "honors", "references", "activities", "interests", "licenses",
+        "most proud of", "strengths", "citations", "professional society memberships",
+        "fundings", "patent", "projects developed at crescent engineering college",
+        "guest lectures delivered", "collaborations", "journals reviewed", "accreditation"
     }
     
     # Very basic boundary detection
