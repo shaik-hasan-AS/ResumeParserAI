@@ -2,9 +2,241 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, Mail, Phone, Briefcase, Sparkles, GraduationCap, ArrowRight, CheckCircle2, AlertTriangle, ListOrdered, Edit3, Target, ArrowRightCircle } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Briefcase, Sparkles, GraduationCap, ArrowRight, CheckCircle2, AlertTriangle, ListOrdered, Edit3, Target, Link2, Code2, MapPin, Pencil, Award } from 'lucide-react';
 import api from '@/lib/api';
 import { ThemeToggle } from '@/components/ThemeToggle';
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function getSeniorityLabel(years: number | null | undefined): { label: string; color: string } {
+  if (years === null || years === undefined) return { label: 'Unknown', color: 'bg-muted text-muted-foreground border-border' };
+  if (years < 2) return { label: 'Entry Level', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
+  if (years < 5) return { label: 'Mid-level', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' };
+  if (years < 10) return { label: 'Senior', color: 'bg-violet-500/10 text-violet-400 border-violet-500/20' };
+  return { label: 'Principal / Staff', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
+}
+
+const CONTACT_FIELDS = ['name', 'email', 'phone', 'linkedin', 'github', 'location'] as const;
+type ContactField = typeof CONTACT_FIELDS[number];
+
+function countDetected(data: any, overrides: Record<ContactField, string>): number {
+  return CONTACT_FIELDS.reduce((acc, key) => {
+    const val = overrides[key] || data?.[key];
+    return acc + (val && val !== '' ? 1 : 0);
+  }, 0);
+}
+
+// ─── Contact Block ───────────────────────────────────────────────────────────
+
+const FIELD_META: Record<ContactField, { label: string; icon: React.ReactNode; placeholder: string }> = {
+  name:     { label: 'Full name',       icon: <User className="w-4 h-4" />,    placeholder: 'Enter full name' },
+  email:    { label: 'Email',           icon: <Mail className="w-4 h-4" />,    placeholder: 'Enter email address' },
+  phone:    { label: 'Phone',           icon: <Phone className="w-4 h-4" />,   placeholder: 'Enter phone number' },
+  linkedin: { label: 'LinkedIn',        icon: <Link2 className="w-4 h-4" />,   placeholder: 'linkedin.com/in/username' },
+  github:   { label: 'GitHub',          icon: <Code2 className="w-4 h-4" />,  placeholder: 'github.com/username' },
+  location: { label: 'Location',        icon: <MapPin className="w-4 h-4" />,  placeholder: 'City, Country' },
+};
+
+function ContactBlock({ parsedData }: { parsedData: any }) {
+  const [overrides, setOverrides] = useState<Record<ContactField, string>>(
+    CONTACT_FIELDS.reduce((acc, k) => ({ ...acc, [k]: '' }), {} as Record<ContactField, string>)
+  );
+  const [editing, setEditing] = useState<Record<ContactField, boolean>>(
+    CONTACT_FIELDS.reduce((acc, k) => ({ ...acc, [k]: false }), {} as Record<ContactField, boolean>)
+  );
+
+  const detected = countDetected(parsedData, overrides);
+  const total = CONTACT_FIELDS.length;
+  const pct = Math.round((detected / total) * 100);
+
+  return (
+    <div className="bg-card border border-border rounded-3xl p-6 shadow-xl space-y-5">
+      {/* Completeness bar */}
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+            <User className="w-4 h-4 text-primary" /> Contact
+          </h2>
+          <span className="text-xs font-semibold text-muted-foreground">
+            {detected}/{total} fields detected
+          </span>
+        </div>
+        <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-primary to-violet-400 transition-all duration-500"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Field list */}
+      <div className="space-y-3">
+        {CONTACT_FIELDS.map((key) => {
+          const meta = FIELD_META[key];
+          const extracted = parsedData?.[key];
+          const override = overrides[key];
+          const value = override || extracted;
+          const missing = !value;
+          const isEditing = editing[key];
+          const isLink = (key === 'linkedin' || key === 'github') && value;
+
+          return (
+            <div key={key} className="flex items-start gap-3 group">
+              <div className={`mt-0.5 p-2 rounded-lg border ${
+                missing ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 'bg-muted/60 border-border text-muted-foreground'
+              }`}>
+                {meta.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-muted-foreground mb-0.5">{meta.label}</p>
+                {isEditing ? (
+                  <input
+                    autoFocus
+                    type="text"
+                    defaultValue={value || ''}
+                    placeholder={meta.placeholder}
+                    onBlur={(e) => {
+                      setOverrides(prev => ({ ...prev, [key]: e.target.value }));
+                      setEditing(prev => ({ ...prev, [key]: false }));
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                      if (e.key === 'Escape') setEditing(prev => ({ ...prev, [key]: false }));
+                    }}
+                    className="w-full text-sm bg-muted border border-primary/40 rounded-lg px-2 py-1 text-foreground outline-none focus:ring-1 focus:ring-primary"
+                  />
+                ) : missing ? (
+                  <button
+                    onClick={() => setEditing(prev => ({ ...prev, [key]: true }))}
+                    className="text-sm text-rose-400/80 italic flex items-center gap-1.5 hover:text-primary transition-colors"
+                  >
+                    <Pencil className="w-3 h-3" />
+                    Click to add {meta.label.toLowerCase()}
+                  </button>
+                ) : isLink ? (
+                  <a
+                    href={value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline truncate block font-medium"
+                  >
+                    {value.replace(/^https?:\/\//, '')}
+                  </a>
+                ) : (
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium text-foreground truncate">{value}</p>
+                    <button
+                      onClick={() => setEditing(prev => ({ ...prev, [key]: true }))}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+                    >
+                      <Pencil className="w-3 h-3 text-muted-foreground" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Profile Block ───────────────────────────────────────────────────────────
+
+const SKILL_STYLES = {
+  technical: 'bg-violet-500/10 text-violet-300 border border-violet-500/20',
+  soft:      'bg-amber-500/10  text-amber-300  border border-amber-500/20',
+  tools:     'bg-teal-500/10   text-teal-300   border border-teal-500/20',
+};
+const SKILL_LABELS = { technical: '⚙ Technical', soft: '💬 Soft Skills', tools: '🛠 Tools' };
+
+function ProfileBlock({ parsedData }: { parsedData: any }) {
+  const seniority = getSeniorityLabel(parsedData?.experience_years);
+  const categorized = parsedData?.skills_categorized as
+    { technical: string[]; soft: string[]; tools: string[] } | undefined;
+  const eduEntries = parsedData?.education_entries as
+    Array<{ degree: string; institution: string; year: string | null }> | undefined;
+
+  return (
+    <div className="bg-card border border-border rounded-3xl p-6 shadow-xl space-y-6">
+      {/* Seniority */}
+      {parsedData?.experience_years !== null && parsedData?.experience_years !== undefined && (
+        <div className="flex items-center gap-3">
+          <Award className="w-4 h-4 text-primary" />
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-1">Inferred seniority</p>
+            <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${seniority.color}`}>
+              {seniority.label} · {parsedData.experience_years}y exp
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Education */}
+      {eduEntries && eduEntries.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-xs font-semibold text-muted-foreground flex items-center gap-2 uppercase tracking-wider">
+            <GraduationCap className="w-4 h-4" /> Education
+          </h3>
+          <div className="space-y-2">
+            {eduEntries.map((entry, i) => (
+              <div key={i} className="bg-muted/50 border border-border rounded-xl p-3 space-y-0.5">
+                <p className="text-sm font-semibold text-foreground leading-snug">{entry.degree}</p>
+                <p className="text-xs text-muted-foreground">{entry.institution}</p>
+                {entry.year && (
+                  <p className="text-xs text-primary font-medium">{entry.year}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Raw fallback if no structured entries */}
+      {(!eduEntries || eduEntries.length === 0) && parsedData?.education && (
+        <div className="space-y-2">
+          <h3 className="text-xs font-semibold text-muted-foreground flex items-center gap-2 uppercase tracking-wider">
+            <GraduationCap className="w-4 h-4" /> Education
+          </h3>
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{parsedData.education}</p>
+        </div>
+      )}
+
+      {/* Skills */}
+      {categorized && (
+        <div className="space-y-4">
+          {(['technical', 'soft', 'tools'] as const).map(cat => (
+            categorized[cat].length > 0 && (
+              <div key={cat} className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground">{SKILL_LABELS[cat]}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {categorized[cat].map((skill, i) => (
+                    <span key={i} className={`text-xs font-medium px-2.5 py-1 rounded-full ${SKILL_STYLES[cat]}`}>
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+          ))}
+        </div>
+      )}
+
+      {/* Experience raw text */}
+      {parsedData?.experience && (
+        <div className="space-y-2 pt-2 border-t border-border">
+          <h3 className="text-xs font-semibold text-muted-foreground flex items-center gap-2 uppercase tracking-wider">
+            <Briefcase className="w-4 h-4" /> Experience summary
+          </h3>
+          <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed line-clamp-6">
+            {parsedData.experience}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Simple Circular Progress Component
 const CircularProgress = ({ value, color, size = 120, strokeWidth = 10 }: { value: number, color: string, size?: number, strokeWidth?: number }) => {
@@ -139,72 +371,10 @@ export default function ResumeViewer() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Left Column: Candidate Profile & Skills */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="bg-card border border-border rounded-3xl p-6 shadow-xl">
-              <h2 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
-                <User className="w-5 h-5 text-primary" /> Candidate Profile
-              </h2>
-              
-              <div className="space-y-5">
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 bg-muted/50 rounded-xl border border-border"><User className="w-4 h-4 text-muted-foreground" /></div>
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Full Name</p>
-                    <p className="font-medium text-zinc-200">{parsedData.name || 'Not detected'}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 bg-muted/50 rounded-xl border border-border"><Mail className="w-4 h-4 text-muted-foreground" /></div>
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Email Address</p>
-                    <p className="font-medium text-zinc-200">{parsedData.email || 'Not detected'}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 bg-muted/50 rounded-xl border border-border"><Phone className="w-4 h-4 text-muted-foreground" /></div>
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Phone Number</p>
-                    <p className="font-medium text-zinc-200">{parsedData.phone || 'Not detected'}</p>
-                  </div>
-                </div>
-              </div>
-
-              {parsedData.skills && parsedData.skills.length > 0 && (
-                <div className="mt-8 pt-8 border-t border-border">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Detected Skills</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {parsedData.skills.map((skill: string, idx: number) => (
-                      <span key={idx} className="bg-muted/50 border border-border text-muted-foreground px-3 py-1.5 rounded-full text-sm font-medium">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {parsedData.experience && (
-                <div className="mt-8 pt-8 border-t border-border">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Briefcase className="w-4 h-4" /> Experience
-                  </h3>
-                  <div className="bg-background p-4 rounded-xl max-h-48 overflow-y-auto text-sm text-muted-foreground custom-scrollbar border border-border leading-relaxed">
-                    <pre className="whitespace-pre-wrap font-sans">{parsedData.experience}</pre>
-                  </div>
-                </div>
-              )}
-              
-              {parsedData.education && (
-                <div className="mt-8 pt-8 border-t border-border">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <GraduationCap className="w-4 h-4" /> Education
-                  </h3>
-                  <div className="bg-background p-4 rounded-xl max-h-32 overflow-y-auto text-sm text-muted-foreground custom-scrollbar border border-border leading-relaxed">
-                    <pre className="whitespace-pre-wrap font-sans">{parsedData.education}</pre>
-                  </div>
-                </div>
-              )}
-            </div>
+          {/* Left Column: Contact + Profile */}
+          <div className="lg:col-span-4 space-y-4">
+            <ContactBlock parsedData={parsedData} />
+            <ProfileBlock parsedData={parsedData} />
           </div>
 
           {/* Right Column: ATS Score & Feedback */}
