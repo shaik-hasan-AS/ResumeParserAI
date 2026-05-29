@@ -56,6 +56,12 @@ const styles = StyleSheet.create({
     color: '#374151',
     lineHeight: 1.5,
   },
+  summaryText: {
+    fontSize: 10,
+    color: '#4B5563',
+    lineHeight: 1.6,
+    fontStyle: 'italic',
+  },
   skillsGroup: {
     marginBottom: 8,
   },
@@ -130,9 +136,11 @@ interface ResumePDFProps {
   overrides: Record<string, string>;
   aiRewrites?: Array<{ original: string; improved: string }>;
   structuredExperience?: ExperienceEntry[];
+  executiveSummary?: string;
+  highlightSkills?: string[];
 }
 
-const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites, structuredExperience }) => {
+const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites, structuredExperience, executiveSummary, highlightSkills }) => {
   const getVal = (key: string) => overrides[key] || parsedData?.[key];
 
   const name = getVal('name');
@@ -181,6 +189,14 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
             )}
           </View>
         </View>
+
+        {/* Executive Summary Section */}
+        {executiveSummary && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Professional Summary</Text>
+            <Text style={styles.summaryText}>{executiveSummary}</Text>
+          </View>
+        )}
 
         {/* Experience Section */}
         {(structuredExperience?.length ? structuredExperience.length > 0 : experience) && (
@@ -234,19 +250,46 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
             {categorized.technical?.length > 0 && (
               <View style={styles.skillsGroup}>
                 <Text style={styles.skillsLabel}>Technical</Text>
-                <Text style={styles.text}>{categorized.technical.join(', ')}</Text>
+                <Text style={styles.text}>
+                  {categorized.technical.map((skill: string, idx: number) => {
+                    const isHighlight = highlightSkills?.some(hs => hs.toLowerCase() === skill.toLowerCase());
+                    return (
+                      <Text key={idx} style={isHighlight ? { fontFamily: 'Helvetica-Bold', color: '#4C1D95' } : {}}>
+                        {skill}{idx < categorized.technical.length - 1 ? ', ' : ''}
+                      </Text>
+                    );
+                  })}
+                </Text>
               </View>
             )}
             {categorized.tools?.length > 0 && (
               <View style={styles.skillsGroup}>
                 <Text style={styles.skillsLabel}>Tools</Text>
-                <Text style={styles.text}>{categorized.tools.join(', ')}</Text>
+                <Text style={styles.text}>
+                  {categorized.tools.map((skill: string, idx: number) => {
+                    const isHighlight = highlightSkills?.some(hs => hs.toLowerCase() === skill.toLowerCase());
+                    return (
+                      <Text key={idx} style={isHighlight ? { fontFamily: 'Helvetica-Bold', color: '#4C1D95' } : {}}>
+                        {skill}{idx < categorized.tools.length - 1 ? ', ' : ''}
+                      </Text>
+                    );
+                  })}
+                </Text>
               </View>
             )}
             {categorized.soft?.length > 0 && (
               <View style={styles.skillsGroup}>
                 <Text style={styles.skillsLabel}>Soft Skills</Text>
-                <Text style={styles.text}>{categorized.soft.join(', ')}</Text>
+                <Text style={styles.text}>
+                  {categorized.soft.map((skill: string, idx: number) => {
+                    const isHighlight = highlightSkills?.some(hs => hs.toLowerCase() === skill.toLowerCase());
+                    return (
+                      <Text key={idx} style={isHighlight ? { fontFamily: 'Helvetica-Bold', color: '#4C1D95' } : {}}>
+                        {skill}{idx < categorized.soft.length - 1 ? ', ' : ''}
+                      </Text>
+                    );
+                  })}
+                </Text>
               </View>
             )}
           </View>

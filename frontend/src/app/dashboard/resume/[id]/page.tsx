@@ -383,6 +383,8 @@ export default function ResumeViewer() {
                     overrides={overrides} 
                     aiRewrites={structData?.bullet_point_rewrites}
                     structuredExperience={structData?.structured_experience}
+                    executiveSummary={structData?.executive_summary_for_resume}
+                    highlightSkills={structData?.highlight_skills}
                   />
                 }
                 fileName={`${parsedData?.name ? parsedData.name.replace(/\s+/g, '_') : 'Resume'}.pdf`}
