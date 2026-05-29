@@ -1,14 +1,5 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Link, Font } from '@react-pdf/renderer';
-
-// Register Roboto Font
-Font.register({
-  family: 'Roboto',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Me5WZLCzYlKw.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmWUlvAx05IsDqlA.ttf', fontWeight: 700 }
-  ]
-});
+import { Page, Text, View, Document, StyleSheet, Link } from '@react-pdf/renderer';
 
 // Create styles
 const styles = StyleSheet.create({
@@ -16,7 +7,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     backgroundColor: '#FFFFFF',
     padding: 40,
-    fontFamily: 'Roboto',
+    fontFamily: 'Helvetica',
   },
   header: {
     marginBottom: 20,
@@ -25,18 +16,9 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
   },
   name: {
-    fontSize: 28,
-    fontFamily: 'Roboto',
-    fontWeight: 700,
-    color: '#7C3AED', // Vibrant Purple
-    marginBottom: 4,
-    letterSpacing: 1,
-  },
-  subtitle: {
-    fontSize: 14,
-    fontFamily: 'Roboto',
-    fontWeight: 700,
-    color: '#4C1D95', // Deep purple
+    fontSize: 24,
+    fontFamily: 'Helvetica-Bold',
+    color: '#111827',
     marginBottom: 8,
   },
   contactInfo: {
@@ -50,44 +32,33 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   link: {
-    color: '#14b8a6', // Teal
+    color: '#4F46E5',
     textDecoration: 'none',
-    fontFamily: 'Roboto',
-    fontWeight: 700,
   },
   section: {
     marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 14,
-    fontFamily: 'Roboto',
-    fontWeight: 700,
-    color: '#7C3AED', // Vibrant Purple
+    fontFamily: 'Helvetica-Bold',
+    color: '#111827',
     textTransform: 'uppercase',
-    marginBottom: 10,
-    borderBottomWidth: 2,
-    borderBottomColor: '#EDE9FE', // Light purple underline
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
     paddingBottom: 4,
-    letterSpacing: 1,
   },
   text: {
     fontSize: 10,
     color: '#374151',
     lineHeight: 1.5,
   },
-  summaryText: {
-    fontSize: 10,
-    color: '#4B5563',
-    lineHeight: 1.6,
-    fontStyle: 'italic',
-  },
   skillsGroup: {
     marginBottom: 8,
   },
   skillsLabel: {
     fontSize: 10,
-    fontFamily: 'Roboto',
-    fontWeight: 700,
+    fontFamily: 'Helvetica-Bold',
     color: '#111827',
     marginBottom: 2,
   },
@@ -96,9 +67,8 @@ const styles = StyleSheet.create({
   },
   degree: {
     fontSize: 11,
-    fontFamily: 'Roboto',
-    fontWeight: 700,
-    color: '#4C1D95', // Deep purple
+    fontFamily: 'Helvetica-Bold',
+    color: '#111827',
   },
   institution: {
     fontSize: 10,
@@ -110,10 +80,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   jobTitle: {
-    fontSize: 12,
-    fontFamily: 'Roboto',
-    fontWeight: 700,
-    color: '#4C1D95', // Deep purple
+    fontSize: 11,
+    fontFamily: 'Helvetica-Bold',
+    color: '#111827',
   },
   companyWrapper: {
     flexDirection: 'row',
@@ -122,8 +91,7 @@ const styles = StyleSheet.create({
   },
   company: {
     fontSize: 10,
-    fontFamily: 'Roboto',
-    fontWeight: 700,
+    fontFamily: 'Helvetica-Bold',
     color: '#4B5563',
   },
   dates: {
@@ -145,11 +113,6 @@ const styles = StyleSheet.create({
     color: '#374151',
     lineHeight: 1.4,
   },
-  metricText: {
-    fontFamily: 'Roboto',
-    fontWeight: 700,
-    color: '#7C3AED',
-  },
 });
 
 interface ExperienceEntry {
@@ -164,17 +127,9 @@ interface ResumePDFProps {
   overrides: Record<string, string>;
   aiRewrites?: Array<{ original: string; improved: string }>;
   structuredExperience?: ExperienceEntry[];
-  executiveSummary?: string;
-  highlightSkills?: string[];
-  targetRole?: string;
 }
 
-// Temporarily disabled formatBullet as it may be causing silent crashes in react-pdf
-const formatBullet = (text: any) => {
-  return text;
-};
-
-const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites, structuredExperience, executiveSummary, highlightSkills, targetRole }) => {
+const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites, structuredExperience }) => {
   const getVal = (key: string) => overrides[key] || parsedData?.[key];
 
   const name = getVal('name');
@@ -205,7 +160,6 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         {/* Header Section */}
         <View style={styles.header}>
           {name && <Text style={styles.name}>{name}</Text>}
-          {targetRole && <Text style={styles.subtitle}>{targetRole}</Text>}
           <View style={styles.contactInfo}>
             {email && <Text style={styles.contactItem}>{email}</Text>}
             {phone && <Text style={styles.contactItem}>•  {phone}</Text>}
@@ -225,51 +179,32 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
           </View>
         </View>
 
-        {/* Executive Summary Section */}
-        {executiveSummary && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Professional Summary</Text>
-            <Text style={styles.summaryText}>{executiveSummary}</Text>
-          </View>
-        )}
-
         {/* Experience Section */}
-        {(experience || (structuredExperience && structuredExperience.length > 0)) ? (
+        {(structuredExperience?.length ? structuredExperience.length > 0 : experience) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Professional Experience</Text>
             
             {structuredExperience && structuredExperience.length > 0 ? (
-              structuredExperience.map((exp, i) => {
-                // Fallback if AI hallucinates an empty object
-                if (!exp.job_title && !exp.company && (!exp.bullet_points || exp.bullet_points.length === 0)) {
-                  if (i === 0) return <Text key={i} style={styles.text}>{experience}</Text>;
-                  return null;
-                }
-                
-                return (
-                  <View key={i} style={{ marginBottom: 12 }}>
-                    {exp.job_title && <Text style={styles.jobTitle}>{exp.job_title}</Text>}
-                    <View style={styles.companyWrapper}>
-                      {exp.company && <Text style={styles.company}>{exp.company}</Text>}
-                      {exp.dates && <Text style={styles.dates}>{exp.dates}</Text>}
-                    </View>
-                    {Array.isArray(exp.bullet_points) && exp.bullet_points.map((bullet, j) => {
-                      if (!bullet) return null;
-                      return (
-                        <View key={j} style={styles.bulletPoint}>
-                          <Text style={styles.bulletDot}>•</Text>
-                          <Text style={styles.bulletText}>{bullet}</Text>
-                        </View>
-                      );
-                    })}
+              structuredExperience.map((exp, i) => (
+                <View key={i} style={{ marginBottom: 12 }}>
+                  <Text style={styles.jobTitle}>{exp.job_title}</Text>
+                  <View style={styles.companyWrapper}>
+                    <Text style={styles.company}>{exp.company}</Text>
+                    <Text style={styles.dates}>{exp.dates}</Text>
                   </View>
-                );
-              })
+                  {exp.bullet_points.map((bullet, j) => (
+                    <View key={j} style={styles.bulletPoint}>
+                      <Text style={styles.bulletDot}>•</Text>
+                      <Text style={styles.bulletText}>{bullet}</Text>
+                    </View>
+                  ))}
+                </View>
+              ))
             ) : (
               <Text style={styles.text}>{experience}</Text>
             )}
           </View>
-        ) : null}
+        )}
 
         {/* Education Section */}
         {(eduEntries.length > 0 || parsedData?.education) && (
@@ -296,46 +231,19 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
             {categorized.technical?.length > 0 && (
               <View style={styles.skillsGroup}>
                 <Text style={styles.skillsLabel}>Technical</Text>
-                <Text style={styles.text}>
-                  {categorized.technical.map((skill: string, idx: number) => {
-                    const isHighlight = highlightSkills?.some(hs => hs.toLowerCase() === skill.toLowerCase());
-                    return (
-                      <Text key={idx} style={isHighlight ? { fontFamily: 'Roboto', fontWeight: 700, color: '#4C1D95' } : {}}>
-                        {skill}{idx < categorized.technical.length - 1 ? ', ' : ''}
-                      </Text>
-                    );
-                  })}
-                </Text>
+                <Text style={styles.text}>{categorized.technical.join(', ')}</Text>
               </View>
             )}
             {categorized.tools?.length > 0 && (
               <View style={styles.skillsGroup}>
                 <Text style={styles.skillsLabel}>Tools</Text>
-                <Text style={styles.text}>
-                  {categorized.tools.map((skill: string, idx: number) => {
-                    const isHighlight = highlightSkills?.some(hs => hs.toLowerCase() === skill.toLowerCase());
-                    return (
-                      <Text key={idx} style={isHighlight ? { fontFamily: 'Roboto', fontWeight: 700, color: '#4C1D95' } : {}}>
-                        {skill}{idx < categorized.tools.length - 1 ? ', ' : ''}
-                      </Text>
-                    );
-                  })}
-                </Text>
+                <Text style={styles.text}>{categorized.tools.join(', ')}</Text>
               </View>
             )}
             {categorized.soft?.length > 0 && (
               <View style={styles.skillsGroup}>
                 <Text style={styles.skillsLabel}>Soft Skills</Text>
-                <Text style={styles.text}>
-                  {categorized.soft.map((skill: string, idx: number) => {
-                    const isHighlight = highlightSkills?.some(hs => hs.toLowerCase() === skill.toLowerCase());
-                    return (
-                      <Text key={idx} style={isHighlight ? { fontFamily: 'Roboto', fontWeight: 700, color: '#4C1D95' } : {}}>
-                        {skill}{idx < categorized.soft.length - 1 ? ', ' : ''}
-                      </Text>
-                    );
-                  })}
-                </Text>
+                <Text style={styles.text}>{categorized.soft.join(', ')}</Text>
               </View>
             )}
           </View>
