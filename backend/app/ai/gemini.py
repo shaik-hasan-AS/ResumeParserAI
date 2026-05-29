@@ -26,7 +26,7 @@ class ResumeEvaluation(BaseModel):
     recommended_certifications: List[str] = Field(description="Highly relevant certifications for this candidate.")
     actionable_improvements: List[str] = Field(description="Concrete, step-by-step actions to fix the weaknesses.")
     bullet_point_rewrites: List[BulletPointRewrite] = Field(description="Examples of how to rewrite weak experience bullets for maximum impact.")
-    structured_experience: List[ExperienceEntry] = Field(description="The candidate's experience completely parsed, formatted, and optimized. Rewrite any weak bullet points for maximum impact. If no experience is found, return an empty list.", default_factory=list)
+    structured_experience: List[ExperienceEntry] = Field(description="The candidate's experience completely parsed and formatted. CRITICAL: Do NOT summarize or omit any jobs. Preserve the full depth and ALL bullet points of their original experience, but rewrite them to be stronger, metric-driven, and highly ATS-optimized.", default_factory=list)
 
 def redact_pii(text: str, parsed_data: dict) -> str:
     redacted_text = text
