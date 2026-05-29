@@ -1,5 +1,14 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Link } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Link, Font } from '@react-pdf/renderer';
+
+// Register Roboto Font
+Font.register({
+  family: 'Roboto',
+  fonts: [
+    { src: 'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Me5WZLCzYlKw.ttf', fontWeight: 400 },
+    { src: 'https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmWUlvAx05IsDqlA.ttf', fontWeight: 700 }
+  ]
+});
 
 // Create styles
 const styles = StyleSheet.create({
@@ -7,7 +16,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     backgroundColor: '#FFFFFF',
     padding: 40,
-    fontFamily: 'Helvetica',
+    fontFamily: 'Roboto',
   },
   header: {
     marginBottom: 20,
@@ -17,10 +26,18 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 28,
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     color: '#7C3AED', // Vibrant Purple
-    marginBottom: 8,
+    marginBottom: 4,
     letterSpacing: 1,
+  },
+  subtitle: {
+    fontSize: 14,
+    fontFamily: 'Roboto',
+    fontWeight: 700,
+    color: '#4C1D95', // Deep purple
+    marginBottom: 8,
   },
   contactInfo: {
     flexDirection: 'row',
@@ -35,14 +52,16 @@ const styles = StyleSheet.create({
   link: {
     color: '#14b8a6', // Teal
     textDecoration: 'none',
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
   },
   section: {
     marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 14,
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     color: '#7C3AED', // Vibrant Purple
     textTransform: 'uppercase',
     marginBottom: 10,
@@ -67,7 +86,8 @@ const styles = StyleSheet.create({
   },
   skillsLabel: {
     fontSize: 10,
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     color: '#111827',
     marginBottom: 2,
   },
@@ -76,7 +96,8 @@ const styles = StyleSheet.create({
   },
   degree: {
     fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     color: '#4C1D95', // Deep purple
   },
   institution: {
@@ -90,7 +111,8 @@ const styles = StyleSheet.create({
   },
   jobTitle: {
     fontSize: 12,
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     color: '#4C1D95', // Deep purple
   },
   companyWrapper: {
@@ -100,7 +122,8 @@ const styles = StyleSheet.create({
   },
   company: {
     fontSize: 10,
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 700,
     color: '#4B5563',
   },
   dates: {
@@ -122,6 +145,11 @@ const styles = StyleSheet.create({
     color: '#374151',
     lineHeight: 1.4,
   },
+  metricText: {
+    fontFamily: 'Roboto',
+    fontWeight: 700,
+    color: '#7C3AED',
+  },
 });
 
 interface ExperienceEntry {
@@ -138,9 +166,23 @@ interface ResumePDFProps {
   structuredExperience?: ExperienceEntry[];
   executiveSummary?: string;
   highlightSkills?: string[];
+  targetRole?: string;
 }
 
-const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites, structuredExperience, executiveSummary, highlightSkills }) => {
+// Helper to highlight numbers/metrics in bullet points
+const formatBullet = (text: string) => {
+  // Matches digits (including decimals), percentages, and money (e.g. 50, 40.5%, $1M, 2,000)
+  const regex = /(\$?\d+(?:,\d{3})*(?:\.\d+)?%?[MK]?)/g;
+  const parts = text.split(regex);
+  return parts.map((part, index) => {
+    if (part.match(regex)) {
+      return <Text key={index} style={styles.metricText}>{part}</Text>;
+    }
+    return part;
+  });
+};
+
+const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites, structuredExperience, executiveSummary, highlightSkills, targetRole }) => {
   const getVal = (key: string) => overrides[key] || parsedData?.[key];
 
   const name = getVal('name');
@@ -171,6 +213,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         {/* Header Section */}
         <View style={styles.header}>
           {name && <Text style={styles.name}>{name}</Text>}
+          {targetRole && <Text style={styles.subtitle}>{targetRole}</Text>}
           <View style={styles.contactInfo}>
             {email && <Text style={styles.contactItem}>{email}</Text>}
             {phone && <Text style={styles.contactItem}>•  {phone}</Text>}
@@ -214,7 +257,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
                   {exp.bullet_points.map((bullet, j) => (
                     <View key={j} style={styles.bulletPoint}>
                       <Text style={styles.bulletDot}>•</Text>
-                      <Text style={styles.bulletText}>{bullet}</Text>
+                      <Text style={styles.bulletText}>{formatBullet(bullet)}</Text>
                     </View>
                   ))}
                 </View>
@@ -254,7 +297,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
                   {categorized.technical.map((skill: string, idx: number) => {
                     const isHighlight = highlightSkills?.some(hs => hs.toLowerCase() === skill.toLowerCase());
                     return (
-                      <Text key={idx} style={isHighlight ? { fontFamily: 'Helvetica-Bold', color: '#4C1D95' } : {}}>
+                      <Text key={idx} style={isHighlight ? { fontFamily: 'Roboto', fontWeight: 700, color: '#4C1D95' } : {}}>
                         {skill}{idx < categorized.technical.length - 1 ? ', ' : ''}
                       </Text>
                     );
@@ -269,7 +312,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
                   {categorized.tools.map((skill: string, idx: number) => {
                     const isHighlight = highlightSkills?.some(hs => hs.toLowerCase() === skill.toLowerCase());
                     return (
-                      <Text key={idx} style={isHighlight ? { fontFamily: 'Helvetica-Bold', color: '#4C1D95' } : {}}>
+                      <Text key={idx} style={isHighlight ? { fontFamily: 'Roboto', fontWeight: 700, color: '#4C1D95' } : {}}>
                         {skill}{idx < categorized.tools.length - 1 ? ', ' : ''}
                       </Text>
                     );
@@ -284,7 +327,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
                   {categorized.soft.map((skill: string, idx: number) => {
                     const isHighlight = highlightSkills?.some(hs => hs.toLowerCase() === skill.toLowerCase());
                     return (
-                      <Text key={idx} style={isHighlight ? { fontFamily: 'Helvetica-Bold', color: '#4C1D95' } : {}}>
+                      <Text key={idx} style={isHighlight ? { fontFamily: 'Roboto', fontWeight: 700, color: '#4C1D95' } : {}}>
                         {skill}{idx < categorized.soft.length - 1 ? ', ' : ''}
                       </Text>
                     );
