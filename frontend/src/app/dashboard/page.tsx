@@ -11,7 +11,12 @@ export default function Dashboard() {
   const [file, setFile] = useState<File | null>(null);
   const [targetRole, setTargetRole] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resumes, setResumes] = useState<any[]>([]);
+  interface Resume {
+    id: number;
+    original_file_path: string;
+    uploaded_at: string;
+  }
+  const [resumes, setResumes] = useState<Resume[]>([]);
   const [loadingResumes, setLoadingResumes] = useState(true);
   const router = useRouter();
 

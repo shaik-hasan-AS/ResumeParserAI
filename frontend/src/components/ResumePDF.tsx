@@ -123,6 +123,7 @@ interface ExperienceEntry {
 }
 
 interface ResumePDFProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parsedData: any;
   overrides: Record<string, string>;
   aiRewrites?: Array<{ original: string; improved: string }>;
@@ -211,6 +212,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Education</Text>
             {eduEntries.length > 0 ? (
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               eduEntries.map((entry: any, i: number) => (
                 <View key={i} style={styles.educationEntry}>
                   <Text style={styles.degree}>{entry.degree}</Text>

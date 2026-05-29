@@ -54,19 +54,21 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
         localStorage.setItem('token', loginResponse.data.access_token);
         router.push('/dashboard');
       }
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { detail?: string } }, message?: string };
       setError(err.response?.data?.detail || err.message || 'An error occurred');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse: any) => {
+  const handleGoogleSuccess = async (credentialResponse: { credential?: string }) => {
     try {
       const response = await api.post('/api/auth/google', { credential: credentialResponse.credential });
       localStorage.setItem('token', response.data.access_token);
       router.push('/dashboard');
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { detail?: string } }, message?: string };
       setError(err.response?.data?.detail || err.message || 'Google Auth Failed');
     }
   };

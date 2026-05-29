@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, FileText, Target, CheckCircle, Upload, Sparkles, Rocket, ArrowRight } from 'lucide-react';
+import { LayoutDashboard, FileText, Target, CheckCircle, Upload, Sparkles, Rocket } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Home() {
@@ -198,7 +198,7 @@ export default function Home() {
                 <Upload className="w-7 h-7 text-primary" />
               </div>
               <h3 className="text-xl font-bold text-foreground mb-2">1. Upload Resume</h3>
-              <p className="text-muted-foreground">Upload your existing PDF or DOCX resume. We'll instantly parse your experience and skills.</p>
+              <p className="text-muted-foreground">Upload your existing PDF or DOCX resume. We&apos;ll instantly parse your experience and skills.</p>
             </motion.div>
             
             <motion.div 
