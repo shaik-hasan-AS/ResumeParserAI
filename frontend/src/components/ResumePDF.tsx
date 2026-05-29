@@ -171,6 +171,7 @@ interface ResumePDFProps {
 
 // Helper to highlight numbers/metrics in bullet points
 const formatBullet = (text: string) => {
+  if (!text) return null;
   // Matches digits (including decimals), percentages, and money (e.g. 50, 40.5%, $1M, 2,000)
   const regex = /(\$?\d+(?:,\d{3})*(?:\.\d+)?%?[MK]?)/g;
   const parts = text.split(regex);
@@ -242,19 +243,19 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         )}
 
         {/* Experience Section */}
-        {(structuredExperience?.length ? structuredExperience.length > 0 : experience) && (
+        {((structuredExperience && structuredExperience.length > 0) || experience) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Professional Experience</Text>
             
             {structuredExperience && structuredExperience.length > 0 ? (
               structuredExperience.map((exp, i) => (
                 <View key={i} style={{ marginBottom: 12 }}>
-                  <Text style={styles.jobTitle}>{exp.job_title}</Text>
+                  {exp.job_title && <Text style={styles.jobTitle}>{exp.job_title}</Text>}
                   <View style={styles.companyWrapper}>
-                    <Text style={styles.company}>{exp.company}</Text>
-                    <Text style={styles.dates}>{exp.dates}</Text>
+                    {exp.company && <Text style={styles.company}>{exp.company}</Text>}
+                    {exp.dates && <Text style={styles.dates}>{exp.dates}</Text>}
                   </View>
-                  {exp.bullet_points.map((bullet, j) => (
+                  {exp.bullet_points && exp.bullet_points.map((bullet, j) => (
                     <View key={j} style={styles.bulletPoint}>
                       <Text style={styles.bulletDot}>•</Text>
                       <Text style={styles.bulletText}>{formatBullet(bullet)}</Text>
