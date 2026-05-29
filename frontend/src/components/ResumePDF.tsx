@@ -79,15 +79,57 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginTop: 2,
   },
+  jobTitle: {
+    fontSize: 11,
+    fontFamily: 'Helvetica-Bold',
+    color: '#111827',
+  },
+  companyWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  company: {
+    fontSize: 10,
+    fontFamily: 'Helvetica-Bold',
+    color: '#4B5563',
+  },
+  dates: {
+    fontSize: 10,
+    color: '#6B7280',
+  },
+  bulletPoint: {
+    flexDirection: 'row',
+    marginBottom: 3,
+  },
+  bulletDot: {
+    width: 10,
+    fontSize: 10,
+    color: '#374151',
+  },
+  bulletText: {
+    flex: 1,
+    fontSize: 10,
+    color: '#374151',
+    lineHeight: 1.4,
+  },
 });
+
+interface ExperienceEntry {
+  job_title: string;
+  company: string;
+  dates: string;
+  bullet_points: string[];
+}
 
 interface ResumePDFProps {
   parsedData: any;
   overrides: Record<string, string>;
   aiRewrites?: Array<{ original: string; improved: string }>;
+  structuredExperience?: ExperienceEntry[];
 }
 
-const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites }) => {
+const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites, structuredExperience }) => {
   const getVal = (key: string) => overrides[key] || parsedData?.[key];
 
   const name = getVal('name');
@@ -138,10 +180,29 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         </View>
 
         {/* Experience Section */}
-        {experience && (
+        {(structuredExperience?.length ? structuredExperience.length > 0 : experience) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Professional Experience</Text>
-            <Text style={styles.text}>{experience}</Text>
+            
+            {structuredExperience && structuredExperience.length > 0 ? (
+              structuredExperience.map((exp, i) => (
+                <View key={i} style={{ marginBottom: 12 }}>
+                  <Text style={styles.jobTitle}>{exp.job_title}</Text>
+                  <View style={styles.companyWrapper}>
+                    <Text style={styles.company}>{exp.company}</Text>
+                    <Text style={styles.dates}>{exp.dates}</Text>
+                  </View>
+                  {exp.bullet_points.map((bullet, j) => (
+                    <View key={j} style={styles.bulletPoint}>
+                      <Text style={styles.bulletDot}>•</Text>
+                      <Text style={styles.bulletText}>{bullet}</Text>
+                    </View>
+                  ))}
+                </View>
+              ))
+            ) : (
+              <Text style={styles.text}>{experience}</Text>
+            )}
           </View>
         )}
 

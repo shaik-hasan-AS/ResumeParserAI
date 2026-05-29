@@ -10,6 +10,12 @@ class BulletPointRewrite(BaseModel):
     improved: str = Field(description="The rewritten, impact-driven bullet point.")
     reasoning: str = Field(description="Why the new bullet point is better.")
 
+class ExperienceEntry(BaseModel):
+    job_title: str = Field(description="The job title or role.")
+    company: str = Field(description="The name of the company or organization.")
+    dates: str = Field(description="The dates of employment (e.g., 'Jan 2020 - Present').")
+    bullet_points: List[str] = Field(description="List of optimized, impact-driven bullet points for this role.")
+
 class ResumeEvaluation(BaseModel):
     score: int = Field(description="ATS match score from 0-100.")
     keyword_match_rate: int = Field(description="Percentage (0-100) of how well the skills match the required keywords.")
@@ -20,6 +26,7 @@ class ResumeEvaluation(BaseModel):
     recommended_certifications: List[str] = Field(description="Highly relevant certifications for this candidate.")
     actionable_improvements: List[str] = Field(description="Concrete, step-by-step actions to fix the weaknesses.")
     bullet_point_rewrites: List[BulletPointRewrite] = Field(description="Examples of how to rewrite weak experience bullets for maximum impact.")
+    structured_experience: List[ExperienceEntry] = Field(description="The candidate's experience completely parsed, formatted, and optimized. Rewrite any weak bullet points for maximum impact. If no experience is found, return an empty list.", default_factory=list)
 
 def redact_pii(text: str, parsed_data: dict) -> str:
     redacted_text = text
@@ -97,6 +104,7 @@ def generate_feedback(parsed_data: dict, raw_text: str, target_role: str = None)
                 "missing_skills": [],
                 "recommended_certifications": [],
                 "actionable_improvements": [],
-                "bullet_point_rewrites": []
+                "bullet_point_rewrites": [],
+                "structured_experience": []
             })
         }
