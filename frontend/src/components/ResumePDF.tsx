@@ -16,10 +16,11 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
   },
   name: {
-    fontSize: 24,
+    fontSize: 28,
     fontFamily: 'Helvetica-Bold',
-    color: '#111827',
+    color: '#7C3AED', // Vibrant Purple
     marginBottom: 8,
+    letterSpacing: 1,
   },
   contactInfo: {
     flexDirection: 'row',
@@ -32,8 +33,9 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   link: {
-    color: '#4F46E5',
+    color: '#14b8a6', // Teal
     textDecoration: 'none',
+    fontFamily: 'Helvetica-Bold',
   },
   section: {
     marginBottom: 20,
@@ -41,12 +43,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontFamily: 'Helvetica-Bold',
-    color: '#111827',
+    color: '#7C3AED', // Vibrant Purple
     textTransform: 'uppercase',
-    marginBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    marginBottom: 10,
+    borderBottomWidth: 2,
+    borderBottomColor: '#EDE9FE', // Light purple underline
     paddingBottom: 4,
+    letterSpacing: 1,
   },
   text: {
     fontSize: 10,
@@ -68,7 +71,7 @@ const styles = StyleSheet.create({
   degree: {
     fontSize: 11,
     fontFamily: 'Helvetica-Bold',
-    color: '#111827',
+    color: '#4C1D95', // Deep purple
   },
   institution: {
     fontSize: 10,
@@ -80,9 +83,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   jobTitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: 'Helvetica-Bold',
-    color: '#111827',
+    color: '#4C1D95', // Deep purple
   },
   companyWrapper: {
     flexDirection: 'row',
