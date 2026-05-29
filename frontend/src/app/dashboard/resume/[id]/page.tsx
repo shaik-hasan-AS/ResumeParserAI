@@ -79,7 +79,7 @@ function ContactBlock({ parsedData, overrides, setOverrides }: { parsedData: Rec
       <div className="space-y-3">
         {CONTACT_FIELDS.map((key) => {
           const meta = FIELD_META[key];
-          const extracted = parsedData?.[key];
+          const extracted = parsedData?.[key] as string | undefined;
           const override = overrides[key];
           const value = override || extracted;
           const missing = !value;
@@ -158,7 +158,7 @@ const SKILL_STYLES = {
 const SKILL_LABELS = { technical: '⚙ Technical', soft: '💬 Soft Skills', tools: '🛠 Tools' };
 
 function ProfileBlock({ parsedData }: { parsedData: Record<string, unknown> | null | undefined }) {
-  const seniority = getSeniorityLabel(parsedData?.experience_years);
+  const seniority = getSeniorityLabel(parsedData?.experience_years as number | null | undefined);
   const categorized = parsedData?.skills_categorized as
     { technical: string[]; soft: string[]; tools: string[] } | undefined;
   const eduEntries = parsedData?.education_entries as
@@ -167,13 +167,13 @@ function ProfileBlock({ parsedData }: { parsedData: Record<string, unknown> | nu
   return (
     <div className="bg-card border border-border rounded-3xl p-6 shadow-xl space-y-6">
       {/* Seniority */}
-      {parsedData?.experience_years !== null && parsedData?.experience_years !== undefined && (
+      {!!(parsedData?.experience_years !== null && parsedData?.experience_years !== undefined) && (
         <div className="flex items-center gap-3">
           <Award className="w-4 h-4 text-primary" />
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-1">Inferred seniority</p>
             <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${seniority.color}`}>
-              {seniority.label} · {parsedData.experience_years}y exp
+              {seniority.label} · {parsedData.experience_years as string}y exp
             </span>
           </div>
         </div>
@@ -200,17 +200,17 @@ function ProfileBlock({ parsedData }: { parsedData: Record<string, unknown> | nu
       )}
 
       {/* Raw fallback if no structured entries */}
-      {(!eduEntries || eduEntries.length === 0) && parsedData?.education && (
+      {!!((!eduEntries || eduEntries.length === 0) && parsedData?.education) && (
         <div className="space-y-2">
           <h3 className="text-xs font-semibold text-muted-foreground flex items-center gap-2 uppercase tracking-wider">
             <GraduationCap className="w-4 h-4" /> Education
           </h3>
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{parsedData.education}</p>
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{parsedData.education as string}</p>
         </div>
       )}
 
       {/* Skills */}
-      {categorized && (
+      {!!categorized && (
         <div className="space-y-4">
           {(['technical', 'soft', 'tools'] as const).map(cat => (
             categorized[cat].length > 0 && (
@@ -230,13 +230,13 @@ function ProfileBlock({ parsedData }: { parsedData: Record<string, unknown> | nu
       )}
 
       {/* Experience raw text */}
-      {parsedData?.experience && (
+      {!!parsedData?.experience && (
         <div className="space-y-2 pt-2 border-t border-border">
           <h3 className="text-xs font-semibold text-muted-foreground flex items-center gap-2 uppercase tracking-wider">
             <Briefcase className="w-4 h-4" /> Experience summary
           </h3>
           <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed line-clamp-6">
-            {parsedData.experience}
+            {parsedData.experience as string}
           </p>
         </div>
       )}
