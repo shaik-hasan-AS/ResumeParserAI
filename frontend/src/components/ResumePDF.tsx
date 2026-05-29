@@ -169,18 +169,9 @@ interface ResumePDFProps {
   targetRole?: string;
 }
 
-// Helper to highlight numbers/metrics in bullet points
+// Temporarily disabled formatBullet as it may be causing silent crashes in react-pdf
 const formatBullet = (text: any) => {
-  if (!text || typeof text !== 'string') return text || null;
-  // Matches digits (including decimals), percentages, and money (e.g. 50, 40.5%, $1M, 2,000)
-  const regex = /(\$?\d+(?:,\d{3})*(?:\.\d+)?%?[MK]?)/g;
-  const parts = text.split(regex);
-  return parts.map((part: string, index: number) => {
-    if (part.match(regex)) {
-      return <Text key={index} style={styles.metricText}>{part}</Text>;
-    }
-    return part;
-  });
+  return text;
 };
 
 const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites, structuredExperience, executiveSummary, highlightSkills, targetRole }) => {
@@ -263,12 +254,11 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
                       {exp.dates && <Text style={styles.dates}>{exp.dates}</Text>}
                     </View>
                     {Array.isArray(exp.bullet_points) && exp.bullet_points.map((bullet, j) => {
-                      const formatted = formatBullet(bullet);
-                      if (!formatted) return null;
+                      if (!bullet) return null;
                       return (
                         <View key={j} style={styles.bulletPoint}>
                           <Text style={styles.bulletDot}>•</Text>
-                          <Text style={styles.bulletText}>{formatted}</Text>
+                          <Text style={styles.bulletText}>{bullet}</Text>
                         </View>
                       );
                     })}
