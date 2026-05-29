@@ -170,12 +170,12 @@ interface ResumePDFProps {
 }
 
 // Helper to highlight numbers/metrics in bullet points
-const formatBullet = (text: string) => {
-  if (!text) return null;
+const formatBullet = (text: any) => {
+  if (!text || typeof text !== 'string') return text || null;
   // Matches digits (including decimals), percentages, and money (e.g. 50, 40.5%, $1M, 2,000)
   const regex = /(\$?\d+(?:,\d{3})*(?:\.\d+)?%?[MK]?)/g;
   const parts = text.split(regex);
-  return parts.map((part, index) => {
+  return parts.map((part: string, index: number) => {
     if (part.match(regex)) {
       return <Text key={index} style={styles.metricText}>{part}</Text>;
     }
@@ -243,31 +243,43 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         )}
 
         {/* Experience Section */}
-        {((structuredExperience && structuredExperience.length > 0) || experience) && (
+        {(experience || (structuredExperience && structuredExperience.length > 0)) ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Professional Experience</Text>
             
             {structuredExperience && structuredExperience.length > 0 ? (
-              structuredExperience.map((exp, i) => (
-                <View key={i} style={{ marginBottom: 12 }}>
-                  {exp.job_title && <Text style={styles.jobTitle}>{exp.job_title}</Text>}
-                  <View style={styles.companyWrapper}>
-                    {exp.company && <Text style={styles.company}>{exp.company}</Text>}
-                    {exp.dates && <Text style={styles.dates}>{exp.dates}</Text>}
-                  </View>
-                  {exp.bullet_points && exp.bullet_points.map((bullet, j) => (
-                    <View key={j} style={styles.bulletPoint}>
-                      <Text style={styles.bulletDot}>•</Text>
-                      <Text style={styles.bulletText}>{formatBullet(bullet)}</Text>
+              structuredExperience.map((exp, i) => {
+                // Fallback if AI hallucinates an empty object
+                if (!exp.job_title && !exp.company && (!exp.bullet_points || exp.bullet_points.length === 0)) {
+                  if (i === 0) return <Text key={i} style={styles.text}>{experience}</Text>;
+                  return null;
+                }
+                
+                return (
+                  <View key={i} style={{ marginBottom: 12 }}>
+                    {exp.job_title && <Text style={styles.jobTitle}>{exp.job_title}</Text>}
+                    <View style={styles.companyWrapper}>
+                      {exp.company && <Text style={styles.company}>{exp.company}</Text>}
+                      {exp.dates && <Text style={styles.dates}>{exp.dates}</Text>}
                     </View>
-                  ))}
-                </View>
-              ))
+                    {Array.isArray(exp.bullet_points) && exp.bullet_points.map((bullet, j) => {
+                      const formatted = formatBullet(bullet);
+                      if (!formatted) return null;
+                      return (
+                        <View key={j} style={styles.bulletPoint}>
+                          <Text style={styles.bulletDot}>•</Text>
+                          <Text style={styles.bulletText}>{formatted}</Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                );
+              })
             ) : (
               <Text style={styles.text}>{experience}</Text>
             )}
           </View>
-        )}
+        ) : null}
 
         {/* Education Section */}
         {(eduEntries.length > 0 || parsedData?.education) && (
