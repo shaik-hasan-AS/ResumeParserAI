@@ -5,8 +5,17 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, User, Mail, Phone, Briefcase, Sparkles, GraduationCap, ArrowRight, CheckCircle2, AlertTriangle, ListOrdered, Edit3, Target, Link2, Code2, MapPin, Pencil, Award } from 'lucide-react';
 import api from '@/lib/api';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import dynamic from 'next/dynamic';
+import ResumePDF from '@/components/ResumePDF';
+import { Download } from 'lucide-react';
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+const PDFDownloadLink = dynamic(
+  () => import('@react-pdf/renderer').then((mod) => mod.PDFDownloadLink),
+  { 
+    ssr: false, 
+    loading: () => <Button disabled variant="outline" className="h-9 px-4 text-sm rounded-lg border-border"><Download className="w-4 h-4 mr-2" /> Loading PDF...</Button> 
+  }
+);
 
 function getSeniorityLabel(years: number | null | undefined): { label: string; color: string } {
   if (years === null || years === undefined) return { label: 'Unknown', color: 'bg-muted text-muted-foreground border-border' };
@@ -37,10 +46,7 @@ const FIELD_META: Record<ContactField, { label: string; icon: React.ReactNode; p
   location: { label: 'Location',        icon: <MapPin className="w-4 h-4" />,  placeholder: 'City, Country' },
 };
 
-function ContactBlock({ parsedData }: { parsedData: any }) {
-  const [overrides, setOverrides] = useState<Record<ContactField, string>>(
-    CONTACT_FIELDS.reduce((acc, k) => ({ ...acc, [k]: '' }), {} as Record<ContactField, string>)
-  );
+function ContactBlock({ parsedData, overrides, setOverrides }: { parsedData: any, overrides: Record<ContactField, string>, setOverrides: React.Dispatch<React.SetStateAction<Record<ContactField, string>>> }) {
   const [editing, setEditing] = useState<Record<ContactField, boolean>>(
     CONTACT_FIELDS.reduce((acc, k) => ({ ...acc, [k]: false }), {} as Record<ContactField, boolean>)
   );
@@ -284,6 +290,10 @@ export default function ResumeViewer() {
   const searchParams = useSearchParams();
   const urlRole = searchParams.get('role');
   
+  const [overrides, setOverrides] = useState<Record<ContactField, string>>(
+    CONTACT_FIELDS.reduce((acc, k) => ({ ...acc, [k]: '' }), {} as Record<ContactField, string>)
+  );
+
   const [parsedData, setParsedData] = useState<any>(null);
   const [feedback, setFeedback] = useState<any>(null);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
@@ -365,6 +375,28 @@ export default function ResumeViewer() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            {parsedData && (
+              <PDFDownloadLink
+                document={
+                  <ResumePDF 
+                    parsedData={parsedData} 
+                    overrides={overrides} 
+                    aiRewrites={structData?.bullet_point_rewrites}
+                  />
+                }
+                fileName={`${parsedData?.name ? parsedData.name.replace(/\s+/g, '_') : 'Resume'}.pdf`}
+              >
+                {({ loading }: any) => (
+                  <Button 
+                    disabled={loading}
+                    className="bg-primary hover:bg-primary/90 text-foreground shadow-sm h-9 px-4 rounded-lg font-semibold flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    {loading ? 'Preparing...' : 'Download PDF'}
+                  </Button>
+                )}
+              </PDFDownloadLink>
+            )}
             <ThemeToggle />
           </div>
         </header>
@@ -373,7 +405,7 @@ export default function ResumeViewer() {
           
           {/* Left Column: Contact + Profile */}
           <div className="lg:col-span-4 space-y-4">
-            <ContactBlock parsedData={parsedData} />
+            <ContactBlock parsedData={parsedData} overrides={overrides} setOverrides={setOverrides} />
             <ProfileBlock parsedData={parsedData} />
           </div>
 
