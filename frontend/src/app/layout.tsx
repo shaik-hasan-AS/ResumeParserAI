@@ -15,8 +15,28 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MyAIProfile - AI Resume Builder",
-  description: "AI-powered resume parsing and ATS optimization platform.",
+  metadataBase: new URL('https://myaiprofile.ai'),
+  title: {
+    default: "MyAIProfile - ATS-Optimized AI Resume Builder",
+    template: "%s | MyAIProfile"
+  },
+  description: "Instantly optimize your resume for any ATS. Get hired faster with AI-powered keyword analysis, actionable feedback, and dynamic bullet rewrites.",
+  keywords: ["resume builder", "ATS optimization", "AI resume parser", "job search", "career", "resume feedback", "ATS score"],
+  authors: [{ name: "MyAIProfile Team" }],
+  creator: "MyAIProfile",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://myaiprofile.ai",
+    title: "MyAIProfile - ATS-Optimized AI Resume Builder",
+    description: "Instantly optimize your resume for any ATS. Get hired faster with AI-powered keyword analysis, actionable feedback, and dynamic bullet rewrites.",
+    siteName: "MyAIProfile",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MyAIProfile - ATS-Optimized AI Resume Builder",
+    description: "Instantly optimize your resume for any ATS. Get hired faster with AI-powered keyword analysis, actionable feedback, and dynamic bullet rewrites.",
+  },
 };
 
 export default function RootLayout({
