@@ -1,118 +1,166 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Link } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Link, Svg, Path } from '@react-pdf/renderer';
 
-// Create styles
+// --- Icons ---
+const iconColor = "#4B5563";
+const IconEmail = () => (
+  <Svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <Path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+    <Path d="M22 6l-10 7L2 6" />
+  </Svg>
+);
+const IconPhone = () => (
+  <Svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <Path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+  </Svg>
+);
+const IconMapPin = () => (
+  <Svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <Path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <Path d="M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+  </Svg>
+);
+const IconLinkedin = () => (
+  <Svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <Path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+    <Path d="M2 9h4v12H2z" />
+    <Path d="M4 2a2 2 0 1 0 0 4 2 2 0 1 0 0-4z" />
+  </Svg>
+);
+const IconGithub = () => (
+  <Svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <Path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+  </Svg>
+);
+
+// --- Styles ---
 const styles = StyleSheet.create({
   page: {
-    flexDirection: 'column',
-    backgroundColor: '#FFFFFF',
-    padding: 40,
+    padding: '40px 48px',
     fontFamily: 'Helvetica',
+    backgroundColor: '#FFFFFF',
+    color: '#111827',
   },
   header: {
-    marginBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    paddingBottom: 15,
+    alignItems: 'center',
+    marginBottom: 24,
   },
   name: {
-    fontSize: 24,
+    fontSize: 22,
     fontFamily: 'Helvetica-Bold',
-    color: '#111827',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
     marginBottom: 8,
+    color: '#111827',
   },
-  contactInfo: {
+  contactRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    fontSize: 10,
-    color: '#4B5563',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
   },
   contactItem: {
-    marginRight: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    fontSize: 9.5,
+    color: '#4B5563',
+  },
+  contactIcon: {
+    marginRight: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   link: {
-    color: '#4F46E5',
+    color: '#4B5563',
     textDecoration: 'none',
   },
   section: {
-    marginBottom: 20,
+    marginBottom: 18,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontFamily: 'Helvetica-Bold',
-    color: '#111827',
-    textTransform: 'uppercase',
-    marginBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    paddingBottom: 4,
-  },
-  text: {
-    fontSize: 10,
-    color: '#374151',
-    lineHeight: 1.5,
-  },
-  skillsGroup: {
-    marginBottom: 8,
-  },
-  skillsLabel: {
-    fontSize: 10,
-    fontFamily: 'Helvetica-Bold',
-    color: '#111827',
-    marginBottom: 2,
-  },
-  educationEntry: {
-    marginBottom: 8,
-  },
-  degree: {
     fontSize: 11,
     fontFamily: 'Helvetica-Bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
     color: '#111827',
+    borderBottomWidth: 1,
+    borderBottomColor: '#D1D5DB',
+    paddingBottom: 4,
+    marginBottom: 10,
   },
-  institution: {
-    fontSize: 10,
-    color: '#4B5563',
+  entryBlock: {
+    marginBottom: 12,
   },
-  year: {
-    fontSize: 10,
-    color: '#6B7280',
-    marginTop: 2,
+  entryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: 2,
   },
   jobTitle: {
     fontSize: 11,
     fontFamily: 'Helvetica-Bold',
     color: '#111827',
   },
-  companyWrapper: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
+  dates: {
+    fontSize: 9.5,
+    color: '#4B5563',
   },
   company: {
     fontSize: 10,
-    fontFamily: 'Helvetica-Bold',
-    color: '#4B5563',
+    fontFamily: 'Helvetica-Oblique',
+    color: '#374151',
+    marginBottom: 6,
   },
-  dates: {
+  degree: {
     fontSize: 10,
-    color: '#6B7280',
+    fontFamily: 'Helvetica-Bold',
+    color: '#111827',
   },
-  bulletPoint: {
-    flexDirection: 'row',
-    marginBottom: 3,
-  },
-  bulletDot: {
-    width: 10,
+  institution: {
     fontSize: 10,
     color: '#374151',
+  },
+  bulletRow: {
+    flexDirection: 'row',
+    marginBottom: 4,
+    paddingLeft: 8,
+    paddingRight: 8,
+  },
+  bulletDot: {
+    width: 12,
+    fontSize: 10,
+    color: '#4B5563',
   },
   bulletText: {
     flex: 1,
-    fontSize: 10,
-    color: '#374151',
+    fontSize: 9.5,
     lineHeight: 1.4,
+    color: '#374151',
   },
+  textBlock: {
+    fontSize: 9.5,
+    lineHeight: 1.4,
+    color: '#374151',
+    marginBottom: 4,
+  },
+  skillsGroup: {
+    flexDirection: 'row',
+    marginBottom: 6,
+  },
+  skillsLabel: {
+    width: 70,
+    fontSize: 9.5,
+    fontFamily: 'Helvetica-Bold',
+    color: '#111827',
+  },
+  skillsText: {
+    flex: 1,
+    fontSize: 9.5,
+    lineHeight: 1.4,
+    color: '#374151',
+  }
 });
 
 interface ExperienceEntry {
@@ -148,12 +196,30 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
   if (experience && aiRewrites && aiRewrites.length > 0) {
     aiRewrites.forEach(rewrite => {
       if (rewrite.original && rewrite.improved) {
-        // Use a simple replace. We might want to be careful with exact string matching
-        // but this handles the direct 1:1 replacements Gemini provides.
         experience = experience.replace(rewrite.original, rewrite.improved);
       }
     });
   }
+
+  const renderRawBullets = (text: string) => {
+    if (!text) return null;
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    return lines.map((line, i) => {
+      const isBullet = line.startsWith('•') || line.startsWith('-');
+      const cleanLine = line.replace(/^[•\-\*]\s*/, '');
+      if (isBullet) {
+        return (
+          <View key={i} style={styles.bulletRow}>
+            <Text style={styles.bulletDot}>•</Text>
+            <Text style={styles.bulletText}>{cleanLine}</Text>
+          </View>
+        );
+      }
+      return <Text key={i} style={styles.textBlock}>{cleanLine}</Text>;
+    });
+  };
+
+  const cleanUrl = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '');
 
   return (
     <Document>
@@ -161,21 +227,36 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         {/* Header Section */}
         <View style={styles.header}>
           {name && <Text style={styles.name}>{name}</Text>}
-          <View style={styles.contactInfo}>
-            {email && <Text style={styles.contactItem}>{email}</Text>}
-            {phone && <Text style={styles.contactItem}>•  {phone}</Text>}
-            {location && <Text style={styles.contactItem}>•  {location}</Text>}
-          </View>
-          <View style={[styles.contactInfo, { marginTop: 4 }]}>
+          <View style={styles.contactRow}>
+            {email && (
+              <View style={styles.contactItem}>
+                <View style={styles.contactIcon}><IconEmail /></View>
+                <Text>{email}</Text>
+              </View>
+            )}
+            {phone && (
+              <View style={styles.contactItem}>
+                <View style={styles.contactIcon}><IconPhone /></View>
+                <Text>{phone}</Text>
+              </View>
+            )}
+            {location && (
+              <View style={styles.contactItem}>
+                <View style={styles.contactIcon}><IconMapPin /></View>
+                <Text>{location}</Text>
+              </View>
+            )}
             {linkedin && (
-              <Link src={linkedin} style={[styles.contactItem, styles.link]}>
-                {linkedin.replace(/^https?:\/\//, '')}
-              </Link>
+              <View style={styles.contactItem}>
+                <View style={styles.contactIcon}><IconLinkedin /></View>
+                <Link src={linkedin} style={styles.link}>{cleanUrl(linkedin)}</Link>
+              </View>
             )}
             {github && (
-              <Link src={github} style={[styles.contactItem, styles.link]}>
-                •  {github.replace(/^https?:\/\//, '')}
-              </Link>
+              <View style={styles.contactItem}>
+                <View style={styles.contactIcon}><IconGithub /></View>
+                <Link src={github} style={styles.link}>{cleanUrl(github)}</Link>
+              </View>
             )}
           </View>
         </View>
@@ -187,14 +268,14 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
             
             {structuredExperience && structuredExperience.length > 0 ? (
               structuredExperience.map((exp, i) => (
-                <View key={i} style={{ marginBottom: 12 }}>
-                  <Text style={styles.jobTitle}>{exp.job_title}</Text>
-                  <View style={styles.companyWrapper}>
-                    <Text style={styles.company}>{exp.company}</Text>
+                <View key={i} style={styles.entryBlock}>
+                  <View style={styles.entryHeader}>
+                    <Text style={styles.jobTitle}>{exp.job_title}</Text>
                     <Text style={styles.dates}>{exp.dates}</Text>
                   </View>
+                  <Text style={styles.company}>{exp.company}</Text>
                   {exp.bullet_points.map((bullet, j) => (
-                    <View key={j} style={styles.bulletPoint}>
+                    <View key={j} style={styles.bulletRow}>
                       <Text style={styles.bulletDot}>•</Text>
                       <Text style={styles.bulletText}>{bullet}</Text>
                     </View>
@@ -202,7 +283,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
                 </View>
               ))
             ) : (
-              <Text style={styles.text}>{experience}</Text>
+              renderRawBullets(experience)
             )}
           </View>
         )}
@@ -214,14 +295,16 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
             {eduEntries.length > 0 ? (
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               eduEntries.map((entry: any, i: number) => (
-                <View key={i} style={styles.educationEntry}>
-                  <Text style={styles.degree}>{entry.degree}</Text>
+                <View key={i} style={styles.entryBlock}>
+                  <View style={styles.entryHeader}>
+                    <Text style={styles.degree}>{entry.degree}</Text>
+                    {entry.year && <Text style={styles.dates}>{entry.year}</Text>}
+                  </View>
                   <Text style={styles.institution}>{entry.institution}</Text>
-                  {entry.year && <Text style={styles.year}>{entry.year}</Text>}
                 </View>
               ))
             ) : (
-              <Text style={styles.text}>{parsedData.education}</Text>
+              renderRawBullets(parsedData.education)
             )}
           </View>
         )}
@@ -232,20 +315,20 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
             <Text style={styles.sectionTitle}>Skills</Text>
             {categorized.technical?.length > 0 && (
               <View style={styles.skillsGroup}>
-                <Text style={styles.skillsLabel}>Technical</Text>
-                <Text style={styles.text}>{categorized.technical.join(', ')}</Text>
+                <Text style={styles.skillsLabel}>Technical:</Text>
+                <Text style={styles.skillsText}>{categorized.technical.join(', ')}</Text>
               </View>
             )}
             {categorized.tools?.length > 0 && (
               <View style={styles.skillsGroup}>
-                <Text style={styles.skillsLabel}>Tools</Text>
-                <Text style={styles.text}>{categorized.tools.join(', ')}</Text>
+                <Text style={styles.skillsLabel}>Tools:</Text>
+                <Text style={styles.skillsText}>{categorized.tools.join(', ')}</Text>
               </View>
             )}
             {categorized.soft?.length > 0 && (
               <View style={styles.skillsGroup}>
-                <Text style={styles.skillsLabel}>Soft Skills</Text>
-                <Text style={styles.text}>{categorized.soft.join(', ')}</Text>
+                <Text style={styles.skillsLabel}>Soft Skills:</Text>
+                <Text style={styles.skillsText}>{categorized.soft.join(', ')}</Text>
               </View>
             )}
           </View>
