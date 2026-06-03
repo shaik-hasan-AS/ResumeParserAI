@@ -211,9 +211,10 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
     if (!text) return null;
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
     return lines.map((line, i) => {
-      // Catch standard bullets, commas, low quotation marks, and common symbol bullets
-      const isBullet = /^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+]/.test(line);
-      const cleanLine = line.replace(/^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+]\s*/, '');
+      // Remove any zero-width spaces or invisible characters that pdfplumber might extract
+      const sanitizedLine = line.replace(/^[\s\u200B-\u200D\uFEFF]+/, '');
+      const isBullet = /^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+，]/.test(sanitizedLine);
+      const cleanLine = sanitizedLine.replace(/^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+，]\s*/, '');
       if (isBullet) {
         return (
           <View key={i} style={styles.bulletRow}>
@@ -231,8 +232,9 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
     
     return lines.map((line, i) => {
-      const isBullet = /^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+]/.test(line);
-      const cleanLine = line.replace(/^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+]\s*/, '');
+      const sanitizedLine = line.replace(/^[\s\u200B-\u200D\uFEFF]+/, '');
+      const isBullet = /^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+，]/.test(sanitizedLine);
+      const cleanLine = sanitizedLine.replace(/^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+，]\s*/, '');
       
       if (isBullet) {
         return (
@@ -244,7 +246,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
       }
       
       const prevLine = i > 0 ? lines[i - 1] : null;
-      const prevIsBullet = prevLine ? /^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+]/.test(prevLine) : false;
+      const prevIsBullet = prevLine ? /^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+，]/.test(prevLine.replace(/^[\s\u200B-\u200D\uFEFF]+/, '')) : false;
       
       // If it's all caps (and has at least 4 letters), treat it as a title
       const isAllCaps = cleanLine === cleanLine.toUpperCase() && cleanLine.replace(/[^A-Z]/g, '').length > 3;
