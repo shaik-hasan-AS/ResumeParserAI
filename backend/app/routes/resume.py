@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models import models
@@ -109,22 +108,6 @@ async def upload_resume(
     db.commit()
     
     return new_resume
-
-
-@router.get("/{id}/file")
-def get_resume_file(
-    id: str,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
-):
-    resume = db.query(models.Resume).filter(models.Resume.id == id, models.Resume.user_id == current_user.id).first()
-    if not resume:
-        raise HTTPException(status_code=404, detail="Resume not found")
-        
-    if not os.path.exists(resume.original_file_path):
-        raise HTTPException(status_code=404, detail="File no longer exists on server")
-        
-    return FileResponse(resume.original_file_path)
 
 
 @router.get("/{id}/parsed", response_model=schemas.ParsedDataResponse)

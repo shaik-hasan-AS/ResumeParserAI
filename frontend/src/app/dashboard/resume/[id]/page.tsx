@@ -409,27 +409,16 @@ export default function ResumeViewer() {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start lg:h-[calc(100vh-140px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Left Column: PDF Viewer */}
-          <div className="w-full h-[600px] lg:h-full rounded-3xl overflow-hidden border border-border shadow-xl bg-muted relative">
-            <iframe 
-              src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/resume/${id}/file`}
-              className="w-full h-full border-none absolute inset-0 bg-muted"
-              title="Resume Document"
-            />
+          {/* Left Column: Contact + Profile */}
+          <div className="lg:col-span-4 space-y-4">
+            <ContactBlock parsedData={parsedData} overrides={overrides} setOverrides={setOverrides} />
+            <ProfileBlock parsedData={parsedData} />
           </div>
 
-          {/* Right Column: ATS Score, Contact, Profile */}
-          <div className="lg:h-full lg:overflow-y-auto custom-scrollbar lg:pr-4 space-y-6 pb-12">
-            
-            {/* Top row: Contact & Profile */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <ContactBlock parsedData={parsedData} overrides={overrides} setOverrides={setOverrides} />
-              <ProfileBlock parsedData={parsedData} />
-            </div>
-
-            <div className="space-y-6">
+          {/* Right Column: ATS Score & Feedback */}
+          <div className="lg:col-span-8 space-y-6">
             {!feedback ? (
               <div className="bg-card border border-border rounded-3xl p-12 text-center shadow-xl h-full flex flex-col justify-center min-h-[500px]">
                 <div className="max-w-sm mx-auto space-y-6">
@@ -685,7 +674,6 @@ export default function ResumeViewer() {
                 )}
               </div>
             )}
-            </div>
           </div>
         </div>
       </div>
