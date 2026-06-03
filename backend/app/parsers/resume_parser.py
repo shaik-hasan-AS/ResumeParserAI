@@ -381,6 +381,12 @@ def parse_resume_text(text: str) -> dict:
     # ── Section extraction ───────────────────────────────────────────────────
     experience_section = ""
     education_section = ""
+    summary_section = ""
+    projects_section = ""
+    certifications_section = ""
+    languages_section = ""
+    awards_section = ""
+    
     current_section = None
 
     exp_keywords = {
@@ -392,12 +398,27 @@ def parse_resume_text(text: str) -> dict:
         "education", "academic background", "academic history", "qualifications", "training",
         "labview academy"
     }
+    summary_keywords = {
+        "summary", "profile", "professional summary", "professional profile", "objective", "career objective"
+    }
+    projects_keywords = {
+        "projects", "academic projects", "personal projects", "open source projects", "projects developed at crescent engineering college"
+    }
+    certs_keywords = {
+        "certifications", "licenses", "certifications & licenses", "licenses & certifications"
+    }
+    lang_keywords = {
+        "languages"
+    }
+    awards_keywords = {
+        "awards", "honors", "awards & honors", "honors & awards", "achievements"
+    }
+    
     reset_keywords = {
-        "skills", "projects", "certifications", "summary", "profile", "languages",
-        "publications", "affiliations", "volunteer experience", "leadership",
-        "awards", "honors", "references", "activities", "interests", "licenses",
+        "skills", "publications", "affiliations", "volunteer experience", "leadership",
+        "references", "activities", "interests",
         "most proud of", "strengths", "citations", "professional society memberships",
-        "fundings", "patent", "projects developed at crescent engineering college",
+        "fundings", "patent",
         "guest lectures delivered", "collaborations", "journals reviewed", "accreditation"
     }
 
@@ -410,6 +431,21 @@ def parse_resume_text(text: str) -> dict:
             elif any(k == lower_line for k in edu_keywords):
                 current_section = "education"
                 continue
+            elif any(k == lower_line for k in summary_keywords):
+                current_section = "summary"
+                continue
+            elif any(k == lower_line for k in projects_keywords):
+                current_section = "projects"
+                continue
+            elif any(k == lower_line for k in certs_keywords):
+                current_section = "certifications"
+                continue
+            elif any(k == lower_line for k in lang_keywords):
+                current_section = "languages"
+                continue
+            elif any(k == lower_line for k in awards_keywords):
+                current_section = "awards"
+                continue
             elif lower_line in reset_keywords:
                 current_section = None
                 continue
@@ -417,9 +453,24 @@ def parse_resume_text(text: str) -> dict:
             experience_section += line + "\n"
         elif current_section == "education":
             education_section += line + "\n"
+        elif current_section == "summary":
+            summary_section += line + "\n"
+        elif current_section == "projects":
+            projects_section += line + "\n"
+        elif current_section == "certifications":
+            certifications_section += line + "\n"
+        elif current_section == "languages":
+            languages_section += line + "\n"
+        elif current_section == "awards":
+            awards_section += line + "\n"
 
     education_section = education_section.strip() if education_section else None
     experience_section = experience_section.strip() if experience_section else None
+    summary_section = summary_section.strip() if summary_section else None
+    projects_section = projects_section.strip() if projects_section else None
+    certifications_section = certifications_section.strip() if certifications_section else None
+    languages_section = languages_section.strip() if languages_section else None
+    awards_section = awards_section.strip() if awards_section else None
 
     # ── Structured education entries ─────────────────────────────────────────
     education_entries = _parse_education_entries(education_section or "")
@@ -440,5 +491,10 @@ def parse_resume_text(text: str) -> dict:
         "education_entries": education_entries,
         "experience": experience_section,
         "education": education_section,
+        "summary": summary_section,
+        "projects": projects_section,
+        "certifications": certifications_section,
+        "languages": languages_section,
+        "awards": awards_section,
         "raw_text_length": len(text),
     }

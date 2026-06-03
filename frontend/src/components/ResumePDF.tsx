@@ -188,6 +188,12 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
   const github = getVal('github');
   const location = getVal('location');
 
+  const summary = getVal('summary');
+  const projects = getVal('projects');
+  const certifications = getVal('certifications');
+  const languages = getVal('languages');
+  const awards = getVal('awards');
+
   const categorized = parsedData?.skills_categorized;
   const eduEntries = parsedData?.education_entries || [];
   
@@ -261,6 +267,14 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
           </View>
         </View>
 
+        {/* Summary Section */}
+        {summary && summary.trim().length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Professional Summary</Text>
+            {renderRawBullets(summary)}
+          </View>
+        )}
+
         {/* Experience Section */}
         {(structuredExperience?.length ? structuredExperience.length > 0 : experience) && (
           <View style={styles.section}>
@@ -309,6 +323,14 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
           </View>
         )}
 
+        {/* Projects Section */}
+        {projects && projects.trim().length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Projects</Text>
+            {renderRawBullets(projects)}
+          </View>
+        )}
+
         {/* Skills Section */}
         {categorized && (
           <View style={styles.section}>
@@ -331,6 +353,30 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
                 <Text style={styles.skillsText}>{categorized.soft.join(', ')}</Text>
               </View>
             )}
+          </View>
+        )}
+
+        {/* Certifications Section */}
+        {certifications && certifications.trim().length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Certifications</Text>
+            {renderRawBullets(certifications)}
+          </View>
+        )}
+
+        {/* Awards Section */}
+        {awards && awards.trim().length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Awards & Honors</Text>
+            {renderRawBullets(awards)}
+          </View>
+        )}
+
+        {/* Languages Section */}
+        {languages && languages.trim().length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Languages</Text>
+            {renderRawBullets(languages)}
           </View>
         )}
       </Page>
