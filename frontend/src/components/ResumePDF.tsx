@@ -229,9 +229,54 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
     return sanitized;
   };
 
+  const preProcessLines = (text: string) => {
+    if (!text) return [];
+    const rawLines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const combinedLines: string[] = [];
+    
+    let currentLine = "";
+    
+    for (let i = 0; i < rawLines.length; i++) {
+      const line = rawLines[i];
+      const sanitized = line.replace(/^[\s\u200B-\u200D\uFEFF]+/, '');
+      const isBullet = checkIsBullet(sanitized);
+      
+      if (isBullet) {
+        if (currentLine) combinedLines.push(currentLine);
+        currentLine = line;
+      } else {
+        if (!currentLine) {
+          // This is a title/subtitle before any bullets
+          combinedLines.push(line);
+        } else {
+          // We are inside a bullet. Is this line a continuation?
+          const prevSanitized = currentLine.trim();
+          const endsWithPunctuation = /[.!?]$/.test(prevSanitized);
+          
+          const firstChar = sanitized.charAt(0);
+          const startsWithLowercase = firstChar && firstChar.toLowerCase() === firstChar && firstChar.toUpperCase() !== firstChar;
+          
+          if (!endsWithPunctuation || startsWithLowercase) {
+            // Combine with current bullet
+            currentLine += " " + line;
+          } else {
+            // Not a continuation. Push the finished bullet and start over.
+            combinedLines.push(currentLine);
+            currentLine = "";
+            combinedLines.push(line);
+          }
+        }
+      }
+    }
+    
+    if (currentLine) combinedLines.push(currentLine);
+    
+    return combinedLines;
+  };
+
   const renderRawBullets = (text: string) => {
     if (!text) return null;
-    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const lines = preProcessLines(text);
     return lines.map((line, i) => {
       const sanitizedLine = line.replace(/^[\s\u200B-\u200D\uFEFF]+/, '');
       const isBullet = checkIsBullet(sanitizedLine);
@@ -250,7 +295,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
 
   const renderProjects = (text: string) => {
     if (!text) return null;
-    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const lines = preProcessLines(text);
     
     return lines.map((line, i) => {
       const sanitizedLine = line.replace(/^[\s\u200B-\u200D\uFEFF]+/, '');
