@@ -44,7 +44,7 @@ def redact_pii(text: str, parsed_data: dict) -> str:
     
     return redacted_text
 
-def generate_feedback(parsed_data: dict, raw_text: str, target_role: str = None) -> dict:
+def generate_feedback(parsed_data: dict, raw_text: str, target_role: str = None, job_description: str = None) -> dict:
     redacted_text = redact_pii(raw_text, parsed_data)
     
     # Redact PII from the parsed_data dict itself before sending to API
@@ -57,11 +57,12 @@ def generate_feedback(parsed_data: dict, raw_text: str, target_role: str = None)
         redacted_parsed_data["phone"] = "[REDACTED PHONE]"
     
     role_context = f"The candidate is specifically applying for the role of: **{target_role}**." if target_role else "The candidate has not specified a target role, so evaluate based on general professional standards and the skills present."
+    jd_context = f"\n\nHere is the Job Description for the target role:\n{job_description}\n\nPlease strictly evaluate the candidate's fit against the requirements, keywords, and skills mentioned in this job description." if job_description else ""
     
     prompt = f"""
     Review the following redacted resume text and parsed data.
     
-    {role_context}
+    {role_context}{jd_context}
     
     Parsed Data: {redacted_parsed_data}
     Raw Text: {redacted_text}
@@ -76,7 +77,7 @@ def generate_feedback(parsed_data: dict, raw_text: str, target_role: str = None)
                 response_mime_type="application/json",
                 response_schema=ResumeEvaluation,
                 temperature=0.2,
-                system_instruction="You are an advanced, strict Applicant Tracking System (ATS) and expert technical recruiter. Your task is to evaluate the resume strictly against the target role (if provided). Calculate a realistic ATS match score (0-100) based on keyword matching, measurable achievements, action verbs, and proper formatting. Provide actionable feedback to improve the resume."
+                system_instruction="You are an advanced, strict Applicant Tracking System (ATS) and expert technical recruiter. Your task is to evaluate the resume strictly against the target role and job description (if provided). Calculate a realistic ATS match score (0-100) based on keyword matching against the JD, measurable achievements, action verbs, and proper formatting. Provide actionable feedback to improve the resume."
             )
         )
         

@@ -10,6 +10,7 @@ import api from '@/lib/api';
 export default function Dashboard() {
   const [file, setFile] = useState<File | null>(null);
   const [targetRole, setTargetRole] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
   const [loading, setLoading] = useState(false);
   interface Resume {
     id: number;
@@ -44,7 +45,7 @@ export default function Dashboard() {
       const response = await api.post('/api/resume/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      router.push(`/dashboard/resume/${response.data.id}?role=${encodeURIComponent(targetRole)}`);
+      router.push(`/dashboard/resume/${response.data.id}?role=${encodeURIComponent(targetRole)}&jd=${encodeURIComponent(jobDescription)}`);
     } catch (error) {
       console.error('Upload failed:', error);
       alert('Upload failed');
@@ -152,6 +153,20 @@ export default function Dashboard() {
                   value={targetRole}
                   onChange={(e) => setTargetRole(e.target.value)}
                   className="w-full px-4 py-3 bg-muted border border-border rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-foreground font-medium placeholder:text-muted-foreground"
+                />
+              </div>
+
+              {/* Job Description Input */}
+              <div className="space-y-3 mt-4">
+                <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" /> Job Description (Optional)
+                </label>
+                <textarea 
+                  placeholder="Paste the full job description here..."
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  maxLength={5000}
+                  className="w-full px-4 py-3 bg-muted border border-border rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-foreground font-medium placeholder:text-muted-foreground min-h-[120px] resize-y custom-scrollbar text-sm"
                 />
               </div>
               

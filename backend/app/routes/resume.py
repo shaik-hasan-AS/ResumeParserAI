@@ -149,7 +149,7 @@ def generate_resume_feedback(
             file_bytes = f.read()
         raw_text = extract_text_from_file(resume.original_file_path, file_bytes)
 
-    feedback_result = generate_feedback(parsed.parsed_json if parsed else {}, raw_text, target_role=req.target_role)
+    feedback_result = generate_feedback(parsed.parsed_json if parsed else {}, raw_text, target_role=req.target_role, job_description=req.job_description)
     
     feedback = db.query(models.Feedback).filter(models.Feedback.resume_id == id).first()
     if not feedback:

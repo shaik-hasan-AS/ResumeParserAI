@@ -39,6 +39,7 @@ class ParsedDataResponse(BaseModel):
 
 class FeedbackRequest(BaseModel):
     target_role: Optional[str] = None
+    job_description: Optional[str] = None
 
 class FeedbackResponse(BaseModel):
     id: str
