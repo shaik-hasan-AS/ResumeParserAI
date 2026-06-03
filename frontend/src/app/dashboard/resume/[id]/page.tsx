@@ -429,10 +429,37 @@ export default function ResumeViewer() {
                       className="bg-primary hover:bg-primary/90 text-white shadow-sm h-9 px-4 rounded-lg font-semibold flex items-center gap-2"
                     >
                       <Download className="w-4 h-4" />
-                      {loading ? 'Preparing...' : 'Download PDF'}
+                      {loading ? 'Preparing...' : 'Resume PDF'}
                     </Button>
                   )}
                 </PDFDownloadLink>
+                {coverLetter && (
+                  <>
+                    <div className="w-px h-6 bg-border" />
+                    <PDFDownloadLink
+                      document={
+                        <CoverLetterPDF
+                          parsedData={parsedData}
+                          overrides={overrides}
+                          coverLetterText={coverLetter}
+                          theme={pdfTheme}
+                        />
+                      }
+                      fileName={`${parsedData?.name ? parsedData.name.replace(/\s+/g, '_') : 'Candidate'}_Cover_Letter.pdf`}
+                    >
+                      {({ loading }: { loading: boolean }) => (
+                        <Button
+                          disabled={loading}
+                          variant="outline"
+                          className="border-primary/40 text-primary hover:bg-primary/10 h-9 px-4 rounded-lg font-semibold flex items-center gap-2 bg-transparent"
+                        >
+                          <FileText className="w-4 h-4" />
+                          {loading ? 'Preparing...' : 'Cover Letter'}
+                        </Button>
+                      )}
+                    </PDFDownloadLink>
+                  </>
+                )}
               </div>
             )}
             <ThemeToggle />
