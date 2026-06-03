@@ -115,13 +115,15 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
         )}
 
         <div className="flex justify-center mb-6">
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={() => setError('Google Auth Failed')}
-            theme="filled_black"
-            shape="pill"
-            text={mode === 'login' ? 'signin_with' : 'signup_with'}
-          />
+          <div className="w-fit rounded-full overflow-hidden bg-transparent">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setError('Google Auth Failed')}
+              theme="filled_black"
+              shape="pill"
+              text={mode === 'login' ? 'signin_with' : 'signup_with'}
+            />
+          </div>
         </div>
 
         <div className="relative mb-6">
