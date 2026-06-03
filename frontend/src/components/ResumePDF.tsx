@@ -211,8 +211,9 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
     if (!text) return null;
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
     return lines.map((line, i) => {
-      const isBullet = /^[•\-\*\,➢▪●○❖]/.test(line);
-      const cleanLine = line.replace(/^[•\-\*\,➢▪●○❖]\s*/, '');
+      // Catch standard bullets, commas, low quotation marks, and common symbol bullets
+      const isBullet = /^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+]/.test(line);
+      const cleanLine = line.replace(/^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+]\s*/, '');
       if (isBullet) {
         return (
           <View key={i} style={styles.bulletRow}>
@@ -230,8 +231,8 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
     
     return lines.map((line, i) => {
-      const isBullet = /^[•\-\*\,➢▪●○❖]/.test(line);
-      const cleanLine = line.replace(/^[•\-\*\,➢▪●○❖]\s*/, '');
+      const isBullet = /^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+]/.test(line);
+      const cleanLine = line.replace(/^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+]\s*/, '');
       
       if (isBullet) {
         return (
@@ -243,9 +244,12 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
       }
       
       const prevLine = i > 0 ? lines[i - 1] : null;
-      const prevIsBullet = prevLine ? /^[•\-\*\,➢▪●○❖]/.test(prevLine) : false;
+      const prevIsBullet = prevLine ? /^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+]/.test(prevLine) : false;
       
-      if (i === 0 || prevIsBullet) {
+      // If it's all caps (and has at least 4 letters), treat it as a title
+      const isAllCaps = cleanLine === cleanLine.toUpperCase() && cleanLine.replace(/[^A-Z]/g, '').length > 3;
+      
+      if (i === 0 || prevIsBullet || isAllCaps) {
         return (
           <Text key={i} style={{ ...styles.jobTitle, marginTop: i > 0 ? 12 : 0, marginBottom: 2 }}>
             {cleanLine}

@@ -405,7 +405,7 @@ def parse_resume_text(text: str) -> dict:
         "projects", "academic projects", "personal projects", "open source projects", "projects developed at crescent engineering college"
     }
     certs_keywords = {
-        "certifications", "licenses", "certifications & licenses", "licenses & certifications"
+        "certifications", "licenses", "certifications & licenses", "licenses & certifications", "certifications & courses", "courses"
     }
     lang_keywords = {
         "languages"
