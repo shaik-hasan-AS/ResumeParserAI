@@ -109,3 +109,50 @@ def generate_feedback(parsed_data: dict, raw_text: str, target_role: str = None,
                 "structured_experience": []
             })
         }
+
+def generate_cover_letter(parsed_data: dict, raw_text: str, job_description: str, target_role: str = None) -> str:
+    redacted_text = redact_pii(raw_text, parsed_data)
+    
+    # Redact PII from the parsed_data dict itself before sending to API
+    redacted_parsed_data = parsed_data.copy()
+    if redacted_parsed_data.get("name"):
+        redacted_parsed_data["name"] = "[REDACTED NAME]"
+    if redacted_parsed_data.get("email"):
+        redacted_parsed_data["email"] = "[REDACTED EMAIL]"
+    if redacted_parsed_data.get("phone"):
+        redacted_parsed_data["phone"] = "[REDACTED PHONE]"
+        
+    role_context = f"The candidate is applying for the role of: **{target_role}**." if target_role else "The candidate is applying for the job described below."
+    jd_context = f"\n\nHere is the Job Description for the target role:\n{job_description}\n"
+    
+    prompt = f"""
+    You are an expert career coach and professional cover letter writer.
+    Write a compelling, professional, and ATS-optimized cover letter for the candidate based on their resume data and the provided job description.
+    
+    {role_context}{jd_context}
+    
+    Candidate's Parsed Resume Data: {redacted_parsed_data}
+    Candidate's Raw Resume Text: {redacted_text}
+    
+    Guidelines:
+    1. Do not invent any experience, skills, or education that are not explicitly stated or strongly implied by the candidate's resume.
+    2. Bridge the gap between the candidate's skills/experience and the specific requirements mentioned in the Job Description.
+    3. Use a confident, professional, and engaging tone.
+    4. Format the output as plain text with paragraphs. Do not include a header block with addresses (we will generate that in the PDF).
+    5. Start directly with the salutation (e.g., "Dear Hiring Manager," or "To the Hiring Team,").
+    6. Conclude with a professional sign-off (e.g., "Sincerely," followed by the candidate's name or a placeholder if redacted).
+    7. Do NOT include markdown formatting like bolding (**) in the final text since this will be rendered directly to a PDF text block.
+    """
+    
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.4,
+            )
+        )
+        return response.text
+    except Exception as e:
+        return f"Error generating cover letter: {str(e)}"

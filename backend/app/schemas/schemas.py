@@ -54,3 +54,10 @@ class FeedbackResponse(BaseModel):
     score: Optional[int]
     class Config:
         from_attributes = True
+
+class CoverLetterRequest(BaseModel):
+    job_description: str
+    target_role: Optional[str] = None
+
+class CoverLetterResponse(BaseModel):
+    cover_letter_text: str

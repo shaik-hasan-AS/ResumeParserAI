@@ -5,7 +5,7 @@ from ..models import models
 from ..schemas import schemas
 from .auth import get_current_user
 from ..parsers.resume_parser import extract_text_from_pdf, parse_resume_text
-from ..ai.gemini import generate_feedback
+from ..ai.gemini import generate_feedback, generate_cover_letter
 from ..parsers.ocr import local_ocr_image, local_ocr_pdf
 import os
 import shutil
@@ -167,3 +167,33 @@ def generate_resume_feedback(
     db.refresh(feedback)
     
     return feedback
+
+@router.post("/{id}/coverletter", response_model=schemas.CoverLetterResponse)
+def create_cover_letter(
+    id: str,
+    req: schemas.CoverLetterRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    resume = db.query(models.Resume).filter(models.Resume.id == id, models.Resume.user_id == current_user.id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+        
+    parsed = db.query(models.ParsedData).filter(models.ParsedData.resume_id == id).first()
+    if not parsed:
+        raise HTTPException(status_code=404, detail="Parsed data not found")
+
+    raw_text = getattr(parsed, "raw_text", None) or ""
+    if not raw_text and os.path.exists(resume.original_file_path):
+        with open(resume.original_file_path, "rb") as f:
+            file_bytes = f.read()
+        raw_text = extract_text_from_file(resume.original_file_path, file_bytes)
+
+    cover_letter_text = generate_cover_letter(
+        parsed.parsed_json if parsed else {}, 
+        raw_text, 
+        job_description=req.job_description,
+        target_role=req.target_role
+    )
+    
+    return schemas.CoverLetterResponse(cover_letter_text=cover_letter_text)
