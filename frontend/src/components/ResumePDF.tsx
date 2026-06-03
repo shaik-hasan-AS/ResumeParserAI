@@ -211,8 +211,8 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
     if (!text) return null;
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
     return lines.map((line, i) => {
-      const isBullet = line.startsWith('•') || line.startsWith('-');
-      const cleanLine = line.replace(/^[•\-\*]\s*/, '');
+      const isBullet = /^[•\-\*\,➢▪●○❖]/.test(line);
+      const cleanLine = line.replace(/^[•\-\*\,➢▪●○❖]\s*/, '');
       if (isBullet) {
         return (
           <View key={i} style={styles.bulletRow}>
@@ -222,6 +222,42 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         );
       }
       return <Text key={i} style={styles.textBlock}>{cleanLine}</Text>;
+    });
+  };
+
+  const renderProjects = (text: string) => {
+    if (!text) return null;
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    
+    return lines.map((line, i) => {
+      const isBullet = /^[•\-\*\,➢▪●○❖]/.test(line);
+      const cleanLine = line.replace(/^[•\-\*\,➢▪●○❖]\s*/, '');
+      
+      if (isBullet) {
+        return (
+          <View key={i} style={styles.bulletRow}>
+            <Text style={styles.bulletDot}>•</Text>
+            <Text style={styles.bulletText}>{cleanLine}</Text>
+          </View>
+        );
+      }
+      
+      const prevLine = i > 0 ? lines[i - 1] : null;
+      const prevIsBullet = prevLine ? /^[•\-\*\,➢▪●○❖]/.test(prevLine) : false;
+      
+      if (i === 0 || prevIsBullet) {
+        return (
+          <Text key={i} style={{ ...styles.jobTitle, marginTop: i > 0 ? 12 : 0, marginBottom: 2 }}>
+            {cleanLine}
+          </Text>
+        );
+      }
+      
+      return (
+        <Text key={i} style={{ ...styles.company, marginBottom: 6 }}>
+          {cleanLine}
+        </Text>
+      );
     });
   };
 
@@ -327,7 +363,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         {projects && projects.trim().length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Projects</Text>
-            {renderRawBullets(projects)}
+            {renderProjects(projects)}
           </View>
         )}
 
