@@ -394,7 +394,7 @@ export default function ResumeViewer() {
                 {({ loading }: { loading: boolean }) => (
                   <Button 
                     disabled={loading}
-                    className="bg-primary hover:bg-primary/90 text-foreground shadow-sm h-9 px-4 rounded-lg font-semibold flex items-center gap-2"
+                    className="bg-primary hover:bg-primary/90 text-white shadow-sm h-9 px-4 rounded-lg font-semibold flex items-center gap-2"
                   >
                     <Download className="w-4 h-4" />
                     {loading ? 'Preparing...' : 'Download PDF'}
@@ -453,7 +453,7 @@ export default function ResumeViewer() {
                       <Button 
                         onClick={() => generateFeedback()} 
                         disabled={loadingFeedback}
-                        className="w-full bg-primary hover:bg-primary/90 text-foreground shadow-[0_0_20px_rgba(147,51,234,0.3)] h-12 rounded-xl font-semibold"
+                        className="w-full bg-primary hover:bg-primary/90 text-white shadow-[0_0_20px_rgba(147,51,234,0.3)] h-12 rounded-xl font-semibold"
                       >
                         Generate Score
                       </Button>
@@ -626,7 +626,7 @@ export default function ResumeViewer() {
                                 <div className="flex-1 bg-emerald-500/5 p-6 flex flex-col justify-between relative">
                                   <div>
                                     <span className="text-xs font-bold text-emerald-500/70 uppercase tracking-wider mb-2 block">Improved</span>
-                                    <p className="text-zinc-200 font-medium text-sm leading-relaxed">&quot;{rewrite.improved}&quot;</p>
+                                    <p className="text-foreground font-medium text-sm leading-relaxed">&quot;{rewrite.improved}&quot;</p>
                                   </div>
                                   <div className="mt-4 pt-4 border-t border-emerald-500/10">
                                     <p className="text-xs text-muted-foreground leading-relaxed">

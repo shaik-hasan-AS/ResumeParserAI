@@ -30,7 +30,7 @@ export default function Home() {
             <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-muted rounded-full px-6">Log in</Button>
           </Link>
           <Link href="/register">
-            <Button className="bg-primary hover:bg-primary/90 text-foreground rounded-full px-6 shadow-[0_0_15px_rgba(147,51,234,0.3)]">Sign up</Button>
+            <Button className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 shadow-[0_0_15px_rgba(147,51,234,0.3)]">Sign up</Button>
           </Link>
         </div>
       </nav>
@@ -61,7 +61,7 @@ export default function Home() {
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <Link href="/register">
-              <Button size="lg" className="w-full sm:w-auto text-lg h-14 px-8 bg-primary hover:bg-primary/90 text-foreground rounded-full shadow-[0_0_30px_rgba(147,51,234,0.4)] hover:shadow-[0_0_40px_rgba(147,51,234,0.6)] transition-all">
+              <Button size="lg" className="w-full sm:w-auto text-lg h-14 px-8 bg-primary hover:bg-primary/90 text-white rounded-full shadow-[0_0_30px_rgba(147,51,234,0.4)] hover:shadow-[0_0_40px_rgba(147,51,234,0.6)] transition-all">
                 Start Building Free
               </Button>
             </Link>
@@ -265,29 +265,29 @@ export default function Home() {
 
             {/* Pro Tier */}
             <div className="bg-gradient-to-b from-[#1a1a24] to-[#12121a] border border-primary/50 rounded-3xl p-8 shadow-[0_0_30px_rgba(147,51,234,0.15)] flex flex-col relative overflow-hidden transform hover:-translate-y-1 transition-all">
-              <div className="absolute top-0 right-0 bg-primary text-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
-              <h3 className="text-xl font-bold text-foreground mb-2">Pro</h3>
-              <p className="text-muted-foreground text-sm mb-6">For serious job seekers.</p>
+              <div className="absolute top-0 right-0 bg-primary text-white text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
+              <h3 className="text-xl font-bold text-white mb-2">Pro</h3>
+              <p className="text-white/70 text-sm mb-6">For serious job seekers.</p>
               <div className="mb-6">
-                <span className="text-4xl font-extrabold text-foreground">$15</span>
-                <span className="text-muted-foreground"> / month</span>
+                <span className="text-4xl font-extrabold text-white">$15</span>
+                <span className="text-white/70"> / month</span>
               </div>
               <ul className="space-y-4 mb-8 flex-1">
-                <li className="flex items-center gap-3 text-muted-foreground">
+                <li className="flex items-center gap-3 text-white/70">
                   <CheckCircle className="w-5 h-5 text-emerald-500" /> Unlimited resume parsing
                 </li>
-                <li className="flex items-center gap-3 text-muted-foreground">
+                <li className="flex items-center gap-3 text-white/70">
                   <CheckCircle className="w-5 h-5 text-emerald-500" /> Detailed ATS Feedback
                 </li>
-                <li className="flex items-center gap-3 text-muted-foreground">
+                <li className="flex items-center gap-3 text-white/70">
                   <CheckCircle className="w-5 h-5 text-emerald-500" /> Unlimited AI Bullet Rewrites
                 </li>
-                <li className="flex items-center gap-3 text-muted-foreground">
+                <li className="flex items-center gap-3 text-white/70">
                   <CheckCircle className="w-5 h-5 text-emerald-500" /> Cover letter generation
                 </li>
               </ul>
               <Link href="/register">
-                <Button className="w-full bg-primary hover:bg-primary/90 text-foreground rounded-xl h-12 shadow-[0_0_20px_rgba(147,51,234,0.3)]">Upgrade to Pro</Button>
+                <Button className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-12 shadow-[0_0_20px_rgba(147,51,234,0.3)]">Upgrade to Pro</Button>
               </Link>
             </div>
           </div>

@@ -159,7 +159,7 @@ export default function Dashboard() {
                 onClick={handleUpload} 
                 disabled={!file || loading} 
                 size="lg"
-                className={`w-full rounded-xl text-base font-semibold h-14 mt-4 transition-all duration-300 ${!file ? 'opacity-50 cursor-not-allowed bg-muted text-muted-foreground border border-border hover:bg-muted' : 'bg-primary hover:bg-primary/90 text-foreground shadow-[0_0_20px_rgba(147,51,234,0.3)]'}`}
+                className={`w-full rounded-xl text-base font-semibold h-14 mt-4 transition-all duration-300 ${!file ? 'opacity-50 cursor-not-allowed bg-muted text-muted-foreground border border-border hover:bg-muted' : 'bg-primary hover:bg-primary/90 text-white shadow-[0_0_20px_rgba(147,51,234,0.3)]'}`}
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
@@ -197,7 +197,7 @@ export default function Dashboard() {
                   resumes.map((resume) => (
                     <div 
                       key={resume.id} 
-                      className="group flex flex-col gap-3 p-4 rounded-2xl bg-muted hover:bg-[#222230] border border-border transition-all cursor-pointer"
+                      className="group flex flex-col gap-3 p-4 rounded-2xl bg-muted hover:bg-primary/10 dark:hover:bg-[#222230] border border-border transition-all cursor-pointer"
                       onClick={() => router.push(`/dashboard/resume/${resume.id}`)}
                     >
                       <div className="flex items-start justify-between">
@@ -206,7 +206,7 @@ export default function Dashboard() {
                             <FileText className="w-4 h-4 text-primary" />
                           </div>
                           <div>
-                            <h4 className="font-medium text-zinc-200 text-sm truncate max-w-[150px]">
+                            <h4 className="font-medium text-foreground text-sm truncate max-w-[150px]">
                               {resume.original_file_path.split('/').pop()}
                             </h4>
                             <p className="text-xs text-muted-foreground mt-0.5">

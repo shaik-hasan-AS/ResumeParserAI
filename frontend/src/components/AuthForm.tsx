@@ -188,7 +188,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
             <Button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-primary hover:bg-primary/90 text-foreground shadow-[0_0_20px_rgba(147,51,234,0.3)] h-12 text-base font-semibold rounded-lg transition-all"
+              className="w-full bg-primary hover:bg-primary/90 text-white shadow-[0_0_20px_rgba(147,51,234,0.3)] h-12 text-base font-semibold rounded-lg transition-all"
             >
               {loading ? 'Please wait...' : (mode === 'login' ? 'Login' : 'Create account')}
             </Button>
