@@ -34,134 +34,267 @@ const IconGithub = () => (
 );
 
 // --- Styles ---
-const styles = StyleSheet.create({
-  page: {
-    padding: '40px 48px',
-    fontFamily: 'Helvetica',
-    backgroundColor: '#FFFFFF',
-    color: '#111827',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  name: {
-    fontSize: 22,
-    fontFamily: 'Helvetica-Bold',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 8,
-    color: '#111827',
-  },
-  contactRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 12,
-  },
-  contactItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    fontSize: 9.5,
-    color: '#4B5563',
-  },
-  contactIcon: {
-    marginRight: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  link: {
-    color: '#4B5563',
-    textDecoration: 'none',
-  },
-  section: {
-    marginBottom: 18,
-  },
-  sectionTitle: {
-    fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    color: '#111827',
-    borderBottomWidth: 1,
-    borderBottomColor: '#D1D5DB',
-    paddingBottom: 4,
-    marginBottom: 10,
-  },
-  entryBlock: {
-    marginBottom: 12,
-  },
-  entryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
-    marginBottom: 2,
-  },
-  jobTitle: {
-    fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
-    color: '#111827',
-  },
-  dates: {
-    fontSize: 9.5,
-    color: '#4B5563',
-  },
-  company: {
-    fontSize: 10,
-    fontFamily: 'Helvetica-Oblique',
-    color: '#374151',
-    marginBottom: 6,
-  },
-  degree: {
-    fontSize: 10,
-    fontFamily: 'Helvetica-Bold',
-    color: '#111827',
-  },
-  institution: {
-    fontSize: 10,
-    color: '#374151',
-  },
-  bulletRow: {
-    flexDirection: 'row',
-    marginBottom: 4,
-    paddingLeft: 8,
-    paddingRight: 8,
-  },
-  bulletDot: {
-    width: 12,
-    fontSize: 10,
-    color: '#4B5563',
-  },
-  bulletText: {
-    flex: 1,
-    fontSize: 9.5,
-    lineHeight: 1.4,
-    color: '#374151',
-  },
-  textBlock: {
-    fontSize: 9.5,
-    lineHeight: 1.4,
-    color: '#374151',
-    marginBottom: 4,
-  },
-  skillsGroup: {
-    flexDirection: 'row',
-    marginBottom: 6,
-  },
-  skillsLabel: {
-    width: 70,
-    fontSize: 9.5,
-    fontFamily: 'Helvetica-Bold',
-    color: '#111827',
-  },
-  skillsText: {
-    flex: 1,
-    fontSize: 9.5,
-    lineHeight: 1.4,
-    color: '#374151',
-  }
-});
+const themeStyles = {
+  modern: StyleSheet.create({
+    page: {
+      padding: '40px 48px',
+      fontFamily: 'Helvetica',
+      backgroundColor: '#FFFFFF',
+      color: '#111827',
+    },
+    header: {
+      alignItems: 'center',
+      marginBottom: 24,
+    },
+    name: {
+      fontSize: 22,
+      fontFamily: 'Helvetica-Bold',
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+      marginBottom: 8,
+      color: '#111827',
+    },
+    contactRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: 12,
+    },
+    contactItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      fontSize: 9.5,
+      color: '#4B5563',
+    },
+    contactIcon: {
+      marginRight: 4,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    separator: {
+      display: 'none',
+    },
+    link: {
+      color: '#4B5563',
+      textDecoration: 'none',
+    },
+    section: {
+      marginBottom: 18,
+    },
+    sectionTitle: {
+      fontSize: 11,
+      fontFamily: 'Helvetica-Bold',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      color: '#111827',
+      borderBottomWidth: 1,
+      borderBottomColor: '#D1D5DB',
+      paddingBottom: 4,
+      marginBottom: 10,
+    },
+    entryBlock: {
+      marginBottom: 12,
+    },
+    entryHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'baseline',
+      marginBottom: 2,
+    },
+    jobTitle: {
+      fontSize: 11,
+      fontFamily: 'Helvetica-Bold',
+      color: '#111827',
+    },
+    dates: {
+      fontSize: 9.5,
+      color: '#4B5563',
+    },
+    company: {
+      fontSize: 10,
+      fontFamily: 'Helvetica-Oblique',
+      color: '#374151',
+      marginBottom: 6,
+    },
+    degree: {
+      fontSize: 10,
+      fontFamily: 'Helvetica-Bold',
+      color: '#111827',
+    },
+    institution: {
+      fontSize: 10,
+      color: '#374151',
+    },
+    bulletRow: {
+      flexDirection: 'row',
+      marginBottom: 4,
+      paddingLeft: 8,
+      paddingRight: 8,
+    },
+    bulletDot: {
+      width: 12,
+      fontSize: 10,
+      color: '#4B5563',
+    },
+    bulletText: {
+      flex: 1,
+      fontSize: 9.5,
+      lineHeight: 1.4,
+      color: '#374151',
+    },
+    textBlock: {
+      fontSize: 9.5,
+      lineHeight: 1.4,
+      color: '#374151',
+      marginBottom: 4,
+    },
+    skillsGroup: {
+      flexDirection: 'row',
+      marginBottom: 6,
+    },
+    skillsLabel: {
+      width: 70,
+      fontSize: 9.5,
+      fontFamily: 'Helvetica-Bold',
+      color: '#111827',
+    },
+    skillsText: {
+      flex: 1,
+      fontSize: 9.5,
+      lineHeight: 1.4,
+      color: '#374151',
+    }
+  }),
+  harvard: StyleSheet.create({
+    page: {
+      padding: '36px 48px',
+      fontFamily: 'Times-Roman',
+      backgroundColor: '#FFFFFF',
+      color: '#000000',
+    },
+    header: {
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    name: {
+      fontSize: 24,
+      fontFamily: 'Times-Bold',
+      marginBottom: 4,
+      color: '#000000',
+    },
+    contactRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: 4,
+    },
+    contactItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      fontSize: 10,
+      color: '#000000',
+    },
+    contactIcon: {
+      display: 'none',
+    },
+    separator: {
+      fontSize: 10,
+      color: '#000000',
+      marginHorizontal: 4,
+    },
+    link: {
+      color: '#000000',
+      textDecoration: 'none',
+    },
+    section: {
+      marginBottom: 12,
+    },
+    sectionTitle: {
+      fontSize: 11,
+      fontFamily: 'Times-Bold',
+      textTransform: 'uppercase',
+      color: '#000000',
+      borderBottomWidth: 1,
+      borderBottomColor: '#000000',
+      paddingBottom: 2,
+      marginBottom: 6,
+    },
+    entryBlock: {
+      marginBottom: 8,
+    },
+    entryHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'baseline',
+      marginBottom: 2,
+    },
+    jobTitle: {
+      fontSize: 11,
+      fontFamily: 'Times-Bold',
+      color: '#000000',
+    },
+    dates: {
+      fontSize: 10,
+      color: '#000000',
+    },
+    company: {
+      fontSize: 10,
+      fontFamily: 'Times-Italic',
+      color: '#000000',
+      marginBottom: 4,
+    },
+    degree: {
+      fontSize: 10,
+      fontFamily: 'Times-Bold',
+      color: '#000000',
+    },
+    institution: {
+      fontSize: 10,
+      color: '#000000',
+    },
+    bulletRow: {
+      flexDirection: 'row',
+      marginBottom: 2,
+      paddingLeft: 12,
+      paddingRight: 12,
+    },
+    bulletDot: {
+      width: 12,
+      fontSize: 10,
+      color: '#000000',
+    },
+    bulletText: {
+      flex: 1,
+      fontSize: 10,
+      lineHeight: 1.3,
+      color: '#000000',
+    },
+    textBlock: {
+      fontSize: 10,
+      lineHeight: 1.3,
+      color: '#000000',
+      marginBottom: 2,
+    },
+    skillsGroup: {
+      flexDirection: 'row',
+      marginBottom: 2,
+    },
+    skillsLabel: {
+      width: 70,
+      fontSize: 10,
+      fontFamily: 'Times-Bold',
+      color: '#000000',
+    },
+    skillsText: {
+      flex: 1,
+      fontSize: 10,
+      lineHeight: 1.3,
+      color: '#000000',
+    }
+  })
+};
 
 interface ExperienceEntry {
   job_title: string;
@@ -176,9 +309,11 @@ interface ResumePDFProps {
   overrides: Record<string, string>;
   aiRewrites?: Array<{ original: string; improved: string }>;
   structuredExperience?: ExperienceEntry[];
+  theme?: 'modern' | 'harvard';
 }
 
-const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites, structuredExperience }) => {
+const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites, structuredExperience, theme = 'modern' }) => {
+  const styles = themeStyles[theme];
   const getVal = (key: string) => overrides[key] || parsedData?.[key];
 
   const name = getVal('name');
@@ -335,44 +470,38 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
 
   const cleanUrl = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '');
 
+  const contactItems = [];
+  if (email) contactItems.push({ type: 'email', val: email, icon: <IconEmail /> });
+  if (phone) contactItems.push({ type: 'phone', val: phone, icon: <IconPhone /> });
+  if (location) contactItems.push({ type: 'location', val: location, icon: <IconMapPin /> });
+  if (linkedin) contactItems.push({ type: 'linkedin', val: linkedin, icon: <IconLinkedin />, link: true });
+  if (github) contactItems.push({ type: 'github', val: github, icon: <IconGithub />, link: true });
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header Section */}
         <View style={styles.header}>
           {name && <Text style={styles.name}>{name}</Text>}
-          <View style={styles.contactRow}>
-            {email && (
-              <View style={styles.contactItem}>
-                <View style={styles.contactIcon}><IconEmail /></View>
-                <Text>{email}</Text>
-              </View>
-            )}
-            {phone && (
-              <View style={styles.contactItem}>
-                <View style={styles.contactIcon}><IconPhone /></View>
-                <Text>{phone}</Text>
-              </View>
-            )}
-            {location && (
-              <View style={styles.contactItem}>
-                <View style={styles.contactIcon}><IconMapPin /></View>
-                <Text>{location}</Text>
-              </View>
-            )}
-            {linkedin && (
-              <View style={styles.contactItem}>
-                <View style={styles.contactIcon}><IconLinkedin /></View>
-                <Link src={linkedin} style={styles.link}>{cleanUrl(linkedin)}</Link>
-              </View>
-            )}
-            {github && (
-              <View style={styles.contactItem}>
-                <View style={styles.contactIcon}><IconGithub /></View>
-                <Link src={github} style={styles.link}>{cleanUrl(github)}</Link>
-              </View>
-            )}
-          </View>
+          {contactItems.length > 0 && (
+            <View style={styles.contactRow}>
+              {contactItems.map((item, index) => (
+                <React.Fragment key={index}>
+                  <View style={styles.contactItem}>
+                    {theme === 'modern' && <View style={styles.contactIcon}>{item.icon}</View>}
+                    {item.link ? (
+                      <Link src={item.val} style={styles.link}>{cleanUrl(item.val)}</Link>
+                    ) : (
+                      <Text>{item.val}</Text>
+                    )}
+                  </View>
+                  {theme === 'harvard' && index < contactItems.length - 1 && (
+                    <Text style={styles.separator}>|</Text>
+                  )}
+                </React.Fragment>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Summary Section */}

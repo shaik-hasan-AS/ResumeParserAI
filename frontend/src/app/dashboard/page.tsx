@@ -16,6 +16,7 @@ export default function Dashboard() {
     id: number;
     original_file_path: string;
     uploaded_at: string;
+    feedback?: { score: number };
   }
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [loadingResumes, setLoadingResumes] = useState(true);
@@ -217,9 +218,15 @@ export default function Dashboard() {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-primary/10 rounded-lg">
-                            <FileText className="w-4 h-4 text-primary" />
-                          </div>
+                          {resume.feedback ? (
+                            <div className="flex flex-col items-center justify-center w-10 h-10 rounded-full border-2 border-primary/20 bg-primary/5">
+                              <span className="text-xs font-bold text-primary">{resume.feedback.score}</span>
+                            </div>
+                          ) : (
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                              <FileText className="w-4 h-4 text-primary" />
+                            </div>
+                          )}
                           <div>
                             <h4 className="font-medium text-foreground text-sm truncate max-w-[150px]">
                               {resume.original_file_path.split('/').pop()}

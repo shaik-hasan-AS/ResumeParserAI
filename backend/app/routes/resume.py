@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from ..database import get_db
 from ..models import models
 from ..schemas import schemas
@@ -64,7 +64,7 @@ def get_user_resumes(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    resumes = db.query(models.Resume).filter(models.Resume.user_id == current_user.id).order_by(models.Resume.uploaded_at.desc()).all()
+    resumes = db.query(models.Resume).options(joinedload(models.Resume.feedback)).filter(models.Resume.user_id == current_user.id).order_by(models.Resume.uploaded_at.desc()).all()
     return resumes
 
 

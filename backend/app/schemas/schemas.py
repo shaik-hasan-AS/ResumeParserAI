@@ -21,11 +21,17 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+class FeedbackSummary(BaseModel):
+    score: int
+    class Config:
+        from_attributes = True
+
 class ResumeResponse(BaseModel):
     id: str
     user_id: str
     original_file_path: str
     uploaded_at: datetime
+    feedback: Optional[FeedbackSummary] = None
     class Config:
         from_attributes = True
 
