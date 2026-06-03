@@ -6,7 +6,17 @@ import { motion } from 'framer-motion';
 import { LayoutDashboard, FileText, Target, CheckCircle, Upload, Sparkles, Rocket } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
+import { useState, useEffect } from 'react';
+
 export default function Home() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsLoggedIn(!!localStorage.getItem('token'));
+    }
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen font-sans mesh-bg relative overflow-x-hidden bg-background">
       {/* Navbar */}
@@ -26,12 +36,20 @@ export default function Home() {
 
         <div className="flex items-center gap-4">
           <ThemeToggle />
-          <Link href="/login">
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-muted rounded-full px-6">Log in</Button>
-          </Link>
-          <Link href="/register">
-            <Button className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 shadow-[0_0_15px_rgba(147,51,234,0.3)]">Sign up</Button>
-          </Link>
+          {isLoggedIn ? (
+            <Link href="/dashboard">
+              <Button className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 shadow-[0_0_15px_rgba(147,51,234,0.3)]">Go to Dashboard</Button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-muted rounded-full px-6">Log in</Button>
+              </Link>
+              <Link href="/register">
+                <Button className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 shadow-[0_0_15px_rgba(147,51,234,0.3)]">Sign up</Button>
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -60,16 +78,26 @@ export default function Home() {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <Link href="/register">
-              <Button size="lg" className="w-full sm:w-auto text-lg h-14 px-8 bg-primary hover:bg-primary/90 text-white rounded-full shadow-[0_0_30px_rgba(147,51,234,0.4)] hover:shadow-[0_0_40px_rgba(147,51,234,0.6)] transition-all">
-                Start Building Free
-              </Button>
-            </Link>
-            <Link href="/login">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg h-14 px-8 rounded-full border-border/50 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all bg-transparent backdrop-blur-sm">
-                View Demo
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard">
+                <Button size="lg" className="w-full sm:w-auto text-lg h-14 px-8 bg-primary hover:bg-primary/90 text-white rounded-full shadow-[0_0_30px_rgba(147,51,234,0.4)] hover:shadow-[0_0_40px_rgba(147,51,234,0.6)] transition-all">
+                  Go to Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/register">
+                  <Button size="lg" className="w-full sm:w-auto text-lg h-14 px-8 bg-primary hover:bg-primary/90 text-white rounded-full shadow-[0_0_30px_rgba(147,51,234,0.4)] hover:shadow-[0_0_40px_rgba(147,51,234,0.6)] transition-all">
+                    Start Building Free
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg h-14 px-8 rounded-full border-border/50 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all bg-transparent backdrop-blur-sm">
+                    Log In
+                  </Button>
+                </Link>
+              </>
+            )}
           </motion.div>
         </motion.div>
 

@@ -390,8 +390,8 @@ export default function ResumeViewer() {
                   onChange={(e) => setPdfTheme(e.target.value as 'modern' | 'harvard')}
                   className="bg-transparent text-sm font-medium text-foreground outline-none border-none cursor-pointer pl-2 pr-1"
                 >
-                  <option value="modern">Modern Professional</option>
-                  <option value="harvard">Harvard Format</option>
+                  <option value="modern" className="bg-background text-foreground">Modern Professional</option>
+                  <option value="harvard" className="bg-background text-foreground">Harvard Format</option>
                 </select>
                 <PDFDownloadLink
                   document={
