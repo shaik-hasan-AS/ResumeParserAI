@@ -207,14 +207,35 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
     });
   }
 
+  const checkIsBullet = (sanitized: string) => {
+    if (!sanitized) return false;
+    if (/^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+，]/.test(sanitized)) return true;
+    
+    // Fallback for weird unicode commas/symbols: 
+    // If the first char is not a letter (has no case), not a digit, and not a bracket/quote, it's a bullet.
+    const firstChar = sanitized.charAt(0);
+    const isLetter = firstChar.toUpperCase() !== firstChar.toLowerCase();
+    const isDigit = /[0-9]/.test(firstChar);
+    const isQuoteOrBracket = /["'\(\)\[\]\{\}]/.test(firstChar);
+    
+    return !isLetter && !isDigit && !isQuoteOrBracket;
+  };
+
+  const getCleanLine = (sanitized: string) => {
+    if (checkIsBullet(sanitized)) {
+      // Remove the first character and any following space
+      return sanitized.substring(1).trim();
+    }
+    return sanitized;
+  };
+
   const renderRawBullets = (text: string) => {
     if (!text) return null;
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
     return lines.map((line, i) => {
-      // Remove any zero-width spaces or invisible characters that pdfplumber might extract
       const sanitizedLine = line.replace(/^[\s\u200B-\u200D\uFEFF]+/, '');
-      const isBullet = /^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+，]/.test(sanitizedLine);
-      const cleanLine = sanitizedLine.replace(/^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+，]\s*/, '');
+      const isBullet = checkIsBullet(sanitizedLine);
+      const cleanLine = getCleanLine(sanitizedLine);
       if (isBullet) {
         return (
           <View key={i} style={styles.bulletRow}>
@@ -233,8 +254,8 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
     
     return lines.map((line, i) => {
       const sanitizedLine = line.replace(/^[\s\u200B-\u200D\uFEFF]+/, '');
-      const isBullet = /^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+，]/.test(sanitizedLine);
-      const cleanLine = sanitizedLine.replace(/^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+，]\s*/, '');
+      const isBullet = checkIsBullet(sanitizedLine);
+      const cleanLine = getCleanLine(sanitizedLine);
       
       if (isBullet) {
         return (
@@ -246,7 +267,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
       }
       
       const prevLine = i > 0 ? lines[i - 1] : null;
-      const prevIsBullet = prevLine ? /^[•\-\*\,➢▪●○❖·‚¸\–\—\~>+，]/.test(prevLine.replace(/^[\s\u200B-\u200D\uFEFF]+/, '')) : false;
+      const prevIsBullet = prevLine ? checkIsBullet(prevLine.replace(/^[\s\u200B-\u200D\uFEFF]+/, '')) : false;
       
       // If it's all caps (and has at least 4 letters), treat it as a title
       const isAllCaps = cleanLine === cleanLine.toUpperCase() && cleanLine.replace(/[^A-Z]/g, '').length > 3;
