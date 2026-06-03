@@ -71,7 +71,7 @@ def generate_feedback(parsed_data: dict, raw_text: str, target_role: str = None,
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -147,7 +147,7 @@ def generate_cover_letter(parsed_data: dict, raw_text: str, job_description: str
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=0.4,

@@ -138,6 +138,62 @@ const themeStyles = {
     paragraph: {
       marginBottom: 14,
     }
+  }),
+  executive: StyleSheet.create({
+    page: {
+      padding: '0px 0px 40px 0px',
+      fontFamily: 'Helvetica',
+      backgroundColor: '#FFFFFF',
+      color: '#111827',
+    },
+    header: {
+      backgroundColor: '#1E3A5F',
+      paddingTop: 28,
+      paddingBottom: 28,
+      paddingLeft: 48,
+      paddingRight: 48,
+      marginBottom: 32,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    name: {
+      fontSize: 24,
+      fontFamily: 'Helvetica-Bold',
+      color: '#FFFFFF',
+      letterSpacing: 0.5,
+      marginBottom: 2,
+    },
+    contactRow: {
+      flexDirection: 'column',
+      alignItems: 'flex-end',
+      gap: 4,
+    },
+    contactItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      fontSize: 9,
+      color: '#CBD5E1',
+    },
+    contactIcon: {
+      display: 'none',
+    },
+    separator: {
+      display: 'none',
+    },
+    link: {
+      color: '#93C5FD',
+      textDecoration: 'none',
+    },
+    body: {
+      fontSize: 11,
+      lineHeight: 1.6,
+      color: '#374151',
+      paddingHorizontal: 48,
+    },
+    paragraph: {
+      marginBottom: 16,
+    }
   })
 };
 
@@ -146,7 +202,7 @@ interface CoverLetterPDFProps {
   parsedData: any;
   overrides: Record<string, string>;
   coverLetterText: string;
-  theme?: 'modern' | 'harvard';
+  theme?: 'modern' | 'harvard' | 'executive';
 }
 
 const CoverLetterPDF: React.FC<CoverLetterPDFProps> = ({ parsedData, overrides, coverLetterText, theme = 'modern' }) => {
@@ -176,28 +232,45 @@ const CoverLetterPDF: React.FC<CoverLetterPDFProps> = ({ parsedData, overrides, 
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header Section */}
-        <View style={styles.header}>
-          {name && <Text style={styles.name}>{name}</Text>}
-          {contactItems.length > 0 && (
-             <View style={styles.contactRow}>
-               {contactItems.map((item, index) => (
-                 <React.Fragment key={index}>
-                   <View style={styles.contactItem}>
-                     {theme === 'modern' && <View style={styles.contactIcon}>{item.icon}</View>}
-                     {item.link ? (
-                       <Link src={item.val} style={styles.link}>{cleanUrl(item.val)}</Link>
-                     ) : (
-                       <Text>{item.val}</Text>
+        {theme === 'executive' ? (
+          <View style={styles.header}>
+            <View>
+              {name && <Text style={styles.name}>{name}</Text>}
+              {location && (
+                <Text style={{ fontSize: 9, color: '#94A3B8', marginTop: 2 }}>{location}</Text>
+              )}
+            </View>
+            <View style={styles.contactRow}>
+              {email && <View style={styles.contactItem}><Text>{email}</Text></View>}
+              {phone && <View style={styles.contactItem}><Text>{phone}</Text></View>}
+              {linkedin && <View style={styles.contactItem}><Link src={linkedin} style={styles.link}>{cleanUrl(linkedin)}</Link></View>}
+              {github && <View style={styles.contactItem}><Link src={github} style={styles.link}>{cleanUrl(github)}</Link></View>}
+            </View>
+          </View>
+        ) : (
+          <View style={styles.header}>
+            {name && <Text style={styles.name}>{name}</Text>}
+            {contactItems.length > 0 && (
+               <View style={styles.contactRow}>
+                 {contactItems.map((item, index) => (
+                   <React.Fragment key={index}>
+                     <View style={styles.contactItem}>
+                       {theme === 'modern' && <View style={styles.contactIcon}>{item.icon}</View>}
+                       {item.link ? (
+                         <Link src={item.val} style={styles.link}>{cleanUrl(item.val)}</Link>
+                       ) : (
+                         <Text>{item.val}</Text>
+                       )}
+                     </View>
+                     {theme === 'harvard' && index < contactItems.length - 1 && (
+                       <Text style={styles.separator}>|</Text>
                      )}
-                   </View>
-                   {theme === 'harvard' && index < contactItems.length - 1 && (
-                     <Text style={styles.separator}>|</Text>
-                   )}
-                 </React.Fragment>
-               ))}
-             </View>
-          )}
-        </View>
+                   </React.Fragment>
+                 ))}
+               </View>
+            )}
+          </View>
+        )}
 
         {/* Body Section */}
         <View style={styles.body}>

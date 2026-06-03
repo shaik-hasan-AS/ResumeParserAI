@@ -293,6 +293,143 @@ const themeStyles = {
       lineHeight: 1.3,
       color: '#000000',
     }
+  }),
+  executive: StyleSheet.create({
+    page: {
+      padding: '0px 0px 40px 0px',
+      fontFamily: 'Helvetica',
+      backgroundColor: '#FFFFFF',
+      color: '#111827',
+    },
+    header: {
+      backgroundColor: '#1E3A5F',
+      paddingTop: 28,
+      paddingBottom: 28,
+      paddingLeft: 48,
+      paddingRight: 48,
+      marginBottom: 24,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    name: {
+      fontSize: 24,
+      fontFamily: 'Helvetica-Bold',
+      color: '#FFFFFF',
+      letterSpacing: 0.5,
+      marginBottom: 2,
+    },
+    contactRow: {
+      flexDirection: 'column',
+      alignItems: 'flex-end',
+      gap: 4,
+    },
+    contactItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      fontSize: 9,
+      color: '#CBD5E1',
+    },
+    contactIcon: {
+      marginRight: 4,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    separator: {
+      display: 'none',
+    },
+    link: {
+      color: '#93C5FD',
+      textDecoration: 'none',
+    },
+    section: {
+      marginBottom: 16,
+      paddingHorizontal: 48,
+    },
+    sectionTitle: {
+      fontSize: 10,
+      fontFamily: 'Helvetica-Bold',
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+      color: '#4F46E5',
+      borderBottomWidth: 2,
+      borderBottomColor: '#4F46E5',
+      paddingBottom: 3,
+      marginBottom: 10,
+    },
+    entryBlock: {
+      marginBottom: 10,
+    },
+    entryHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'baseline',
+      marginBottom: 2,
+    },
+    jobTitle: {
+      fontSize: 11,
+      fontFamily: 'Helvetica-Bold',
+      color: '#1E3A5F',
+    },
+    dates: {
+      fontSize: 9.5,
+      color: '#4F46E5',
+      fontFamily: 'Helvetica-Bold',
+    },
+    company: {
+      fontSize: 10,
+      fontFamily: 'Helvetica-Oblique',
+      color: '#374151',
+      marginBottom: 6,
+    },
+    degree: {
+      fontSize: 10,
+      fontFamily: 'Helvetica-Bold',
+      color: '#1E3A5F',
+    },
+    institution: {
+      fontSize: 10,
+      color: '#374151',
+    },
+    bulletRow: {
+      flexDirection: 'row',
+      marginBottom: 4,
+      paddingLeft: 8,
+      paddingRight: 8,
+    },
+    bulletDot: {
+      width: 12,
+      fontSize: 10,
+      color: '#4F46E5',
+    },
+    bulletText: {
+      flex: 1,
+      fontSize: 9.5,
+      lineHeight: 1.4,
+      color: '#374151',
+    },
+    textBlock: {
+      fontSize: 9.5,
+      lineHeight: 1.4,
+      color: '#374151',
+      marginBottom: 4,
+    },
+    skillsGroup: {
+      flexDirection: 'row',
+      marginBottom: 6,
+    },
+    skillsLabel: {
+      width: 70,
+      fontSize: 9.5,
+      fontFamily: 'Helvetica-Bold',
+      color: '#1E3A5F',
+    },
+    skillsText: {
+      flex: 1,
+      fontSize: 9.5,
+      lineHeight: 1.4,
+      color: '#374151',
+    }
   })
 };
 
@@ -309,7 +446,7 @@ interface ResumePDFProps {
   overrides: Record<string, string>;
   aiRewrites?: Array<{ original: string; improved: string }>;
   structuredExperience?: ExperienceEntry[];
-  theme?: 'modern' | 'harvard';
+  theme?: 'modern' | 'harvard' | 'executive';
 }
 
 const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites, structuredExperience, theme = 'modern' }) => {
@@ -481,28 +618,63 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header Section */}
-        <View style={styles.header}>
-          {name && <Text style={styles.name}>{name}</Text>}
-          {contactItems.length > 0 && (
-            <View style={styles.contactRow}>
-              {contactItems.map((item, index) => (
-                <React.Fragment key={index}>
-                  <View style={styles.contactItem}>
-                    {theme === 'modern' && <View style={styles.contactIcon}>{item.icon}</View>}
-                    {item.link ? (
-                      <Link src={item.val} style={styles.link}>{cleanUrl(item.val)}</Link>
-                    ) : (
-                      <Text>{item.val}</Text>
-                    )}
-                  </View>
-                  {theme === 'harvard' && index < contactItems.length - 1 && (
-                    <Text style={styles.separator}>|</Text>
-                  )}
-                </React.Fragment>
-              ))}
+        {theme === 'executive' ? (
+          // Executive: navy header bar with name left, contact right
+          <View style={styles.header}>
+            <View>
+              {name && <Text style={styles.name}>{name}</Text>}
+              {location && (
+                <Text style={{ fontSize: 9, color: '#94A3B8', marginTop: 2 }}>{location}</Text>
+              )}
             </View>
-          )}
-        </View>
+            <View style={styles.contactRow}>
+              {email && (
+                <View style={styles.contactItem}>
+                  <Text>{email}</Text>
+                </View>
+              )}
+              {phone && (
+                <View style={styles.contactItem}>
+                  <Text>{phone}</Text>
+                </View>
+              )}
+              {linkedin && (
+                <View style={styles.contactItem}>
+                  <Link src={linkedin} style={styles.link}>{cleanUrl(linkedin)}</Link>
+                </View>
+              )}
+              {github && (
+                <View style={styles.contactItem}>
+                  <Link src={github} style={styles.link}>{cleanUrl(github)}</Link>
+                </View>
+              )}
+            </View>
+          </View>
+        ) : (
+          // Modern / Harvard: centred header
+          <View style={styles.header}>
+            {name && <Text style={styles.name}>{name}</Text>}
+            {contactItems.length > 0 && (
+              <View style={styles.contactRow}>
+                {contactItems.map((item, index) => (
+                  <React.Fragment key={index}>
+                    <View style={styles.contactItem}>
+                      {theme === 'modern' && <View style={styles.contactIcon}>{item.icon}</View>}
+                      {item.link ? (
+                        <Link src={item.val} style={styles.link}>{cleanUrl(item.val)}</Link>
+                      ) : (
+                        <Text>{item.val}</Text>
+                      )}
+                    </View>
+                    {theme === 'harvard' && index < contactItems.length - 1 && (
+                      <Text style={styles.separator}>|</Text>
+                    )}
+                  </React.Fragment>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Summary Section */}
         {summary && summary.trim().length > 0 && (
