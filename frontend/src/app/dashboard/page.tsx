@@ -149,9 +149,15 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchResumes = async () => {
+      // Seed from cache immediately so the list doesn't flash empty on navigation
+      const cached = sessionStorage.getItem('dashboard_resumes');
+      if (cached) {
+        try { setResumes(JSON.parse(cached)); setLoadingResumes(false); } catch { /* ignore */ }
+      }
       try {
         const response = await api.get('/api/resume/');
         setResumes(response.data);
+        sessionStorage.setItem('dashboard_resumes', JSON.stringify(response.data));
       } catch (error) {
         console.error('Failed to fetch resumes:', error);
       } finally {

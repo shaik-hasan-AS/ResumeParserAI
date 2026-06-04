@@ -1,6 +1,8 @@
 import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Link, Svg, Path } from '@react-pdf/renderer';
 
+const DEFAULT_SECTION_ORDER = ['summary', 'experience', 'education', 'projects', 'skills', 'certifications', 'awards', 'languages', 'custom_sections'];
+
 // --- Icons ---
 const iconColor = "#4B5563";
 const IconEmail = () => (
@@ -697,129 +699,154 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
           </View>
         )}
 
-        {/* Summary Section */}
-        {isVisible('summary') && summary && summary.trim().length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{labels.summary || 'Professional Summary'}</Text>
-            {renderRawBullets(summary)}
-          </View>
-        )}
+        {/* Dynamically ordered sections */}
+        {(parsedData?.section_order || DEFAULT_SECTION_ORDER).map((sectionKey: string) => {
 
-        {/* Experience Section */}
-        {isVisible('experience') && (structuredExperience?.length ? structuredExperience.length > 0 : experience) && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{labels.experience || 'Experience'}</Text>
-            
-            {structuredExperience && structuredExperience.length > 0 ? (
-              structuredExperience.map((exp, i) => (
-                <View key={i} style={styles.entryBlock}>
-                  <View style={styles.entryHeader}>
-                    <Text style={styles.jobTitle}>{exp.job_title}</Text>
-                    <Text style={styles.dates}>{exp.dates}</Text>
-                  </View>
-                  <Text style={styles.company}>{exp.company}</Text>
-                  {exp.bullet_points.map((bullet, j) => (
-                    <View key={j} style={styles.bulletRow}>
-                      <Text style={styles.bulletDot}>•</Text>
-                      <Text style={styles.bulletText}>{bullet}</Text>
+          if (sectionKey === 'summary') {
+            if (!isVisible('summary') || !summary || !summary.trim()) return null;
+            return (
+              <View key="summary" style={styles.section}>
+                <Text style={styles.sectionTitle}>{labels.summary || 'Professional Summary'}</Text>
+                {renderRawBullets(summary)}
+              </View>
+            );
+          }
+
+          if (sectionKey === 'experience') {
+            const hasExp = structuredExperience?.length ? structuredExperience.length > 0 : experience;
+            if (!isVisible('experience') || !hasExp) return null;
+            return (
+              <View key="experience" style={styles.section}>
+                <Text style={styles.sectionTitle}>{labels.experience || 'Experience'}</Text>
+                {structuredExperience && structuredExperience.length > 0 ? (
+                  structuredExperience.map((exp, i) => (
+                    <View key={i} style={styles.entryBlock}>
+                      <View style={styles.entryHeader}>
+                        <Text style={styles.jobTitle}>{exp.job_title}</Text>
+                        <Text style={styles.dates}>{exp.dates}</Text>
+                      </View>
+                      <Text style={styles.company}>{exp.company}</Text>
+                      {exp.bullet_points.map((bullet, j) => (
+                        <View key={j} style={styles.bulletRow}>
+                          <Text style={styles.bulletDot}>•</Text>
+                          <Text style={styles.bulletText}>{bullet}</Text>
+                        </View>
+                      ))}
                     </View>
-                  ))}
-                </View>
-              ))
-            ) : (
-              renderRawBullets(experience)
-            )}
-          </View>
-        )}
+                  ))
+                ) : (
+                  renderRawBullets(experience)
+                )}
+              </View>
+            );
+          }
 
-        {/* Education Section */}
-        {isVisible('education') && (eduEntries.length > 0 || parsedData?.education) && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{labels.education || 'Education'}</Text>
-            {eduEntries.length > 0 ? (
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              eduEntries.map((entry: any, i: number) => (
-                <View key={i} style={styles.entryBlock}>
-                  <View style={styles.entryHeader}>
-                    <Text style={styles.degree}>{entry.degree}</Text>
-                    {entry.year && <Text style={styles.dates}>{entry.year}</Text>}
+          if (sectionKey === 'education') {
+            if (!isVisible('education') || (!eduEntries.length && !parsedData?.education)) return null;
+            return (
+              <View key="education" style={styles.section}>
+                <Text style={styles.sectionTitle}>{labels.education || 'Education'}</Text>
+                {eduEntries.length > 0 ? (
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  eduEntries.map((entry: any, i: number) => (
+                    <View key={i} style={styles.entryBlock}>
+                      <View style={styles.entryHeader}>
+                        <Text style={styles.degree}>{entry.degree}</Text>
+                        {entry.year && <Text style={styles.dates}>{entry.year}</Text>}
+                      </View>
+                      <Text style={styles.institution}>{entry.institution}</Text>
+                    </View>
+                  ))
+                ) : (
+                  renderRawBullets(parsedData.education)
+                )}
+              </View>
+            );
+          }
+
+          if (sectionKey === 'projects') {
+            if (!isVisible('projects') || !projects || !projects.trim()) return null;
+            return (
+              <View key="projects" style={styles.section}>
+                <Text style={styles.sectionTitle}>{labels.projects || 'Projects'}</Text>
+                {renderProjects(projects)}
+              </View>
+            );
+          }
+
+          if (sectionKey === 'skills') {
+            if (!isVisible('skills') || !categorized) return null;
+            return (
+              <View key="skills" style={styles.section}>
+                <Text style={styles.sectionTitle}>{labels.skills || 'Skills'}</Text>
+                {categorized.technical?.length > 0 && (
+                  <View style={styles.skillsGroup}>
+                    <Text style={styles.skillsLabel}>Technical:</Text>
+                    <Text style={styles.skillsText}>{categorized.technical.join(', ')}</Text>
                   </View>
-                  <Text style={styles.institution}>{entry.institution}</Text>
+                )}
+                {categorized.tools?.length > 0 && (
+                  <View style={styles.skillsGroup}>
+                    <Text style={styles.skillsLabel}>Tools:</Text>
+                    <Text style={styles.skillsText}>{categorized.tools.join(', ')}</Text>
+                  </View>
+                )}
+                {categorized.soft?.length > 0 && (
+                  <View style={styles.skillsGroup}>
+                    <Text style={styles.skillsLabel}>Soft Skills:</Text>
+                    <Text style={styles.skillsText}>{categorized.soft.join(', ')}</Text>
+                  </View>
+                )}
+              </View>
+            );
+          }
+
+          if (sectionKey === 'certifications') {
+            if (!isVisible('certifications') || !certifications || !certifications.trim()) return null;
+            return (
+              <View key="certifications" style={styles.section}>
+                <Text style={styles.sectionTitle}>{labels.certifications || 'Certifications'}</Text>
+                {renderRawBullets(certifications)}
+              </View>
+            );
+          }
+
+          if (sectionKey === 'awards') {
+            if (!isVisible('awards') || !awards || !awards.trim()) return null;
+            return (
+              <View key="awards" style={styles.section}>
+                <Text style={styles.sectionTitle}>{labels.awards || 'Awards & Honors'}</Text>
+                {renderRawBullets(awards)}
+              </View>
+            );
+          }
+
+          if (sectionKey === 'languages') {
+            if (!isVisible('languages') || !languages || !languages.trim()) return null;
+            return (
+              <View key="languages" style={styles.section}>
+                <Text style={styles.sectionTitle}>{labels.languages || 'Languages'}</Text>
+                {renderRawBullets(languages)}
+              </View>
+            );
+          }
+
+          if (sectionKey === 'custom_sections') {
+            if (!parsedData?.custom_sections) return null;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return parsedData.custom_sections.map((sec: any, index: number) => {
+              const visibilityKey = sec.id ? `custom_${sec.id}` : `custom_${index}`;
+              if (!isVisible(visibilityKey) || !sec.title || !sec.content?.trim()) return null;
+              return (
+                <View key={visibilityKey} style={styles.section}>
+                  <Text style={styles.sectionTitle}>{sec.title}</Text>
+                  {renderRawBullets(sec.content)}
                 </View>
-              ))
-            ) : (
-              renderRawBullets(parsedData.education)
-            )}
-          </View>
-        )}
+              );
+            });
+          }
 
-        {/* Projects Section */}
-        {isVisible('projects') && projects && projects.trim().length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{labels.projects || 'Projects'}</Text>
-            {renderProjects(projects)}
-          </View>
-        )}
-
-        {/* Skills Section */}
-        {isVisible('skills') && categorized && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{labels.skills || 'Skills'}</Text>
-            {categorized.technical?.length > 0 && (
-              <View style={styles.skillsGroup}>
-                <Text style={styles.skillsLabel}>Technical:</Text>
-                <Text style={styles.skillsText}>{categorized.technical.join(', ')}</Text>
-              </View>
-            )}
-            {categorized.tools?.length > 0 && (
-              <View style={styles.skillsGroup}>
-                <Text style={styles.skillsLabel}>Tools:</Text>
-                <Text style={styles.skillsText}>{categorized.tools.join(', ')}</Text>
-              </View>
-            )}
-            {categorized.soft?.length > 0 && (
-              <View style={styles.skillsGroup}>
-                <Text style={styles.skillsLabel}>Soft Skills:</Text>
-                <Text style={styles.skillsText}>{categorized.soft.join(', ')}</Text>
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* Certifications Section */}
-        {isVisible('certifications') && certifications && certifications.trim().length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{labels.certifications || 'Certifications'}</Text>
-            {renderRawBullets(certifications)}
-          </View>
-        )}
-
-        {/* Awards Section */}
-        {isVisible('awards') && awards && awards.trim().length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{labels.awards || 'Awards & Honors'}</Text>
-            {renderRawBullets(awards)}
-          </View>
-        )}
-
-        {/* Languages Section */}
-        {isVisible('languages') && languages && languages.trim().length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{labels.languages || 'Languages'}</Text>
-            {renderRawBullets(languages)}
-          </View>
-        )}
-
-        {/* Custom Sections */}
-        {parsedData?.custom_sections && parsedData.custom_sections.map((sec: any, index: number) => {
-          const visibilityKey = sec.id ? `custom_${sec.id}` : `custom_${index}`;
-          if (!isVisible(visibilityKey) || !sec.title || !sec.content.trim()) return null;
-          return (
-            <View key={visibilityKey} style={styles.section}>
-              <Text style={styles.sectionTitle}>{sec.title}</Text>
-              {renderRawBullets(sec.content)}
-            </View>
-          );
+          return null;
         })}
       </Page>
     </Document>

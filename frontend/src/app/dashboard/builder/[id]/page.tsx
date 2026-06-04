@@ -237,9 +237,18 @@ const SectionOrderEditor = () => {
   const labels = parsedData.section_labels || {};
 
   const getLabel = (sec: string) => {
-    if (sec === 'custom_sections') return 'Custom Sections';
-    if (sec === 'summary') return labels.summary || 'Summary';
-    return labels[sec] || sec.charAt(0).toUpperCase() + sec.slice(1);
+    const fallbacks: Record<string, string> = {
+      summary: 'Professional Summary',
+      experience: 'Experience',
+      education: 'Education',
+      projects: 'Projects',
+      skills: 'Skills',
+      certifications: 'Certifications',
+      awards: 'Awards & Honors',
+      languages: 'Languages',
+      custom_sections: 'Custom Sections',
+    };
+    return labels[sec] || fallbacks[sec] || sec.charAt(0).toUpperCase() + sec.slice(1);
   };
 
   return (
