@@ -13,18 +13,15 @@ import { CSS } from '@dnd-kit/utilities';
 
 const PDFViewer = dynamic(() => import('@react-pdf/renderer').then(mod => mod.PDFViewer), { ssr: false });
 
-const SortableExperienceItem = ({ id, exp, index }: { id: string, exp: any, index: number }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
-  const { updateExperience, parsedData } = useResumeStore();
+const RewritableTextarea = ({ value, onChange, placeholder, context, className }: { value: string, onChange: (val: string) => void, placeholder: string, context: string, className?: string }) => {
   const [rewriting, setRewriting] = useState(false);
 
   const handleRewrite = async () => {
-    const text = (exp.bullet_points || []).join('\n');
-    if (!text.trim()) return;
+    if (!value.trim()) return;
     setRewriting(true);
     try {
-      const res = await api.post('/api/resume/rewrite', { text, context: 'Experience bullet points' });
-      updateExperience(index, { ...exp, bullet_points: res.data.text.split('\n') });
+      const res = await api.post('/api/resume/rewrite', { text: value, context });
+      onChange(res.data.text);
     } catch (e) {
       console.error(e);
       alert("Failed to rewrite.");
@@ -32,6 +29,30 @@ const SortableExperienceItem = ({ id, exp, index }: { id: string, exp: any, inde
       setRewriting(false);
     }
   };
+
+  return (
+    <div className="relative">
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={className || "w-full h-24 px-3 py-2 border border-border rounded-lg bg-muted text-sm custom-scrollbar"}
+      />
+      <button
+        onClick={handleRewrite}
+        disabled={rewriting}
+        title="Rewrite with AI"
+        className="absolute bottom-3 right-3 p-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
+      >
+        {rewriting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+      </button>
+    </div>
+  );
+};
+
+const SortableExperienceItem = ({ id, exp, index }: { id: string, exp: any, index: number }) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+  const { updateExperience, parsedData } = useResumeStore();
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -46,7 +67,7 @@ const SortableExperienceItem = ({ id, exp, index }: { id: string, exp: any, inde
 
   return (
     <div ref={setNodeRef} style={style} className="bg-muted p-4 rounded-xl border border-border mb-3 flex gap-3 group">
-      <div {...attributes} {...listeners} className="cursor-grab text-muted-foreground hover:text-foreground mt-2">
+      <div {...attributes} {...listeners} title="Drag to reorder" className="cursor-grab text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 p-1 rounded-md mt-2">
         <GripVertical className="w-5 h-5" />
       </div>
       <div className="flex-1 space-y-3">
@@ -78,22 +99,12 @@ const SortableExperienceItem = ({ id, exp, index }: { id: string, exp: any, inde
             className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
           />
         </div>
-        <div className="relative">
-          <textarea
-            value={(exp.bullet_points || []).join('\n')}
-            onChange={(e) => updateExperience(index, { ...exp, bullet_points: e.target.value.split('\n') })}
-            placeholder="Bullet points (one per line)"
-            className="w-full h-24 px-3 py-2 bg-background border border-border rounded-lg text-sm custom-scrollbar"
-          />
-          <button
-            onClick={handleRewrite}
-            disabled={rewriting}
-            title="Rewrite with AI"
-            className="absolute bottom-3 right-3 p-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
-          >
-            {rewriting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          </button>
-        </div>
+        <RewritableTextarea
+          value={(exp.bullet_points || []).join('\n')}
+          onChange={(val) => updateExperience(index, { ...exp, bullet_points: val.split('\n') })}
+          placeholder="Bullet points (one per line)"
+          context="Experience bullet points"
+        />
       </div>
     </div>
   );
@@ -106,28 +117,13 @@ export default function BuilderPage() {
   const { parsedData, setParsedData, updateField, reorderExperiences } = useResumeStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [rewritingSummary, setRewritingSummary] = useState(false);
   const { toggleSectionVisibility } = useResumeStore();
-
   const isVisible = (section: string) => parsedData.visible_sections?.[section] !== false;
 
-  const handleRewriteSummary = async () => {
-    const text = parsedData.summary || '';
-    if (!text.trim()) return;
-    setRewritingSummary(true);
-    try {
-      const res = await api.post('/api/resume/rewrite', { text, context: 'Professional Summary' });
-      updateField('summary', res.data.text);
-    } catch (e) {
-      console.error(e);
-      alert("Failed to rewrite summary.");
-    } finally {
-      setRewritingSummary(false);
-    }
-  };
+  const [theme, setTheme] = useState<'modern' | 'harvard' | 'executive'>('modern');
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
@@ -222,21 +218,12 @@ export default function BuilderPage() {
               <input type="text" value={parsedData.linkedin || ''} onChange={(e) => updateField('linkedin', e.target.value)} placeholder="LinkedIn URL" className="px-3 py-2 border border-border rounded-lg bg-muted text-sm" />
               <input type="text" value={parsedData.github || ''} onChange={(e) => updateField('github', e.target.value)} placeholder="Portfolio / Link URL" className="px-3 py-2 border border-border rounded-lg bg-muted text-sm" />
             </div>
-            <div className="relative">
-              <textarea
-                value={parsedData.summary || ''} onChange={(e) => updateField('summary', e.target.value)}
-                placeholder="Professional Summary"
-                className="w-full h-24 px-3 py-2 border border-border rounded-lg bg-muted text-sm custom-scrollbar"
-              />
-              <button
-                onClick={handleRewriteSummary}
-                disabled={rewritingSummary}
-                title="Rewrite with AI"
-                className="absolute bottom-3 right-3 p-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
-              >
-                {rewritingSummary ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              </button>
-            </div>
+            <RewritableTextarea
+              value={parsedData.summary || ''}
+              onChange={(val) => updateField('summary', val)}
+              placeholder="Professional Summary"
+              context="Professional Summary"
+            />
           </section>
 
           <section className="space-y-4">
@@ -265,10 +252,11 @@ export default function BuilderPage() {
                     {isVisible('education') ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </button>
                 </div>
-                <textarea
-                  value={parsedData.education || ''} onChange={(e) => updateField('education', e.target.value)}
+                <RewritableTextarea
+                  value={parsedData.education || ''}
+                  onChange={(val) => updateField('education', val)}
                   placeholder="Education Details"
-                  className="w-full h-24 px-3 py-2 border border-border rounded-lg bg-muted text-sm custom-scrollbar"
+                  context="Education section"
                 />
               </div>
               <div>
@@ -278,10 +266,11 @@ export default function BuilderPage() {
                     {isVisible('projects') ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </button>
                 </div>
-                <textarea
-                  value={parsedData.projects || ''} onChange={(e) => updateField('projects', e.target.value)}
+                <RewritableTextarea
+                  value={parsedData.projects || ''}
+                  onChange={(val) => updateField('projects', val)}
                   placeholder="Projects Details"
-                  className="w-full h-24 px-3 py-2 border border-border rounded-lg bg-muted text-sm custom-scrollbar"
+                  context="Projects section"
                 />
               </div>
               <div>
@@ -291,9 +280,11 @@ export default function BuilderPage() {
                     {isVisible('certifications') ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </button>
                 </div>
-                <textarea
-                  value={parsedData.certifications || ''} onChange={(e) => updateField('certifications', e.target.value)}
+                <RewritableTextarea
+                  value={parsedData.certifications || ''}
+                  onChange={(val) => updateField('certifications', val)}
                   placeholder="Certifications Details"
+                  context="Certifications section"
                   className="w-full h-20 px-3 py-2 border border-border rounded-lg bg-muted text-sm custom-scrollbar"
                 />
               </div>
@@ -302,12 +293,27 @@ export default function BuilderPage() {
         </div>
 
         {/* Right Pane: PDF Preview */}
-        <div className="w-1/2 bg-muted/30 p-4 h-full relative">
-          <PDFViewer width="100%" height="100%" className="rounded-xl shadow-xl border border-border">
+        <div className="w-1/2 bg-muted/30 p-4 h-full relative flex flex-col">
+          {/* Theme Selector */}
+          <div className="flex justify-center gap-2 mb-4 shrink-0">
+            {(['modern', 'harvard', 'executive'] as const).map((t) => (
+              <Button
+                key={t}
+                variant={theme === t ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTheme(t)}
+                className="capitalize"
+              >
+                {t}
+              </Button>
+            ))}
+          </div>
+          
+          <PDFViewer width="100%" height="100%" className="rounded-xl shadow-xl border border-border flex-1">
             <ResumePDF 
               parsedData={parsedData} 
               overrides={{ name: '', email: '', phone: '', linkedin: '', github: '', location: '' }}
-              theme="modern"
+              theme={theme}
               structuredExperience={experienceItems}
             />
           </PDFViewer>

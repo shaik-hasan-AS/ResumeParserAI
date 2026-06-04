@@ -13,7 +13,7 @@ interface ParsedData {
   email?: string;
   phone?: string;
   skills?: string[];
-  education?: string[];
+  education?: string;
   summary?: string;
   structured_experience?: Experience[];
   visible_sections?: Record<string, boolean>;
