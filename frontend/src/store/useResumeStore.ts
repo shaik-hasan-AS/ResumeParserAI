@@ -33,6 +33,7 @@ interface ParsedData {
   visible_sections?: Record<string, boolean>;
   section_labels?: Record<string, string>;
   custom_sections?: CustomSection[];
+  section_order?: string[];
   [key: string]: any;
 }
 
@@ -48,7 +49,10 @@ interface ResumeStore {
   reorderCustomSections: (startIndex: number, endIndex: number) => void;
   toggleSectionVisibility: (section: string) => void;
   updateSectionLabel: (section: string, label: string) => void;
+  reorderGlobalSections: (startIndex: number, endIndex: number) => void;
 }
+
+export const DEFAULT_SECTION_ORDER = ['summary', 'experience', 'education', 'projects', 'skills', 'certifications', 'awards', 'languages', 'custom_sections'];
 
 export const useResumeStore = create<ResumeStore>((set) => ({
   parsedData: {},
@@ -63,6 +67,7 @@ export const useResumeStore = create<ResumeStore>((set) => ({
     addIds(data.structured_experience || []);
     addIds(data.education_entries || []);
     addIds(data.custom_sections || []);
+    if (!data.section_order) data.section_order = DEFAULT_SECTION_ORDER;
     set({ parsedData: data });
   },
   updateField: (field, value) => set((state) => ({
@@ -120,5 +125,11 @@ export const useResumeStore = create<ResumeStore>((set) => ({
         section_labels: { ...labels, [section]: label }
       }
     };
+  }),
+  reorderGlobalSections: (startIndex, endIndex) => set((state) => {
+    const order = Array.from(state.parsedData.section_order || DEFAULT_SECTION_ORDER);
+    const [removed] = order.splice(startIndex, 1);
+    order.splice(endIndex, 0, removed);
+    return { parsedData: { ...state.parsedData, section_order: order } };
   })
 }));
