@@ -67,10 +67,10 @@ const ExperienceItem = ({ exp, index, total }: { exp: any, index: number, total:
   return (
     <div className="bg-muted p-4 rounded-xl border border-border mb-3 flex gap-3 group">
       <div className="flex flex-col gap-1 mt-2 text-muted-foreground shrink-0">
-        <button onClick={moveUp} disabled={index === 0} className="hover:text-foreground hover:bg-muted-foreground/10 p-1 rounded-md disabled:opacity-30">
+        <button type="button" onClick={moveUp} disabled={index === 0} className="hover:text-foreground hover:bg-muted-foreground/10 p-1 rounded-md disabled:opacity-30">
           <ArrowUp className="w-4 h-4" />
         </button>
-        <button onClick={moveDown} disabled={index === total - 1} className="hover:text-foreground hover:bg-muted-foreground/10 p-1 rounded-md disabled:opacity-30">
+        <button type="button" onClick={moveDown} disabled={index === total - 1} className="hover:text-foreground hover:bg-muted-foreground/10 p-1 rounded-md disabled:opacity-30">
           <ArrowDown className="w-4 h-4" />
         </button>
       </div>
@@ -134,10 +134,10 @@ const EducationItem = ({ edu, index, total }: { edu: any, index: number, total: 
   return (
     <div className="bg-muted p-4 rounded-xl border border-border mb-3 flex gap-3 group">
       <div className="flex flex-col gap-1 mt-2 text-muted-foreground shrink-0">
-        <button onClick={moveUp} disabled={index === 0} className="hover:text-foreground hover:bg-muted-foreground/10 p-1 rounded-md disabled:opacity-30">
+        <button type="button" onClick={moveUp} disabled={index === 0} className="hover:text-foreground hover:bg-muted-foreground/10 p-1 rounded-md disabled:opacity-30">
           <ArrowUp className="w-4 h-4" />
         </button>
-        <button onClick={moveDown} disabled={index === total - 1} className="hover:text-foreground hover:bg-muted-foreground/10 p-1 rounded-md disabled:opacity-30">
+        <button type="button" onClick={moveDown} disabled={index === total - 1} className="hover:text-foreground hover:bg-muted-foreground/10 p-1 rounded-md disabled:opacity-30">
           <ArrowDown className="w-4 h-4" />
         </button>
       </div>
@@ -205,10 +205,10 @@ const CustomSectionItem = ({ sec, index, total }: { sec: any, index: number, tot
           className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm font-semibold"
         />
         <div className="flex items-center gap-2">
-          <button onClick={moveUp} disabled={index === 0} className="text-muted-foreground hover:text-foreground disabled:opacity-30">
+          <button type="button" onClick={moveUp} disabled={index === 0} className="text-muted-foreground hover:text-foreground disabled:opacity-30">
             <ArrowUp className="w-4 h-4" />
           </button>
-          <button onClick={moveDown} disabled={index === total - 1} className="text-muted-foreground hover:text-foreground disabled:opacity-30">
+          <button type="button" onClick={moveDown} disabled={index === total - 1} className="text-muted-foreground hover:text-foreground disabled:opacity-30">
             <ArrowDown className="w-4 h-4" />
           </button>
           <button onClick={handleRemove} className="text-rose-500 hover:text-rose-600">
@@ -293,8 +293,11 @@ export default function BuilderPage() {
   };
 
   const experienceItems = parsedData.structured_experience || [];
+  experienceItems.forEach((item: any) => { if (!item.id) item.id = crypto.randomUUID(); });
   const educationItems = parsedData.education_entries || [];
+  educationItems.forEach((item: any) => { if (!item.id) item.id = crypto.randomUUID(); });
   const customSectionsItems = parsedData.custom_sections || [];
+  customSectionsItems.forEach((item: any) => { if (!item.id) item.id = crypto.randomUUID(); });
 
   return (
     <div className="min-h-screen bg-background flex flex-col font-sans h-screen overflow-hidden">
