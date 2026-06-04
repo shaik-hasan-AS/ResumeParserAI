@@ -16,6 +16,7 @@ interface ParsedData {
   education?: string[];
   summary?: string;
   structured_experience?: Experience[];
+  visible_sections?: Record<string, boolean>;
   [key: string]: any;
 }
 
@@ -25,6 +26,7 @@ interface ResumeStore {
   updateField: (field: keyof ParsedData, value: any) => void;
   updateExperience: (index: number, updatedExp: Experience) => void;
   reorderExperiences: (startIndex: number, endIndex: number) => void;
+  toggleSectionVisibility: (section: string) => void;
 }
 
 export const useResumeStore = create<ResumeStore>((set) => ({
@@ -44,4 +46,15 @@ export const useResumeStore = create<ResumeStore>((set) => ({
     exps.splice(endIndex, 0, removed);
     return { parsedData: { ...state.parsedData, structured_experience: exps } };
   }),
+  toggleSectionVisibility: (section: string) => set((state) => {
+    const currentVis = state.parsedData.visible_sections || {};
+    // Default to true if undefined
+    const isVisible = currentVis[section] !== undefined ? currentVis[section] : true;
+    return {
+      parsedData: {
+        ...state.parsedData,
+        visible_sections: { ...currentVis, [section]: !isVisible }
+      }
+    };
+  })
 }));

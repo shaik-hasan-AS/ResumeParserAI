@@ -158,3 +158,31 @@ def generate_cover_letter(parsed_data: dict, raw_text: str, job_description: str
         return response.text
     except Exception as e:
         return f"Error generating cover letter: {str(e)}"
+
+def rewrite_text(text: str, context: str = None) -> str:
+    prompt = f"""
+    You are an expert career coach and resume writer.
+    Your task is to rewrite the following text into a highly professional, ATS-optimized format.
+    Make it impactful, action-oriented, and concise. Do not invent facts, only elevate the language.
+    
+    Context about this text (e.g. 'This is a professional summary' or 'This is an experience bullet point'):
+    {context or 'No specific context provided.'}
+    
+    Original Text:
+    {text}
+    
+    Return ONLY the rewritten text, nothing else. No quotation marks or explanations.
+    """
+    
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash-lite',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.3,
+            )
+        )
+        return response.text.strip()
+    except Exception as e:
+        return f"Error rewriting text: {str(e)}"

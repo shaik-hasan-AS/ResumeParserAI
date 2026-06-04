@@ -32,6 +32,12 @@ const IconGithub = () => (
     <Path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
   </Svg>
 );
+const IconGlobe = () => (
+  <Svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <Path d="M12 22A10 10 0 1 0 12 2a10 10 0 0 0 0 20z" />
+    <Path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+  </Svg>
+);
 
 // --- Styles ---
 const themeStyles = {
@@ -608,12 +614,24 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
 
   const cleanUrl = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '');
 
+  const isVisible = (sectionName: string) => {
+    if (!parsedData?.visible_sections) return true;
+    return parsedData.visible_sections[sectionName] !== false;
+  };
+
   const contactItems = [];
   if (email) contactItems.push({ type: 'email', val: email, icon: <IconEmail /> });
   if (phone) contactItems.push({ type: 'phone', val: phone, icon: <IconPhone /> });
   if (location) contactItems.push({ type: 'location', val: location, icon: <IconMapPin /> });
   if (linkedin) contactItems.push({ type: 'linkedin', val: linkedin, icon: <IconLinkedin />, link: true });
-  if (github) contactItems.push({ type: 'github', val: github, icon: <IconGithub />, link: true });
+  if (github) {
+    const isGithub = github.toLowerCase().includes('github.com');
+    const isLinkedin = github.toLowerCase().includes('linkedin.com');
+    let icon = <IconGlobe />;
+    if (isGithub) icon = <IconGithub />;
+    else if (isLinkedin) icon = <IconLinkedin />;
+    contactItems.push({ type: 'github', val: github, icon, link: true });
+  }
 
   return (
     <Document>
@@ -678,7 +696,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         )}
 
         {/* Summary Section */}
-        {summary && summary.trim().length > 0 && (
+        {isVisible('summary') && summary && summary.trim().length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Professional Summary</Text>
             {renderRawBullets(summary)}
@@ -686,7 +704,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         )}
 
         {/* Experience Section */}
-        {(structuredExperience?.length ? structuredExperience.length > 0 : experience) && (
+        {isVisible('experience') && (structuredExperience?.length ? structuredExperience.length > 0 : experience) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Professional Experience</Text>
             
@@ -713,7 +731,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         )}
 
         {/* Education Section */}
-        {(eduEntries.length > 0 || parsedData?.education) && (
+        {isVisible('education') && (eduEntries.length > 0 || parsedData?.education) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Education</Text>
             {eduEntries.length > 0 ? (
@@ -734,7 +752,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         )}
 
         {/* Projects Section */}
-        {projects && projects.trim().length > 0 && (
+        {isVisible('projects') && projects && projects.trim().length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Projects</Text>
             {renderProjects(projects)}
@@ -742,7 +760,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         )}
 
         {/* Skills Section */}
-        {categorized && (
+        {isVisible('skills') && categorized && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Skills</Text>
             {categorized.technical?.length > 0 && (
@@ -767,7 +785,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         )}
 
         {/* Certifications Section */}
-        {certifications && certifications.trim().length > 0 && (
+        {isVisible('certifications') && certifications && certifications.trim().length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Certifications</Text>
             {renderRawBullets(certifications)}
@@ -775,7 +793,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         )}
 
         {/* Awards Section */}
-        {awards && awards.trim().length > 0 && (
+        {isVisible('awards') && awards && awards.trim().length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Awards & Honors</Text>
             {renderRawBullets(awards)}
@@ -783,7 +801,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         )}
 
         {/* Languages Section */}
-        {languages && languages.trim().length > 0 && (
+        {isVisible('languages') && languages && languages.trim().length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Languages</Text>
             {renderRawBullets(languages)}

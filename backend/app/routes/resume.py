@@ -5,7 +5,7 @@ from ..models import models
 from ..schemas import schemas
 from .auth import get_current_user
 from ..parsers.resume_parser import extract_text_from_pdf, parse_resume_text
-from ..ai.gemini import generate_feedback, generate_cover_letter
+from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text
 from ..parsers.ocr import local_ocr_image, local_ocr_pdf
 import os
 import shutil
@@ -231,3 +231,11 @@ def create_cover_letter(
     )
     
     return schemas.CoverLetterResponse(cover_letter_text=cover_letter_text)
+
+@router.post("/rewrite")
+def rewrite_resume_text(
+    req: schemas.RewriteRequest,
+    current_user: models.User = Depends(get_current_user)
+):
+    rewritten = rewrite_text(req.text, req.context)
+    return {"text": rewritten}

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save, GripVertical, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, GripVertical, Plus, Trash2, Sparkles, Loader2, Eye, EyeOff } from 'lucide-react';
 import api from '@/lib/api';
 import dynamic from 'next/dynamic';
 import ResumePDF from '@/components/ResumePDF';
@@ -16,6 +16,22 @@ const PDFViewer = dynamic(() => import('@react-pdf/renderer').then(mod => mod.PD
 const SortableExperienceItem = ({ id, exp, index }: { id: string, exp: any, index: number }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
   const { updateExperience, parsedData } = useResumeStore();
+  const [rewriting, setRewriting] = useState(false);
+
+  const handleRewrite = async () => {
+    const text = (exp.bullet_points || []).join('\n');
+    if (!text.trim()) return;
+    setRewriting(true);
+    try {
+      const res = await api.post('/api/resume/rewrite', { text, context: 'Experience bullet points' });
+      updateExperience(index, { ...exp, bullet_points: res.data.text.split('\n') });
+    } catch (e) {
+      console.error(e);
+      alert("Failed to rewrite.");
+    } finally {
+      setRewriting(false);
+    }
+  };
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -62,12 +78,22 @@ const SortableExperienceItem = ({ id, exp, index }: { id: string, exp: any, inde
             className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
           />
         </div>
-        <textarea
-          value={(exp.bullet_points || []).join('\n')}
-          onChange={(e) => updateExperience(index, { ...exp, bullet_points: e.target.value.split('\n') })}
-          placeholder="Bullet points (one per line)"
-          className="w-full h-24 px-3 py-2 bg-background border border-border rounded-lg text-sm custom-scrollbar"
-        />
+        <div className="relative">
+          <textarea
+            value={(exp.bullet_points || []).join('\n')}
+            onChange={(e) => updateExperience(index, { ...exp, bullet_points: e.target.value.split('\n') })}
+            placeholder="Bullet points (one per line)"
+            className="w-full h-24 px-3 py-2 bg-background border border-border rounded-lg text-sm custom-scrollbar"
+          />
+          <button
+            onClick={handleRewrite}
+            disabled={rewriting}
+            title="Rewrite with AI"
+            className="absolute bottom-3 right-3 p-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
+          >
+            {rewriting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -80,6 +106,25 @@ export default function BuilderPage() {
   const { parsedData, setParsedData, updateField, reorderExperiences } = useResumeStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [rewritingSummary, setRewritingSummary] = useState(false);
+  const { toggleSectionVisibility } = useResumeStore();
+
+  const isVisible = (section: string) => parsedData.visible_sections?.[section] !== false;
+
+  const handleRewriteSummary = async () => {
+    const text = parsedData.summary || '';
+    if (!text.trim()) return;
+    setRewritingSummary(true);
+    try {
+      const res = await api.post('/api/resume/rewrite', { text, context: 'Professional Summary' });
+      updateField('summary', res.data.text);
+    } catch (e) {
+      console.error(e);
+      alert("Failed to rewrite summary.");
+    } finally {
+      setRewritingSummary(false);
+    }
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -175,13 +220,23 @@ export default function BuilderPage() {
               <input type="text" value={parsedData.phone || ''} onChange={(e) => updateField('phone', e.target.value)} placeholder="Phone" className="px-3 py-2 border border-border rounded-lg bg-muted text-sm" />
               <input type="text" value={parsedData.location || ''} onChange={(e) => updateField('location', e.target.value)} placeholder="Location (City, State)" className="px-3 py-2 border border-border rounded-lg bg-muted text-sm" />
               <input type="text" value={parsedData.linkedin || ''} onChange={(e) => updateField('linkedin', e.target.value)} placeholder="LinkedIn URL" className="px-3 py-2 border border-border rounded-lg bg-muted text-sm" />
-              <input type="text" value={parsedData.github || ''} onChange={(e) => updateField('github', e.target.value)} placeholder="GitHub URL" className="px-3 py-2 border border-border rounded-lg bg-muted text-sm" />
+              <input type="text" value={parsedData.github || ''} onChange={(e) => updateField('github', e.target.value)} placeholder="Portfolio / Link URL" className="px-3 py-2 border border-border rounded-lg bg-muted text-sm" />
             </div>
-            <textarea
-              value={parsedData.summary || ''} onChange={(e) => updateField('summary', e.target.value)}
-              placeholder="Professional Summary"
-              className="w-full h-24 px-3 py-2 border border-border rounded-lg bg-muted text-sm custom-scrollbar"
-            />
+            <div className="relative">
+              <textarea
+                value={parsedData.summary || ''} onChange={(e) => updateField('summary', e.target.value)}
+                placeholder="Professional Summary"
+                className="w-full h-24 px-3 py-2 border border-border rounded-lg bg-muted text-sm custom-scrollbar"
+              />
+              <button
+                onClick={handleRewriteSummary}
+                disabled={rewritingSummary}
+                title="Rewrite with AI"
+                className="absolute bottom-3 right-3 p-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-md transition-colors"
+              >
+                {rewritingSummary ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              </button>
+            </div>
           </section>
 
           <section className="space-y-4">
@@ -204,7 +259,12 @@ export default function BuilderPage() {
             <h2 className="text-lg font-bold">Additional Sections</h2>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-muted-foreground mb-1 block">Education</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-sm font-semibold text-muted-foreground">Education</label>
+                  <button onClick={() => toggleSectionVisibility('education')} className="text-muted-foreground hover:text-foreground">
+                    {isVisible('education') ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  </button>
+                </div>
                 <textarea
                   value={parsedData.education || ''} onChange={(e) => updateField('education', e.target.value)}
                   placeholder="Education Details"
@@ -212,7 +272,12 @@ export default function BuilderPage() {
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-muted-foreground mb-1 block">Projects</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-sm font-semibold text-muted-foreground">Projects</label>
+                  <button onClick={() => toggleSectionVisibility('projects')} className="text-muted-foreground hover:text-foreground">
+                    {isVisible('projects') ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  </button>
+                </div>
                 <textarea
                   value={parsedData.projects || ''} onChange={(e) => updateField('projects', e.target.value)}
                   placeholder="Projects Details"
@@ -220,7 +285,12 @@ export default function BuilderPage() {
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-muted-foreground mb-1 block">Certifications</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-sm font-semibold text-muted-foreground">Certifications</label>
+                  <button onClick={() => toggleSectionVisibility('certifications')} className="text-muted-foreground hover:text-foreground">
+                    {isVisible('certifications') ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  </button>
+                </div>
                 <textarea
                   value={parsedData.certifications || ''} onChange={(e) => updateField('certifications', e.target.value)}
                   placeholder="Certifications Details"

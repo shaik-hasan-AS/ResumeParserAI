@@ -65,3 +65,7 @@ class CoverLetterRequest(BaseModel):
 
 class CoverLetterResponse(BaseModel):
     cover_letter_text: str
+
+class RewriteRequest(BaseModel):
+    text: str
+    context: Optional[str] = None
