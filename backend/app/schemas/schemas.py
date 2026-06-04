@@ -43,6 +43,10 @@ class ParsedDataResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class ParsedDataUpdateRequest(BaseModel):
+    parsed_json: Dict[str, Any]
+
+
 class FeedbackRequest(BaseModel):
     target_role: Optional[str] = None
     job_description: Optional[str] = None

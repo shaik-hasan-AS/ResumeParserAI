@@ -463,6 +463,14 @@ export default function ResumeViewer() {
                 )}
               </div>
             )}
+            <Button
+              variant="outline"
+              onClick={() => router.push(`/dashboard/builder/${id}`)}
+              className="border-primary/40 text-primary hover:bg-primary/10 h-9 px-4 rounded-lg font-semibold flex items-center gap-2 bg-transparent"
+            >
+              <Edit3 className="w-4 h-4" />
+              Edit Resume
+            </Button>
             <ThemeToggle />
           </div>
         </header>

@@ -127,6 +127,27 @@ def get_parsed_data(
     return parsed
 
 
+@router.put("/{id}/parsed", response_model=schemas.ParsedDataResponse)
+def update_parsed_data(
+    id: str,
+    req: schemas.ParsedDataUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    resume = db.query(models.Resume).filter(models.Resume.id == id, models.Resume.user_id == current_user.id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+        
+    parsed = db.query(models.ParsedData).filter(models.ParsedData.resume_id == id).first()
+    if not parsed:
+        raise HTTPException(status_code=404, detail="Parsed data not found")
+        
+    parsed.parsed_json = req.parsed_json
+    db.commit()
+    db.refresh(parsed)
+    return parsed
+
+
 @router.post("/{id}/feedback", response_model=schemas.FeedbackResponse)
 def generate_resume_feedback(
     id: str,
