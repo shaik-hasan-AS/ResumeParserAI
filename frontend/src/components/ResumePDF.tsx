@@ -812,9 +812,10 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
 
         {/* Custom Sections */}
         {parsedData?.custom_sections && parsedData.custom_sections.map((sec: any, index: number) => {
-          if (!isVisible(`custom_${index}`) || !sec.title || !sec.content.trim()) return null;
+          const visibilityKey = sec.id ? `custom_${sec.id}` : `custom_${index}`;
+          if (!isVisible(visibilityKey) || !sec.title || !sec.content.trim()) return null;
           return (
-            <View key={`custom_${index}`} style={styles.section}>
+            <View key={visibilityKey} style={styles.section}>
               <Text style={styles.sectionTitle}>{sec.title}</Text>
               {renderRawBullets(sec.content)}
             </View>

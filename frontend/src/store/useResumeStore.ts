@@ -52,7 +52,19 @@ interface ResumeStore {
 
 export const useResumeStore = create<ResumeStore>((set) => ({
   parsedData: {},
-  setParsedData: (data) => set({ parsedData: data }),
+  setParsedData: (data) => {
+    const addIds = (arr: any[]) => {
+      if (arr) {
+        arr.forEach(item => {
+          if (!item.id) item.id = crypto.randomUUID();
+        });
+      }
+    };
+    addIds(data.structured_experience || []);
+    addIds(data.education_entries || []);
+    addIds(data.custom_sections || []);
+    set({ parsedData: data });
+  },
   updateField: (field, value) => set((state) => ({
     parsedData: { ...state.parsedData, [field]: value }
   })),

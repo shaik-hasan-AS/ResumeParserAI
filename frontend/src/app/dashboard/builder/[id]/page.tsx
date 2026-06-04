@@ -177,7 +177,8 @@ const EducationItem = ({ edu, index, total }: { edu: any, index: number, total: 
 
 const CustomSectionItem = ({ sec, index, total }: { sec: any, index: number, total: number }) => {
   const { updateCustomSection, reorderCustomSections, parsedData, toggleSectionVisibility } = useResumeStore();
-  const isVisible = parsedData.visible_sections?.[`custom_${index}`] !== false;
+  const visibilityKey = sec.id ? `custom_${sec.id}` : `custom_${index}`;
+  const isVisible = parsedData.visible_sections?.[visibilityKey] !== false;
 
   const handleRemove = () => {
     const secs = [...(parsedData.custom_sections || [])];
@@ -201,7 +202,7 @@ const CustomSectionItem = ({ sec, index, total }: { sec: any, index: number, tot
           value={sec.title}
           onChange={(e) => updateCustomSection(index, { ...sec, title: e.target.value })}
           placeholder="Custom Section Title (e.g. Strengths)"
-          className="text-sm font-semibold text-muted-foreground bg-transparent border-b border-transparent hover:border-border focus:border-border focus:outline-none flex-1"
+          className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm font-semibold"
         />
         <div className="flex items-center gap-2">
           <button onClick={moveUp} disabled={index === 0} className="text-muted-foreground hover:text-foreground disabled:opacity-30">
@@ -213,7 +214,7 @@ const CustomSectionItem = ({ sec, index, total }: { sec: any, index: number, tot
           <button onClick={handleRemove} className="text-rose-500 hover:text-rose-600">
             <Trash2 className="w-4 h-4" />
           </button>
-          <button onClick={() => toggleSectionVisibility(`custom_${index}`)} className="text-muted-foreground hover:text-foreground">
+          <button onClick={() => toggleSectionVisibility(visibilityKey)} className="text-muted-foreground hover:text-foreground">
             {isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           </button>
         </div>
@@ -275,19 +276,19 @@ export default function BuilderPage() {
 
   const addExperience = () => {
     const exps = [...(parsedData.structured_experience || [])];
-    exps.push({ job_title: '', company: '', dates: '', bullet_points: [] });
+    exps.push({ id: crypto.randomUUID(), job_title: '', company: '', dates: '', bullet_points: [] });
     updateField('structured_experience', exps);
   };
 
   const addEducation = () => {
     const edus = [...(parsedData.education_entries || [])];
-    edus.push({ degree: '', institution: '', year: '' });
+    edus.push({ id: crypto.randomUUID(), degree: '', institution: '', year: '' });
     updateField('education_entries', edus);
   };
 
   const addCustomSection = () => {
     const secs = [...(parsedData.custom_sections || [])];
-    secs.push({ title: 'New Section', content: '' });
+    secs.push({ id: crypto.randomUUID(), title: 'New Section', content: '' });
     updateField('custom_sections', secs);
   };
 
@@ -348,7 +349,7 @@ export default function BuilderPage() {
             </div>
             <div>
               {experienceItems.map((exp: any, index: number) => (
-                <ExperienceItem key={index} exp={exp} index={index} total={experienceItems.length} />
+                <ExperienceItem key={exp.id || index} exp={exp} index={index} total={experienceItems.length} />
               ))}
             </div>
           </section>
@@ -376,7 +377,7 @@ export default function BuilderPage() {
                 {educationItems.length > 0 && (
                   <div className="mb-3">
                     {educationItems.map((edu: any, index: number) => (
-                      <EducationItem key={index} edu={edu} index={index} total={educationItems.length} />
+                      <EducationItem key={edu.id || index} edu={edu} index={index} total={educationItems.length} />
                     ))}
                   </div>
                 )}
@@ -439,7 +440,7 @@ export default function BuilderPage() {
             {customSectionsItems.length > 0 && (
               <div className="space-y-4">
                 {customSectionsItems.map((sec: any, index: number) => (
-                  <CustomSectionItem key={index} sec={sec} index={index} total={customSectionsItems.length} />
+                  <CustomSectionItem key={sec.id || index} sec={sec} index={index} total={customSectionsItems.length} />
                 ))}
               </div>
             )}
