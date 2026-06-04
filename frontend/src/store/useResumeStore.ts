@@ -15,6 +15,12 @@ interface EducationEntry {
   year: string;
 }
 
+interface CustomSection {
+  id?: string;
+  title: string;
+  content: string;
+}
+
 interface ParsedData {
   name?: string;
   email?: string;
@@ -26,6 +32,7 @@ interface ParsedData {
   structured_experience?: Experience[];
   visible_sections?: Record<string, boolean>;
   section_labels?: Record<string, string>;
+  custom_sections?: CustomSection[];
   [key: string]: any;
 }
 
@@ -37,6 +44,8 @@ interface ResumeStore {
   reorderExperiences: (startIndex: number, endIndex: number) => void;
   updateEducation: (index: number, updatedEdu: EducationEntry) => void;
   reorderEducations: (startIndex: number, endIndex: number) => void;
+  updateCustomSection: (index: number, updatedSec: CustomSection) => void;
+  reorderCustomSections: (startIndex: number, endIndex: number) => void;
   toggleSectionVisibility: (section: string) => void;
   updateSectionLabel: (section: string, label: string) => void;
 }
@@ -79,6 +88,17 @@ export const useResumeStore = create<ResumeStore>((set) => ({
     const [removed] = edus.splice(startIndex, 1);
     edus.splice(endIndex, 0, removed);
     return { parsedData: { ...state.parsedData, education_entries: edus } };
+  }),
+  updateCustomSection: (index, updatedSec) => set((state) => {
+    const secs = [...(state.parsedData.custom_sections || [])];
+    secs[index] = updatedSec;
+    return { parsedData: { ...state.parsedData, custom_sections: secs } };
+  }),
+  reorderCustomSections: (startIndex, endIndex) => set((state) => {
+    const secs = Array.from(state.parsedData.custom_sections || []);
+    const [removed] = secs.splice(startIndex, 1);
+    secs.splice(endIndex, 0, removed);
+    return { parsedData: { ...state.parsedData, custom_sections: secs } };
   }),
   updateSectionLabel: (section, label) => set((state) => {
     const labels = state.parsedData.section_labels || {};

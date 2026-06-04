@@ -175,6 +175,59 @@ const EducationItem = ({ edu, index, total }: { edu: any, index: number, total: 
   );
 };
 
+const CustomSectionItem = ({ sec, index, total }: { sec: any, index: number, total: number }) => {
+  const { updateCustomSection, reorderCustomSections, parsedData, toggleSectionVisibility } = useResumeStore();
+  const isVisible = parsedData.visible_sections?.[`custom_${index}`] !== false;
+
+  const handleRemove = () => {
+    const secs = [...(parsedData.custom_sections || [])];
+    secs.splice(index, 1);
+    useResumeStore.getState().updateField('custom_sections', secs);
+  };
+
+  const moveUp = () => {
+    if (index > 0) reorderCustomSections(index, index - 1);
+  };
+
+  const moveDown = () => {
+    if (index < total - 1) reorderCustomSections(index, index + 1);
+  };
+
+  return (
+    <div className="mb-6 space-y-2">
+      <div className="flex items-center justify-between mb-1">
+        <input
+          type="text"
+          value={sec.title}
+          onChange={(e) => updateCustomSection(index, { ...sec, title: e.target.value })}
+          placeholder="Custom Section Title (e.g. Strengths)"
+          className="text-sm font-semibold text-muted-foreground bg-transparent border-b border-transparent hover:border-border focus:border-border focus:outline-none flex-1"
+        />
+        <div className="flex items-center gap-2">
+          <button onClick={moveUp} disabled={index === 0} className="text-muted-foreground hover:text-foreground disabled:opacity-30">
+            <ArrowUp className="w-4 h-4" />
+          </button>
+          <button onClick={moveDown} disabled={index === total - 1} className="text-muted-foreground hover:text-foreground disabled:opacity-30">
+            <ArrowDown className="w-4 h-4" />
+          </button>
+          <button onClick={handleRemove} className="text-rose-500 hover:text-rose-600">
+            <Trash2 className="w-4 h-4" />
+          </button>
+          <button onClick={() => toggleSectionVisibility(`custom_${index}`)} className="text-muted-foreground hover:text-foreground">
+            {isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+      <RewritableTextarea
+        value={sec.content}
+        onChange={(val) => updateCustomSection(index, { ...sec, content: val })}
+        placeholder={`Content for ${sec.title || 'custom section'}`}
+        context={`Custom resume section: ${sec.title}`}
+      />
+    </div>
+  );
+};
+
 
 export default function BuilderPage() {
   const { id } = useParams();
@@ -232,8 +285,15 @@ export default function BuilderPage() {
     updateField('education_entries', edus);
   };
 
+  const addCustomSection = () => {
+    const secs = [...(parsedData.custom_sections || [])];
+    secs.push({ title: 'New Section', content: '' });
+    updateField('custom_sections', secs);
+  };
+
   const experienceItems = parsedData.structured_experience || [];
   const educationItems = parsedData.education_entries || [];
+  const customSectionsItems = parsedData.custom_sections || [];
 
   return (
     <div className="min-h-screen bg-background flex flex-col font-sans h-screen overflow-hidden">
@@ -367,6 +427,22 @@ export default function BuilderPage() {
                 />
               </div>
             </div>
+          </section>
+
+          <section className="space-y-4">
+            <div className="flex justify-between items-center border-t border-border pt-6">
+              <h2 className="text-lg font-bold">Custom Sections</h2>
+              <Button variant="outline" size="sm" onClick={addCustomSection} className="gap-2">
+                <Plus className="w-4 h-4" /> Add Custom Section
+              </Button>
+            </div>
+            {customSectionsItems.length > 0 && (
+              <div className="space-y-4">
+                {customSectionsItems.map((sec: any, index: number) => (
+                  <CustomSectionItem key={index} sec={sec} index={index} total={customSectionsItems.length} />
+                ))}
+              </div>
+            )}
           </section>
         </div>
 

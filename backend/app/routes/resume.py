@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm.attributes import flag_modified
 from ..database import get_db
 from ..models import models
 from ..schemas import schemas
@@ -143,6 +144,7 @@ def update_parsed_data(
         raise HTTPException(status_code=404, detail="Parsed data not found")
         
     parsed.parsed_json = req.parsed_json
+    flag_modified(parsed, "parsed_json")
     db.commit()
     db.refresh(parsed)
     return parsed
