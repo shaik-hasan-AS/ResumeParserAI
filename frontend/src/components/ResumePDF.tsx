@@ -614,6 +614,8 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
 
   const cleanUrl = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '');
 
+  const labels = parsedData?.section_labels || {};
+
   const isVisible = (sectionName: string) => {
     if (!parsedData?.visible_sections) return true;
     return parsedData.visible_sections[sectionName] !== false;
@@ -698,7 +700,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         {/* Summary Section */}
         {isVisible('summary') && summary && summary.trim().length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Professional Summary</Text>
+            <Text style={styles.sectionTitle}>{labels.summary || 'Professional Summary'}</Text>
             {renderRawBullets(summary)}
           </View>
         )}
@@ -706,7 +708,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         {/* Experience Section */}
         {isVisible('experience') && (structuredExperience?.length ? structuredExperience.length > 0 : experience) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Professional Experience</Text>
+            <Text style={styles.sectionTitle}>{labels.experience || 'Experience'}</Text>
             
             {structuredExperience && structuredExperience.length > 0 ? (
               structuredExperience.map((exp, i) => (
@@ -733,7 +735,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         {/* Education Section */}
         {isVisible('education') && (eduEntries.length > 0 || parsedData?.education) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Education</Text>
+            <Text style={styles.sectionTitle}>{labels.education || 'Education'}</Text>
             {eduEntries.length > 0 ? (
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               eduEntries.map((entry: any, i: number) => (
@@ -754,7 +756,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         {/* Projects Section */}
         {isVisible('projects') && projects && projects.trim().length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Projects</Text>
+            <Text style={styles.sectionTitle}>{labels.projects || 'Projects'}</Text>
             {renderProjects(projects)}
           </View>
         )}
@@ -762,7 +764,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         {/* Skills Section */}
         {isVisible('skills') && categorized && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Skills</Text>
+            <Text style={styles.sectionTitle}>{labels.skills || 'Skills'}</Text>
             {categorized.technical?.length > 0 && (
               <View style={styles.skillsGroup}>
                 <Text style={styles.skillsLabel}>Technical:</Text>
@@ -787,7 +789,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         {/* Certifications Section */}
         {isVisible('certifications') && certifications && certifications.trim().length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Certifications</Text>
+            <Text style={styles.sectionTitle}>{labels.certifications || 'Certifications'}</Text>
             {renderRawBullets(certifications)}
           </View>
         )}
@@ -795,7 +797,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         {/* Awards Section */}
         {isVisible('awards') && awards && awards.trim().length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Awards & Honors</Text>
+            <Text style={styles.sectionTitle}>{labels.awards || 'Awards & Honors'}</Text>
             {renderRawBullets(awards)}
           </View>
         )}
@@ -803,7 +805,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
         {/* Languages Section */}
         {isVisible('languages') && languages && languages.trim().length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Languages</Text>
+            <Text style={styles.sectionTitle}>{labels.languages || 'Languages'}</Text>
             {renderRawBullets(languages)}
           </View>
         )}

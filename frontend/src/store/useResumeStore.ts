@@ -8,15 +8,24 @@ interface Experience {
   bullet_points: string[];
 }
 
+interface EducationEntry {
+  id?: string;
+  degree: string;
+  institution: string;
+  year: string;
+}
+
 interface ParsedData {
   name?: string;
   email?: string;
   phone?: string;
   skills?: string[];
   education?: string;
+  education_entries?: EducationEntry[];
   summary?: string;
   structured_experience?: Experience[];
   visible_sections?: Record<string, boolean>;
+  section_labels?: Record<string, string>;
   [key: string]: any;
 }
 
@@ -26,7 +35,10 @@ interface ResumeStore {
   updateField: (field: keyof ParsedData, value: any) => void;
   updateExperience: (index: number, updatedExp: Experience) => void;
   reorderExperiences: (startIndex: number, endIndex: number) => void;
+  updateEducation: (index: number, updatedEdu: EducationEntry) => void;
+  reorderEducations: (startIndex: number, endIndex: number) => void;
   toggleSectionVisibility: (section: string) => void;
+  updateSectionLabel: (section: string, label: string) => void;
 }
 
 export const useResumeStore = create<ResumeStore>((set) => ({
@@ -54,6 +66,26 @@ export const useResumeStore = create<ResumeStore>((set) => ({
       parsedData: {
         ...state.parsedData,
         visible_sections: { ...currentVis, [section]: !isVisible }
+      }
+    };
+  }),
+  updateEducation: (index, updatedEdu) => set((state) => {
+    const edus = [...(state.parsedData.education_entries || [])];
+    edus[index] = updatedEdu;
+    return { parsedData: { ...state.parsedData, education_entries: edus } };
+  }),
+  reorderEducations: (startIndex, endIndex) => set((state) => {
+    const edus = Array.from(state.parsedData.education_entries || []);
+    const [removed] = edus.splice(startIndex, 1);
+    edus.splice(endIndex, 0, removed);
+    return { parsedData: { ...state.parsedData, education_entries: edus } };
+  }),
+  updateSectionLabel: (section, label) => set((state) => {
+    const labels = state.parsedData.section_labels || {};
+    return {
+      parsedData: {
+        ...state.parsedData,
+        section_labels: { ...labels, [section]: label }
       }
     };
   })

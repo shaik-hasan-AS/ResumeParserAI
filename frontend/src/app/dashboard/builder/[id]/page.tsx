@@ -2,14 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save, GripVertical, Plus, Trash2, Sparkles, Loader2, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Sparkles, Loader2, Eye, EyeOff, ArrowUp, ArrowDown, Edit2 } from 'lucide-react';
 import api from '@/lib/api';
 import dynamic from 'next/dynamic';
 import ResumePDF from '@/components/ResumePDF';
 import { useResumeStore } from '@/store/useResumeStore';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 
 const PDFViewer = dynamic(() => import('@react-pdf/renderer').then(mod => mod.PDFViewer), { ssr: false });
 
@@ -50,14 +47,8 @@ const RewritableTextarea = ({ value, onChange, placeholder, context, className }
   );
 };
 
-const SortableExperienceItem = ({ id, exp, index }: { id: string, exp: any, index: number }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
-  const { updateExperience, parsedData } = useResumeStore();
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+const ExperienceItem = ({ exp, index, total }: { exp: any, index: number, total: number }) => {
+  const { updateExperience, reorderExperiences, parsedData } = useResumeStore();
 
   const handleRemove = () => {
     const exps = [...(parsedData.structured_experience || [])];
@@ -65,10 +56,23 @@ const SortableExperienceItem = ({ id, exp, index }: { id: string, exp: any, inde
     useResumeStore.getState().updateField('structured_experience', exps);
   };
 
+  const moveUp = () => {
+    if (index > 0) reorderExperiences(index, index - 1);
+  };
+
+  const moveDown = () => {
+    if (index < total - 1) reorderExperiences(index, index + 1);
+  };
+
   return (
-    <div ref={setNodeRef} style={style} className="bg-muted p-4 rounded-xl border border-border mb-3 flex gap-3 group">
-      <div {...attributes} {...listeners} title="Drag to reorder" className="cursor-grab text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 p-1 rounded-md mt-2">
-        <GripVertical className="w-5 h-5" />
+    <div className="bg-muted p-4 rounded-xl border border-border mb-3 flex gap-3 group">
+      <div className="flex flex-col gap-1 mt-2 text-muted-foreground shrink-0">
+        <button onClick={moveUp} disabled={index === 0} className="hover:text-foreground hover:bg-muted-foreground/10 p-1 rounded-md disabled:opacity-30">
+          <ArrowUp className="w-4 h-4" />
+        </button>
+        <button onClick={moveDown} disabled={index === total - 1} className="hover:text-foreground hover:bg-muted-foreground/10 p-1 rounded-md disabled:opacity-30">
+          <ArrowDown className="w-4 h-4" />
+        </button>
       </div>
       <div className="flex-1 space-y-3">
         <div className="flex gap-2">
@@ -110,6 +114,67 @@ const SortableExperienceItem = ({ id, exp, index }: { id: string, exp: any, inde
   );
 };
 
+const EducationItem = ({ edu, index, total }: { edu: any, index: number, total: number }) => {
+  const { updateEducation, reorderEducations, parsedData } = useResumeStore();
+
+  const handleRemove = () => {
+    const edus = [...(parsedData.education_entries || [])];
+    edus.splice(index, 1);
+    useResumeStore.getState().updateField('education_entries', edus);
+  };
+
+  const moveUp = () => {
+    if (index > 0) reorderEducations(index, index - 1);
+  };
+
+  const moveDown = () => {
+    if (index < total - 1) reorderEducations(index, index + 1);
+  };
+
+  return (
+    <div className="bg-muted p-4 rounded-xl border border-border mb-3 flex gap-3 group">
+      <div className="flex flex-col gap-1 mt-2 text-muted-foreground shrink-0">
+        <button onClick={moveUp} disabled={index === 0} className="hover:text-foreground hover:bg-muted-foreground/10 p-1 rounded-md disabled:opacity-30">
+          <ArrowUp className="w-4 h-4" />
+        </button>
+        <button onClick={moveDown} disabled={index === total - 1} className="hover:text-foreground hover:bg-muted-foreground/10 p-1 rounded-md disabled:opacity-30">
+          <ArrowDown className="w-4 h-4" />
+        </button>
+      </div>
+      <div className="flex-1 space-y-3">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={edu.degree || ''}
+            onChange={(e) => updateEducation(index, { ...edu, degree: e.target.value })}
+            placeholder="Degree / Certificate"
+            className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+          />
+          <button onClick={handleRemove} className="p-2 text-rose-500 hover:bg-rose-500/10 rounded-lg">
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={edu.institution || ''}
+            onChange={(e) => updateEducation(index, { ...edu, institution: e.target.value })}
+            placeholder="Institution"
+            className="flex-[2] px-3 py-2 bg-background border border-border rounded-lg text-sm"
+          />
+          <input
+            type="text"
+            value={edu.year || ''}
+            onChange={(e) => updateEducation(index, { ...edu, year: e.target.value })}
+            placeholder="Year"
+            className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 export default function BuilderPage() {
   const { id } = useParams();
@@ -122,24 +187,15 @@ export default function BuilderPage() {
 
   const [theme, setTheme] = useState<'modern' | 'harvard' | 'executive'>('modern');
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await api.get(`/api/resume/${id}/parsed`);
         const data = response.data.parsed_json || {};
         
-        // Add unique IDs to experiences for dnd-kit
-        if (data.structured_experience) {
-          data.structured_experience = data.structured_experience.map((e: any, i: number) => ({
-            ...e,
-            id: e.id || `exp-${i}-${Date.now()}`
-          }));
-        }
+        // Make sure arrays exist
+        if (!data.structured_experience) data.structured_experience = [];
+        if (!data.education_entries) data.education_entries = [];
         
         setParsedData(data);
       } catch (err) {
@@ -164,28 +220,20 @@ export default function BuilderPage() {
     }
   };
 
-  const handleDragEnd = (event: any) => {
-    const { active, over } = event;
-    if (active.id !== over.id) {
-      const exps = parsedData.structured_experience || [];
-      const oldIndex = exps.findIndex((x) => x.id === active.id);
-      const newIndex = exps.findIndex((x) => x.id === over.id);
-      reorderExperiences(oldIndex, newIndex);
-    }
-  };
-
   const addExperience = () => {
     const exps = [...(parsedData.structured_experience || [])];
-    exps.push({
-      id: `exp-${exps.length}-${Date.now()}`,
-      job_title: '', company: '', dates: '', bullet_points: []
-    });
+    exps.push({ job_title: '', company: '', dates: '', bullet_points: [] });
     updateField('structured_experience', exps);
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading builder...</div>;
+  const addEducation = () => {
+    const edus = [...(parsedData.education_entries || [])];
+    edus.push({ degree: '', institution: '', year: '' });
+    updateField('education_entries', edus);
+  };
 
   const experienceItems = parsedData.structured_experience || [];
+  const educationItems = parsedData.education_entries || [];
 
   return (
     <div className="min-h-screen bg-background flex flex-col font-sans h-screen overflow-hidden">
@@ -228,18 +276,21 @@ export default function BuilderPage() {
 
           <section className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold">Experience</h2>
+              <input
+                type="text"
+                value={parsedData.section_labels?.experience || 'Experience'}
+                onChange={(e) => useResumeStore.getState().updateSectionLabel('experience', e.target.value)}
+                className="text-lg font-bold bg-transparent border-b border-transparent hover:border-border focus:border-border focus:outline-none placeholder-muted-foreground w-1/2"
+              />
               <Button variant="outline" size="sm" onClick={addExperience} className="gap-2">
                 <Plus className="w-4 h-4" /> Add Role
               </Button>
             </div>
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={experienceItems.map((e: any) => e.id)} strategy={verticalListSortingStrategy}>
-                {experienceItems.map((exp: any, index: number) => (
-                  <SortableExperienceItem key={exp.id} id={exp.id} exp={exp} index={index} />
-                ))}
-              </SortableContext>
-            </DndContext>
+            <div>
+              {experienceItems.map((exp: any, index: number) => (
+                <ExperienceItem key={index} exp={exp} index={index} total={experienceItems.length} />
+              ))}
+            </div>
           </section>
 
           <section className="space-y-4">
@@ -247,21 +298,43 @@ export default function BuilderPage() {
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-sm font-semibold text-muted-foreground">Education</label>
-                  <button onClick={() => toggleSectionVisibility('education')} className="text-muted-foreground hover:text-foreground">
-                    {isVisible('education') ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                  </button>
+                  <input
+                    type="text"
+                    value={parsedData.section_labels?.education || 'Education'}
+                    onChange={(e) => useResumeStore.getState().updateSectionLabel('education', e.target.value)}
+                    className="text-sm font-semibold text-muted-foreground bg-transparent border-b border-transparent hover:border-border focus:border-border focus:outline-none"
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" onClick={addEducation} className="h-6 text-xs px-2">
+                      <Plus className="w-3 h-3 mr-1" /> Add
+                    </Button>
+                    <button onClick={() => toggleSectionVisibility('education')} className="text-muted-foreground hover:text-foreground">
+                      {isVisible('education') ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
+                {educationItems.length > 0 && (
+                  <div className="mb-3">
+                    {educationItems.map((edu: any, index: number) => (
+                      <EducationItem key={index} edu={edu} index={index} total={educationItems.length} />
+                    ))}
+                  </div>
+                )}
                 <RewritableTextarea
                   value={parsedData.education || ''}
                   onChange={(val) => updateField('education', val)}
-                  placeholder="Education Details"
+                  placeholder="Additional Education Details (Optional)"
                   context="Education section"
                 />
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-sm font-semibold text-muted-foreground">Projects</label>
+                  <input
+                    type="text"
+                    value={parsedData.section_labels?.projects || 'Projects'}
+                    onChange={(e) => useResumeStore.getState().updateSectionLabel('projects', e.target.value)}
+                    className="text-sm font-semibold text-muted-foreground bg-transparent border-b border-transparent hover:border-border focus:border-border focus:outline-none"
+                  />
                   <button onClick={() => toggleSectionVisibility('projects')} className="text-muted-foreground hover:text-foreground">
                     {isVisible('projects') ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </button>
@@ -275,7 +348,12 @@ export default function BuilderPage() {
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-sm font-semibold text-muted-foreground">Certifications</label>
+                  <input
+                    type="text"
+                    value={parsedData.section_labels?.certifications || 'Certifications'}
+                    onChange={(e) => useResumeStore.getState().updateSectionLabel('certifications', e.target.value)}
+                    className="text-sm font-semibold text-muted-foreground bg-transparent border-b border-transparent hover:border-border focus:border-border focus:outline-none"
+                  />
                   <button onClick={() => toggleSectionVisibility('certifications')} className="text-muted-foreground hover:text-foreground">
                     {isVisible('certifications') ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </button>
