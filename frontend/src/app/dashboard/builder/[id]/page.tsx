@@ -200,8 +200,6 @@ export default function BuilderPage() {
             </DndContext>
           </section>
 
-          </section>
-
           <section className="space-y-4">
             <h2 className="text-lg font-bold">Additional Sections</h2>
             <div className="space-y-4">
