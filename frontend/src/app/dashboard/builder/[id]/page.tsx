@@ -233,11 +233,15 @@ const CustomSectionItem = ({ sec, index, total }: { sec: any, index: number, tot
 
 
 const SectionOrderEditor = () => {
-  const { parsedData, reorderGlobalSections, toggleSectionVisibility } = useResumeStore();
-  const order: string[] = parsedData.section_order?.length ? parsedData.section_order : DEFAULT_SECTION_ORDER;
+  const { parsedData, updateField, toggleSectionVisibility } = useResumeStore();
+
+  const DEFAULT = ['summary', 'experience', 'education', 'projects', 'skills', 'certifications', 'awards', 'languages', 'custom_sections'];
   const labels = parsedData.section_labels || {};
 
-  const FALLBACK_LABELS: Record<string, string> = {
+  // Always work with a fresh independent copy — never mutate state directly
+  const order: string[] = (parsedData.section_order?.length ? parsedData.section_order : DEFAULT).slice();
+
+  const LABELS: Record<string, string> = {
     summary: 'Professional Summary',
     experience: 'Experience',
     education: 'Education',
@@ -249,12 +253,18 @@ const SectionOrderEditor = () => {
     custom_sections: 'Custom Sections',
   };
 
-  const getLabel = (key: string) => labels[key] || FALLBACK_LABELS[key] || key;
+  const getLabel = (key: string) => labels[key] || LABELS[key] || key;
+
+  const swap = (a: number, b: number) => {
+    const next = order.slice(); // fresh copy
+    [next[a], next[b]] = [next[b], next[a]]; // simple swap — no splice bug possible
+    updateField('section_order', next);
+  };
 
   return (
     <section className="space-y-4">
       <h2 className="text-lg font-bold">Section Layout Order</h2>
-      <p className="text-xs text-muted-foreground">Drag sections up/down to reorder them in the PDF.</p>
+      <p className="text-xs text-muted-foreground">Reorder sections in the PDF using the arrows.</p>
       <div className="bg-muted p-2 rounded-xl border border-border">
         {order.map((key, index) => {
           const hidden = parsedData.visible_sections?.[key] === false;
@@ -267,7 +277,7 @@ const SectionOrderEditor = () => {
               <div className="flex items-center gap-1">
                 <button
                   type="button"
-                  onClick={() => { if (index > 0) reorderGlobalSections(index, index - 1); }}
+                  onClick={() => swap(index, index - 1)}
                   disabled={index === 0}
                   className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 rounded disabled:opacity-30"
                 >
@@ -275,7 +285,7 @@ const SectionOrderEditor = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { if (index < order.length - 1) reorderGlobalSections(index, index + 1); }}
+                  onClick={() => swap(index, index + 1)}
                   disabled={index === order.length - 1}
                   className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 rounded disabled:opacity-30"
                 >
@@ -286,7 +296,6 @@ const SectionOrderEditor = () => {
                     type="button"
                     onClick={() => toggleSectionVisibility(key)}
                     className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 rounded"
-                    title={hidden ? 'Show section' : 'Hide section'}
                   >
                     {hidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
