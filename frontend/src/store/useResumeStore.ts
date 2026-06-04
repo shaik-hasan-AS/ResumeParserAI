@@ -67,7 +67,7 @@ export const useResumeStore = create<ResumeStore>((set) => ({
     addIds(data.structured_experience || []);
     addIds(data.education_entries || []);
     addIds(data.custom_sections || []);
-    if (!data.section_order) data.section_order = DEFAULT_SECTION_ORDER;
+    if (!data.section_order || data.section_order.length === 0) data.section_order = [...DEFAULT_SECTION_ORDER];
     set({ parsedData: data });
   },
   updateField: (field, value) => set((state) => ({
@@ -127,7 +127,8 @@ export const useResumeStore = create<ResumeStore>((set) => ({
     };
   }),
   reorderGlobalSections: (startIndex, endIndex) => set((state) => {
-    const order = Array.from(state.parsedData.section_order || DEFAULT_SECTION_ORDER);
+    const order = [...(state.parsedData.section_order?.length ? state.parsedData.section_order : DEFAULT_SECTION_ORDER)];
+    if (startIndex < 0 || endIndex < 0 || startIndex >= order.length || endIndex >= order.length) return {};
     const [removed] = order.splice(startIndex, 1);
     order.splice(endIndex, 0, removed);
     return { parsedData: { ...state.parsedData, section_order: order } };

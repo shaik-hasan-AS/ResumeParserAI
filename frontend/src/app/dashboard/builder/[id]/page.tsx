@@ -231,46 +231,64 @@ const CustomSectionItem = ({ sec, index, total }: { sec: any, index: number, tot
 
 
 
+
 const SectionOrderEditor = () => {
   const { parsedData, reorderGlobalSections, toggleSectionVisibility } = useResumeStore();
-  const order = parsedData.section_order || DEFAULT_SECTION_ORDER;
+  const order: string[] = parsedData.section_order?.length ? parsedData.section_order : DEFAULT_SECTION_ORDER;
   const labels = parsedData.section_labels || {};
 
-  const getLabel = (sec: string) => {
-    const fallbacks: Record<string, string> = {
-      summary: 'Professional Summary',
-      experience: 'Experience',
-      education: 'Education',
-      projects: 'Projects',
-      skills: 'Skills',
-      certifications: 'Certifications',
-      awards: 'Awards & Honors',
-      languages: 'Languages',
-      custom_sections: 'Custom Sections',
-    };
-    return labels[sec] || fallbacks[sec] || sec.charAt(0).toUpperCase() + sec.slice(1);
+  const FALLBACK_LABELS: Record<string, string> = {
+    summary: 'Professional Summary',
+    experience: 'Experience',
+    education: 'Education',
+    projects: 'Projects',
+    skills: 'Skills',
+    certifications: 'Certifications',
+    awards: 'Awards & Honors',
+    languages: 'Languages',
+    custom_sections: 'Custom Sections',
   };
+
+  const getLabel = (key: string) => labels[key] || FALLBACK_LABELS[key] || key;
 
   return (
     <section className="space-y-4">
       <h2 className="text-lg font-bold">Section Layout Order</h2>
-      <p className="text-xs text-muted-foreground">Reorder sections across your entire resume PDF.</p>
+      <p className="text-xs text-muted-foreground">Drag sections up/down to reorder them in the PDF.</p>
       <div className="bg-muted p-2 rounded-xl border border-border">
-        {order.map((sec, index) => {
-          const isVisible = parsedData.visible_sections?.[sec] !== false;
+        {order.map((key, index) => {
+          const hidden = parsedData.visible_sections?.[key] === false;
           return (
-            <div key={sec} className="flex items-center justify-between py-2 px-2 border-b border-border/50 last:border-0 hover:bg-background/50 rounded-lg transition-colors">
-              <span className="text-sm font-semibold">{getLabel(sec)}</span>
+            <div key={key} className="flex items-center justify-between py-2 px-2 border-b border-border/50 last:border-0 hover:bg-background/50 rounded-lg transition-colors">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground w-4 text-center font-mono">{index + 1}</span>
+                <span className={`text-sm font-semibold ${hidden ? 'line-through text-muted-foreground/50' : ''}`}>{getLabel(key)}</span>
+              </div>
               <div className="flex items-center gap-1">
-                <button type="button" onClick={() => { if(index > 0) reorderGlobalSections(index, index - 1); }} disabled={index === 0} className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 rounded disabled:opacity-30">
+                <button
+                  type="button"
+                  onClick={() => { if (index > 0) reorderGlobalSections(index, index - 1); }}
+                  disabled={index === 0}
+                  className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 rounded disabled:opacity-30"
+                >
                   <ArrowUp className="w-4 h-4" />
                 </button>
-                <button type="button" onClick={() => { if(index < order.length - 1) reorderGlobalSections(index, index - 1 + 2); }} disabled={index === order.length - 1} className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 rounded disabled:opacity-30">
+                <button
+                  type="button"
+                  onClick={() => { if (index < order.length - 1) reorderGlobalSections(index, index + 1); }}
+                  disabled={index === order.length - 1}
+                  className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 rounded disabled:opacity-30"
+                >
                   <ArrowDown className="w-4 h-4" />
                 </button>
-                {sec !== 'custom_sections' && (
-                  <button type="button" onClick={() => toggleSectionVisibility(sec)} className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 rounded">
-                    {isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                {key !== 'custom_sections' && (
+                  <button
+                    type="button"
+                    onClick={() => toggleSectionVisibility(key)}
+                    className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 rounded"
+                    title={hidden ? 'Show section' : 'Hide section'}
+                  >
+                    {hidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 )}
               </div>
@@ -281,6 +299,7 @@ const SectionOrderEditor = () => {
     </section>
   );
 };
+
 
 
 export default function BuilderPage() {

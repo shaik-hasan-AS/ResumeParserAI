@@ -143,17 +143,26 @@ export default function Dashboard() {
   const [targetRole, setTargetRole] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resumes, setResumes] = useState<Resume[]>([]);
-  const [loadingResumes, setLoadingResumes] = useState(true);
+  const [resumes, setResumes] = useState<Resume[]>(() => {
+    // Restore from cache immediately — no flash on navigation
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = sessionStorage.getItem('dashboard_resumes');
+        if (cached) return JSON.parse(cached);
+      } catch { /* ignore */ }
+    }
+    return [];
+  });
+  const [loadingResumes, setLoadingResumes] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('dashboard_resumes');
+    }
+    return true;
+  });
   const router = useRouter();
 
   useEffect(() => {
     const fetchResumes = async () => {
-      // Seed from cache immediately so the list doesn't flash empty on navigation
-      const cached = sessionStorage.getItem('dashboard_resumes');
-      if (cached) {
-        try { setResumes(JSON.parse(cached)); setLoadingResumes(false); } catch { /* ignore */ }
-      }
       try {
         const response = await api.get('/api/resume/');
         setResumes(response.data);
@@ -166,6 +175,7 @@ export default function Dashboard() {
     };
     fetchResumes();
   }, []);
+
 
   const handleUpload = async () => {
     if (!file) return;
