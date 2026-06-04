@@ -173,7 +173,9 @@ export default function BuilderPage() {
               <input type="text" value={parsedData.name || ''} onChange={(e) => updateField('name', e.target.value)} placeholder="Full Name" className="px-3 py-2 border border-border rounded-lg bg-muted text-sm" />
               <input type="text" value={parsedData.email || ''} onChange={(e) => updateField('email', e.target.value)} placeholder="Email" className="px-3 py-2 border border-border rounded-lg bg-muted text-sm" />
               <input type="text" value={parsedData.phone || ''} onChange={(e) => updateField('phone', e.target.value)} placeholder="Phone" className="px-3 py-2 border border-border rounded-lg bg-muted text-sm" />
-              <input type="text" value={parsedData.linkedin || ''} onChange={(e) => updateField('linkedin', e.target.value)} placeholder="LinkedIn" className="px-3 py-2 border border-border rounded-lg bg-muted text-sm" />
+              <input type="text" value={parsedData.location || ''} onChange={(e) => updateField('location', e.target.value)} placeholder="Location (City, State)" className="px-3 py-2 border border-border rounded-lg bg-muted text-sm" />
+              <input type="text" value={parsedData.linkedin || ''} onChange={(e) => updateField('linkedin', e.target.value)} placeholder="LinkedIn URL" className="px-3 py-2 border border-border rounded-lg bg-muted text-sm" />
+              <input type="text" value={parsedData.github || ''} onChange={(e) => updateField('github', e.target.value)} placeholder="GitHub URL" className="px-3 py-2 border border-border rounded-lg bg-muted text-sm" />
             </div>
             <textarea
               value={parsedData.summary || ''} onChange={(e) => updateField('summary', e.target.value)}
@@ -198,8 +200,37 @@ export default function BuilderPage() {
             </DndContext>
           </section>
 
-          {/* Additional sections like Education and Skills could be added here similarly */}
-          
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-lg font-bold">Additional Sections</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-semibold text-muted-foreground mb-1 block">Education</label>
+                <textarea
+                  value={parsedData.education || ''} onChange={(e) => updateField('education', e.target.value)}
+                  placeholder="Education Details"
+                  className="w-full h-24 px-3 py-2 border border-border rounded-lg bg-muted text-sm custom-scrollbar"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-muted-foreground mb-1 block">Projects</label>
+                <textarea
+                  value={parsedData.projects || ''} onChange={(e) => updateField('projects', e.target.value)}
+                  placeholder="Projects Details"
+                  className="w-full h-24 px-3 py-2 border border-border rounded-lg bg-muted text-sm custom-scrollbar"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-muted-foreground mb-1 block">Certifications</label>
+                <textarea
+                  value={parsedData.certifications || ''} onChange={(e) => updateField('certifications', e.target.value)}
+                  placeholder="Certifications Details"
+                  className="w-full h-20 px-3 py-2 border border-border rounded-lg bg-muted text-sm custom-scrollbar"
+                />
+              </div>
+            </div>
+          </section>
         </div>
 
         {/* Right Pane: PDF Preview */}
