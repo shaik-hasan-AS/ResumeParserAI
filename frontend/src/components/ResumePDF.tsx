@@ -447,9 +447,10 @@ interface ResumePDFProps {
   aiRewrites?: Array<{ original: string; improved: string }>;
   structuredExperience?: ExperienceEntry[];
   theme?: 'modern' | 'harvard' | 'executive';
+  aiSummary?: string;
 }
 
-const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites, structuredExperience, theme = 'modern' }) => {
+const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites, structuredExperience, theme = 'modern', aiSummary }) => {
   const styles = themeStyles[theme];
   const getVal = (key: string) => overrides[key] || parsedData?.[key];
 
@@ -460,7 +461,7 @@ const ResumePDF: React.FC<ResumePDFProps> = ({ parsedData, overrides, aiRewrites
   const github = getVal('github');
   const location = getVal('location');
 
-  const summary = getVal('summary');
+  const summary = aiSummary || getVal('summary');
   const projects = getVal('projects');
   const certifications = getVal('certifications');
   const languages = getVal('languages');

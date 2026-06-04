@@ -184,6 +184,19 @@ def generate_resume_feedback(
         feedback.feedback_text = feedback_result["feedback_text"]
         feedback.score = feedback_result["score"]
         
+    # Also update the parsed data's summary with the new professional summary
+    try:
+        import json
+        parsed_fb = json.loads(feedback_result["feedback_text"])
+        if parsed_fb.get("professional_summary"):
+            # Update the parsed JSON in memory
+            new_parsed_json = dict(parsed.parsed_json) if parsed.parsed_json else {}
+            new_parsed_json["summary"] = parsed_fb["professional_summary"]
+            # Reassign to trigger SQLAlchemy JSON update
+            parsed.parsed_json = new_parsed_json
+    except Exception as e:
+        print(f"Error updating professional summary: {e}")
+        
     db.commit()
     db.refresh(feedback)
     

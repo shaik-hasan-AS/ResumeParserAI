@@ -20,6 +20,7 @@ class ResumeEvaluation(BaseModel):
     score: int = Field(description="ATS match score from 0-100.")
     keyword_match_rate: int = Field(description="Percentage (0-100) of how well the skills match the required keywords.")
     summary: str = Field(description="Overall summary string evaluating their fit for the role.")
+    professional_summary: str = Field(description="A 2-3 sentence professional summary tailored to the target role, written in the third person or implied first person (e.g., 'Results-driven Software Engineer...'), suitable to be placed at the very top of the candidate's resume. Do not use bullet points.")
     strengths: List[str] = Field(description="List of strengths found in the resume.")
     weaknesses: List[str] = Field(description="List of weaknesses or areas to improve.")
     missing_skills: List[str] = Field(description="Suggested skills to add for the role.")
@@ -100,6 +101,7 @@ def generate_feedback(parsed_data: dict, raw_text: str, target_role: str = None,
                 "score": 0,
                 "keyword_match_rate": 0,
                 "summary": f"Error calling Gemini API: {str(e)}",
+                "professional_summary": "",
                 "strengths": [],
                 "weaknesses": [],
                 "missing_skills": [],
