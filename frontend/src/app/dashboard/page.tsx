@@ -23,7 +23,7 @@ function scoreColor(score: number) {
 
 // ── Analytics Board ──────────────────────────────────────────────────────────
 function ATSAnalyticsBoard({ resumes }: { resumes: Resume[] }) {
-  const scored = resumes.filter(r => r.feedback?.score !== undefined && r.feedback?.score !== null);
+  const scored = resumes.filter(r => r.feedback?.score !== undefined && r.feedback?.score !== null && r.feedback.score > 0);
   if (scored.length === 0) return null;
 
   const scores = scored.map(r => r.feedback!.score);
@@ -344,9 +344,13 @@ export default function Dashboard() {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          {resume.feedback ? (
+                          {resume.feedback && resume.feedback.score > 0 ? (
                             <div className={`flex flex-col items-center justify-center w-10 h-10 rounded-full border-2 ${scoreColor(resume.feedback.score).border} ${scoreColor(resume.feedback.score).bg}`}>
                               <span className={`text-xs font-bold ${scoreColor(resume.feedback.score).text}`}>{resume.feedback.score}</span>
+                            </div>
+                          ) : resume.feedback && resume.feedback.score === 0 ? (
+                            <div className="flex flex-col items-center justify-center w-10 h-10 rounded-full border-2 border-rose-500/30 bg-rose-500/15">
+                              <span className="text-[10px] font-bold text-rose-400">ERR</span>
                             </div>
                           ) : (
                             <div className="p-2 bg-primary/10 rounded-lg">

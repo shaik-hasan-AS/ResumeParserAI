@@ -10,11 +10,12 @@ MyAIProfile is an advanced AI-powered Applicant Tracking System (ATS) simulator 
 ## ✨ Features
 
 - **Google OAuth Integration:** Secure and seamless user authentication.
-- **Advanced Resume Parsing:** Upload resumes in PDF or Image formats.
+- **Advanced Resume Parsing:** Robust parsing of complex fields (education, experience, contact info, projects) from resumes in PDF or Image formats.
 - **Built-in OCR Engine:** Uses Tesseract OCR to accurately read text from scanned PDFs and image-based resumes.
-- **AI-Powered ATS Scoring:** Simulates a strict ATS and recruiter review process using `gemini-2.5-flash`.
+- **AI-Powered ATS Scoring & Dashboard:** Visual ATS score analytics dashboard to track resume performance, simulating a strict ATS and recruiter review process using `gemini-2.5-flash`.
 - **Actionable Insights:** Get a detailed Action Plan, including Keyword Match Rates and "Before & After" rewrites for weak bullet points.
-- **Responsive & Modern UI:** Built with Next.js, Tailwind CSS, and Shadcn UI components for a premium user experience.
+- **Resume Builder & PDF Export:** Export your optimized resume to a professional, ATS-friendly PDF. Choose from premium, corporate-styled templates like 'Modern', 'Harvard', and 'Executive'.
+- **Responsive & Modern UI:** Built with Next.js, Tailwind CSS, and Shadcn UI components for a premium user experience. Fully supports both light and dark modes with a commercial, professional color palette.
 
 ---
 
@@ -102,15 +103,18 @@ The frontend is optimized for deployment on Vercel. Connect your repository to V
 ## 🛠️ Tech Stack
 
 **Frontend:**
-- Next.js (React)
-- Tailwind CSS
+- Next.js 15 (React 19)
+- Tailwind CSS v4
 - Lucide React (Icons)
 - Shadcn UI (Components)
+- Framer Motion (Animations)
+- React PDF Renderer (Resume Export)
 
 **Backend:**
 - Python 3.11
 - FastAPI
-- PyMuPDF (`fitz`) - PDF processing
+- PyMuPDF (`fitz`), `pdfplumber`, `pdfminer.six` - PDF processing
 - Pytesseract - OCR Engine
+- spaCy - NLP Processing
 - Google GenAI SDK (`gemini-2.5-flash`) - AI Parsing & Feedback
-- SQLModel / SQLite - Database
+- SQLModel / SQLite & PostgreSQL - Database
