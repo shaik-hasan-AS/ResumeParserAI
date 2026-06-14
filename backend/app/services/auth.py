@@ -5,7 +5,7 @@ import os
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
-SECRET_KEY = "your-secret-key-for-local-dev"
+SECRET_KEY = os.environ.get("SECRET_KEY", "your-secret-key-for-local-dev")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

@@ -60,7 +60,7 @@ The project is split into a separated frontend and backend architecture:
    ALGORITHM=HS256
    ACCESS_TOKEN_EXPIRE_MINUTES=30
    GOOGLE_CLIENT_ID=your_google_client_id
-   # Add other required variables as needed
+   DATABASE_URL=postgresql+psycopg2://user:password@localhost/dbname
    ```
 5. Run the server:
    ```bash

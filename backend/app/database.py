@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 SQLALCHEMY_DATABASE_URL = os.environ.get(
     "DATABASE_URL",
-    "postgresql+psycopg2://hasan@/vinento?host=/var/run/postgresql"
+    "postgresql+psycopg2://user:password@localhost/dbname"
 )
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
