@@ -11,6 +11,16 @@ from app.routes import auth, resume, jobs
 # Create database tables safely so app doesn't crash on startup if DB is down
 try:
     Base.metadata.create_all(bind=engine)
+    # HOTFIX: Since Alembic migration failed due to create_all creating tables out of band,
+    # we manually ensure the role column exists.
+    from sqlalchemy import text
+    with engine.begin() as conn:
+        try:
+            conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR"))
+            print("Successfully added role column")
+        except Exception:
+            # Column probably already exists
+            pass
     print("Database tables created successfully or already exist.")
 except Exception as e:
     print(f"Error creating database tables: {e}")
