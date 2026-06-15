@@ -6,14 +6,40 @@ class UserCreate(BaseModel):
     name: str
     email: EmailStr
     password: str
+    role: Optional[str] = "candidate"
 
 class GoogleAuthRequest(BaseModel):
     credential: str
+    role: Optional[str] = "candidate"
 
 class UserResponse(BaseModel):
     id: str
     name: str
     email: str
+    role: str
+    class Config:
+        from_attributes = True
+
+class JobListingCreate(BaseModel):
+    title: str
+    description: str
+
+class JobListingResponse(BaseModel):
+    id: str
+    recruiter_id: str
+    title: str
+    description: str
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class ApplicationResponse(BaseModel):
+    id: str
+    job_id: str
+    resume_id: str
+    match_score: Optional[int]
+    match_summary: Optional[str]
+    applied_at: datetime
     class Config:
         from_attributes = True
 

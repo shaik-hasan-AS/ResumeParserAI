@@ -19,6 +19,7 @@ if config.config_file_name is not None:
 
 import os
 from app.database import Base, SQLALCHEMY_DATABASE_URL
+import app.models.models  # Import models so Base.metadata is populated
 # add your model's MetaData object here
 # for 'autogenerate' support
 target_metadata = Base.metadata

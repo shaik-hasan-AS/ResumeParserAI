@@ -24,6 +24,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState<'candidate' | 'recruiter'>('candidate');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,9 +42,16 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         });
         localStorage.setItem('token', response.data.access_token);
-        router.push('/dashboard');
+        
+        // Fetch user info to route properly
+        const userRes = await api.get('/api/auth/me', { headers: { Authorization: `Bearer ${response.data.access_token}` } });
+        if (userRes.data.role === 'recruiter') {
+            router.push('/dashboard/recruiter');
+        } else {
+            router.push('/dashboard');
+        }
       } else {
-        await api.post('/api/auth/register', { name, email, password });
+        await api.post('/api/auth/register', { name, email, password, role });
         // Auto-login after register or switch to login mode
         const formData = new URLSearchParams();
         formData.append('username', email);
@@ -52,7 +60,11 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         });
         localStorage.setItem('token', loginResponse.data.access_token);
-        router.push('/dashboard');
+        if (role === 'recruiter') {
+            router.push('/dashboard/recruiter');
+        } else {
+            router.push('/dashboard');
+        }
       }
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } }, message?: string };
@@ -64,9 +76,15 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
 
   const handleGoogleSuccess = async (credentialResponse: { credential?: string }) => {
     try {
-      const response = await api.post('/api/auth/google', { credential: credentialResponse.credential });
+      const response = await api.post('/api/auth/google', { credential: credentialResponse.credential, role: mode === 'register' ? role : undefined });
       localStorage.setItem('token', response.data.access_token);
-      router.push('/dashboard');
+      
+      const userRes = await api.get('/api/auth/me', { headers: { Authorization: `Bearer ${response.data.access_token}` } });
+      if (userRes.data.role === 'recruiter') {
+          router.push('/dashboard/recruiter');
+      } else {
+          router.push('/dashboard');
+      }
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } }, message?: string };
       setError(err.response?.data?.detail || err.message || 'Google Auth Failed');
@@ -140,8 +158,37 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
             <motion.div 
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              className="space-y-2 overflow-hidden"
+              className="space-y-4 overflow-hidden mb-4"
             >
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs uppercase tracking-wider font-semibold">I am a...</Label>
+                <div className="flex gap-4 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setRole('candidate')}
+                    className={`flex-1 py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                      role === 'candidate' 
+                        ? 'border-primary bg-primary/10 text-primary' 
+                        : 'border-border bg-card text-muted-foreground hover:bg-muted'
+                    }`}
+                  >
+                    Candidate
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole('recruiter')}
+                    className={`flex-1 py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                      role === 'recruiter' 
+                        ? 'border-primary bg-primary/10 text-primary' 
+                        : 'border-border bg-card text-muted-foreground hover:bg-muted'
+                    }`}
+                  >
+                    Recruiter
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
               <Label htmlFor="name" className="text-muted-foreground text-xs uppercase tracking-wider font-semibold">Full Name</Label>
               <Input 
                 id="name" 
@@ -150,6 +197,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
                 required={mode === 'register'} 
                 className="bg-muted border-border text-foreground rounded-lg focus-visible:ring-primary focus-visible:border-primary h-11" 
               />
+              </div>
             </motion.div>
           )}
 

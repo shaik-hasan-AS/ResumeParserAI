@@ -213,6 +213,9 @@ export default function Dashboard() {
             <p className="text-muted-foreground mt-1 text-sm">Upload your resume to get instant ATS feedback.</p>
           </div>
           <div className="flex items-center gap-4">
+            <Button variant="outline" className="rounded-xl px-4 border-primary/30 text-primary hover:bg-primary/10" onClick={() => router.push('/dashboard/jobs')}>
+              View Jobs Board
+            </Button>
             <ThemeToggle />
             <Button variant="ghost" className="rounded-xl px-6 text-muted-foreground hover:bg-muted/50 hover:text-foreground" onClick={() => { localStorage.removeItem('token'); router.push('/'); }}>
               Logout

@@ -238,5 +238,53 @@ def generate_mock_interview(parsed_data: dict, raw_text: str, target_role: str =
             )
         )
         return response.text
-    except Exception as e:
         return json.dumps({"questions": [{"question": f"Error generating interview: {str(e)}", "type": "error", "expected_answer_hints": []}]})
+
+class CandidateEvaluation(BaseModel):
+    match_score: int = Field(description="Match score out of 100 based on the candidate's fit for the job description.")
+    match_summary: str = Field(description="A 2-3 sentence summary explaining why the candidate is or isn't a good fit, based on their skills and the job requirements.")
+
+def evaluate_candidate_fit(parsed_data: dict, job_description: str) -> dict:
+    # Redact PII to avoid bias or privacy issues
+    redacted_parsed_data = parsed_data.copy()
+    if redacted_parsed_data.get("name"):
+        redacted_parsed_data["name"] = "[REDACTED NAME]"
+    if redacted_parsed_data.get("email"):
+        redacted_parsed_data["email"] = "[REDACTED EMAIL]"
+    if redacted_parsed_data.get("phone"):
+        redacted_parsed_data["phone"] = "[REDACTED PHONE]"
+
+    prompt = f"""
+    You are an expert technical recruiter and hiring manager.
+    Evaluate the following candidate's parsed resume data against the provided Job Description.
+
+    Job Description:
+    {job_description}
+
+    Candidate's Resume Data:
+    {redacted_parsed_data}
+
+    Provide a match score out of 100 and a brief 2-3 sentence summary explaining your reasoning.
+    """
+
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash-lite',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=CandidateEvaluation,
+                temperature=0.2,
+            )
+        )
+        parsed_response = json.loads(response.text)
+        return {
+            "match_score": parsed_response.get("match_score", 0),
+            "match_summary": parsed_response.get("match_summary", "Evaluation failed.")
+        }
+    except Exception as e:
+        return {
+            "match_score": 0,
+            "match_summary": f"Error evaluating candidate: {str(e)}"
+        }

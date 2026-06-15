@@ -13,7 +13,9 @@ class User(Base):
     name = Column(String)
     email = Column(String, unique=True, index=True)
     password_hash = Column(Text, nullable=True)
+    role = Column(String, default="candidate") # "candidate" or "recruiter"
     resumes = relationship("Resume", back_populates="owner")
+    job_listings = relationship("JobListing", back_populates="recruiter")
 
 class Resume(Base):
     __tablename__ = "resumes"
@@ -24,6 +26,7 @@ class Resume(Base):
     owner = relationship("User", back_populates="resumes")
     parsed_data = relationship("ParsedData", back_populates="resume", uselist=False)
     feedback = relationship("Feedback", back_populates="resume", uselist=False)
+    applications = relationship("Application", back_populates="resume")
 
 class ParsedData(Base):
     __tablename__ = "parsed_data"
@@ -40,3 +43,24 @@ class Feedback(Base):
     feedback_text = Column(Text)
     score = Column(Integer)
     resume = relationship("Resume", back_populates="feedback")
+
+class JobListing(Base):
+    __tablename__ = "job_listings"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    recruiter_id = Column(String, ForeignKey("users.id"))
+    title = Column(String)
+    description = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    recruiter = relationship("User", back_populates="job_listings")
+    applications = relationship("Application", back_populates="job_listing")
+
+class Application(Base):
+    __tablename__ = "applications"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    job_id = Column(String, ForeignKey("job_listings.id"))
+    resume_id = Column(String, ForeignKey("resumes.id"))
+    match_score = Column(Integer, nullable=True)
+    match_summary = Column(Text, nullable=True)
+    applied_at = Column(DateTime, default=datetime.utcnow)
+    job_listing = relationship("JobListing", back_populates="applications")
+    resume = relationship("Resume", back_populates="applications")
