@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL Database ─────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: vinentoai_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vinentoai
+      POSTGRES_PASSWORD: vinentoai_secret
+      POSTGRES_DB: vinentoai
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vinentoai"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI Backend ─────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vinentoai_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      # Override the DATABASE_URL to point at the db container
+      DATABASE_URL: postgresql+psycopg2://vinentoai:vinentoai_secret@db:5432/vinentoai
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist uploaded resume files across restarts
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── Next.js Frontend ────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vinentoai_frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

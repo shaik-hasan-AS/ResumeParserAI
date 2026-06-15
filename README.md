@@ -10,14 +10,48 @@ MyAIProfile is an advanced AI-powered Applicant Tracking System (ATS) simulator 
 ## ✨ Features
 
 - **Google OAuth Integration:** Secure and seamless user authentication.
-- **Advanced Resume Parsing:** Robust parsing of complex fields (education, experience, contact info, projects) from resumes in PDF or Image formats.
+- **Advanced Resume Parsing:** Robust parsing of PDF, DOCX, and image-based resumes.
 - **Built-in OCR Engine:** Uses Tesseract OCR to accurately read text from scanned PDFs and image-based resumes.
-- **AI-Powered ATS Scoring & Dashboard:** Visual ATS score analytics dashboard to track resume performance, simulating a strict ATS and recruiter review process using `gemini-2.5-flash`.
-- **Actionable Insights:** Get a detailed Action Plan, including Keyword Match Rates and "Before & After" rewrites for weak bullet points.
-- **Resume Builder & PDF Export:** Export your optimized resume to a professional, ATS-friendly PDF. Choose from premium, corporate-styled templates like 'Modern', 'Harvard', and 'Executive'.
-- **Responsive & Modern UI:** Built with Next.js, Tailwind CSS, and Shadcn UI components for a premium user experience. Fully supports both light and dark modes with a commercial, professional color palette.
+- **AI-Powered ATS Scoring & Dashboard:** Visual ATS score analytics dashboard powered by `gemini-2.5-flash`.
+- **Actionable Insights:** Detailed Action Plan, Keyword Match Rates, and "Before & After" bullet point rewrites.
+- **AI Mock Interview Generator:** Get 5-7 tailored technical and behavioral interview questions based on your resume.
+- **AI Cover Letter Generator:** Generate a professional, tailored cover letter in one click and export it as a PDF.
+- **Live PDF Preview:** Real-time side-by-side preview of your resume PDF as you edit contact details.
+- **Resume Builder & PDF Export:** Export optimized resumes in 'Modern', 'Harvard', and 'Executive' templates.
+- **Responsive & Modern UI:** Next.js, Tailwind CSS v4, and Shadcn UI — full dark/light mode support.
+- **Database Migrations:** Alembic-powered schema migrations for safe production database updates.
+- **Docker Support:** Boot the entire stack (Backend, Frontend, PostgreSQL) with a single command.
 
 ---
+
+## 🐳 Quick Start with Docker
+
+The fastest way to run the full stack locally. No need to install Python, Node.js, or PostgreSQL separately.
+
+**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/shaik-hasan-AS/ResumeParserAI.git
+cd ResumeParserAI
+
+# 2. Set up your environment variables
+cp backend/.env.example backend/.env
+# Edit backend/.env and add your GEMINI_API_KEY
+
+# 3. Boot the entire stack
+docker compose up --build
+```
+
+The app will be available at:
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:8000
+- **API Docs:** http://localhost:8000/docs
+
+> **Note:** On the first run, Docker will build images and download dependencies. This takes ~3-5 minutes. Subsequent starts are instant.
+
+---
+
 
 ## 🏗️ Architecture
 

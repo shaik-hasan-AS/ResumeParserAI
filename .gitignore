@@ -24,3 +24,11 @@ backend/uploads/
 .DS_Store
 Thumbs.db
 parsed.json
+
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+
+# Docker volumes (local postgres data)
+postgres_data/
