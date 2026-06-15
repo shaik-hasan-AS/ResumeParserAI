@@ -5,7 +5,8 @@ from ..database import get_db
 from ..models import models
 from ..schemas import schemas
 from .auth import get_current_user
-from ..parsers.resume_parser import extract_text_from_pdf, parse_resume_text
+from ..parsers.resume.main import extract_text_from_pdf, parse_resume_text
+from starlette.concurrency import run_in_threadpool
 from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text
 from ..parsers.ocr import local_ocr_image, local_ocr_pdf
 import os
@@ -97,8 +98,8 @@ async def upload_resume(
     db.commit()
     db.refresh(new_resume)
 
-    raw_text = extract_text_from_file(file_path, file_bytes)
-    parsed_json = parse_resume_text(raw_text)
+    raw_text = await run_in_threadpool(extract_text_from_file, file_path, file_bytes)
+    parsed_json = await run_in_threadpool(parse_resume_text, raw_text)
     
     parsed_data = models.ParsedData(
         resume_id=new_resume.id,
