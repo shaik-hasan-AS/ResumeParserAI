@@ -27,7 +27,7 @@ def google_auth(request: schemas.GoogleAuthRequest, db: Session = Depends(get_db
         
         user = db.query(models.User).filter(models.User.email == email).first()
         if not user:
-            user = models.User(name=name, email=email, password_hash=None)
+            user = models.User(name=name, email=email, password_hash=None, role=request.role)
             db.add(user)
             db.commit()
             db.refresh(user)
@@ -84,3 +84,7 @@ def get_current_user(token: str = Depends(auth_service.oauth2_scheme), db: Sessi
     if user is None:
         raise credentials_exception
     return user
+
+@router.get("/me", response_model=schemas.UserResponse)
+def get_me(current_user: models.User = Depends(get_current_user)):
+    return current_user
