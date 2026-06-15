@@ -6,10 +6,12 @@ from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
-SQLALCHEMY_DATABASE_URL = os.environ.get(
-    "DATABASE_URL",
-    "postgresql+psycopg2://user:password@localhost/dbname"
-)
+# Railway provides DATABASE_URL starting with postgres:// but SQLAlchemy requires postgresql://
+db_url = os.environ.get("DATABASE_URL", "postgresql+psycopg2://user:password@localhost/dbname")
+if db_url and db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+SQLALCHEMY_DATABASE_URL = db_url
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
