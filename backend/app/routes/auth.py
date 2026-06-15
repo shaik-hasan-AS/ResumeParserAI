@@ -88,3 +88,16 @@ def get_current_user(token: str = Depends(auth_service.oauth2_scheme), db: Sessi
 @router.get("/me", response_model=schemas.UserResponse)
 def get_me(current_user: models.User = Depends(get_current_user)):
     return current_user
+
+@router.get("/test_db")
+def test_db(db: Session = Depends(get_db)):
+    try:
+        user = models.User(name="Test", email="test@test.com", password_hash=None, role="candidate")
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        db.delete(user)
+        db.commit()
+        return {"status": "ok"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
