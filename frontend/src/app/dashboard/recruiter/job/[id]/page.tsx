@@ -3,7 +3,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import api from '@/lib/api';
-import { ArrowLeft, Users, FileText, CheckCircle2, AlertTriangle, MessageSquare, GripVertical, Plus } from 'lucide-react';
+import { ArrowLeft, Users, FileText, CheckCircle2, AlertTriangle, MessageSquare, GripVertical, Plus, UploadCloud, X } from 'lucide-react';
 
 interface Application {
   application_id: string;
@@ -32,6 +32,9 @@ export default function JobDetailsPage() {
   const [activeNoteApp, setActiveNoteApp] = useState<Application | null>(null);
   const [noteText, setNoteText] = useState("");
   const [savingNote, setSavingNote] = useState(false);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState("");
 
   useEffect(() => {
     fetchApplications();
@@ -45,6 +48,32 @@ export default function JobDetailsPage() {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBulkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    setUploading(true);
+    setUploadProgress(`Uploading and analyzing ${e.target.files.length} resumes... This might take a minute.`);
+    
+    const formData = new FormData();
+    Array.from(e.target.files).forEach(file => {
+      formData.append('files', file);
+    });
+
+    try {
+      await api.post(`/api/jobs/${id}/upload_candidates`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setUploadModalOpen(false);
+      fetchApplications(); // Refresh board
+    } catch (err) {
+      console.error("Upload failed", err);
+      alert("Failed to upload resumes. Ensure they are PDFs.");
+    } finally {
+      setUploading(false);
+      setUploadProgress("");
     }
   };
 
@@ -95,7 +124,15 @@ export default function JobDetailsPage() {
             <p className="text-muted-foreground mt-1 text-xs md:text-sm">Drag or update status to move candidates through the pipeline.</p>
           </div>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={() => setUploadModalOpen(true)}
+            className="bg-primary hover:bg-primary/90 text-white rounded-full flex items-center gap-2 text-sm"
+          >
+            <UploadCloud className="w-4 h-4" /> Bulk Upload PDFs
+          </Button>
+          <ThemeToggle />
+        </div>
       </header>
 
       {/* Kanban Board Container */}
@@ -221,6 +258,51 @@ export default function JobDetailsPage() {
               <Button onClick={saveNotes} disabled={savingNote} className="rounded-xl bg-primary hover:bg-primary/90 text-white">
                 {savingNote ? 'Saving...' : 'Save Notes'}
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Upload Modal */}
+      {uploadModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-card border border-border rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95">
+            <div className="p-6 border-b border-border flex justify-between items-center bg-muted/30">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <UploadCloud className="w-5 h-5 text-primary" />
+                Upload Candidates
+              </h3>
+              {!uploading && (
+                <button onClick={() => setUploadModalOpen(false)} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+            <div className="p-8">
+              {uploading ? (
+                <div className="flex flex-col items-center justify-center text-center space-y-4 py-8">
+                  <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                  <div>
+                    <h4 className="font-bold text-foreground text-lg">AI Processing</h4>
+                    <p className="text-sm text-muted-foreground mt-2 max-w-[250px]">{uploadProgress}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <div className="border-2 border-dashed border-border rounded-2xl p-10 bg-muted/20 hover:bg-muted/40 transition-colors relative group">
+                    <input 
+                      type="file" 
+                      multiple 
+                      accept=".pdf,.docx" 
+                      onChange={handleBulkUpload}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    />
+                    <UploadCloud className="w-12 h-12 text-primary/50 mx-auto mb-4 group-hover:text-primary transition-colors" />
+                    <h4 className="font-bold text-foreground mb-1">Click or drag files here</h4>
+                    <p className="text-xs text-muted-foreground">Upload multiple PDF/DOCX resumes. The AI will parse them and evaluate them against this job description automatically.</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

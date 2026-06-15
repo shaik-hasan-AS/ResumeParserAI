@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from typing import List
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models import models
@@ -145,3 +146,75 @@ def update_application(
     db.commit()
     db.refresh(application)
     return application
+
+@router.post("/{job_id}/upload_candidates")
+async def bulk_upload_candidates(
+    job_id: str,
+    files: List[UploadFile] = File(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if current_user.role != "recruiter":
+        raise HTTPException(status_code=403, detail="Only recruiters can upload candidates")
+        
+    job = db.query(models.JobListing).filter(models.JobListing.id == job_id, models.JobListing.recruiter_id == current_user.id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found or does not belong to you")
+        
+    from .resume import extract_text_from_file, UPLOAD_DIR
+    from ..parsers.resume.main import parse_resume_text
+    import uuid
+    import os
+    import asyncio
+    
+    async def process_file(file: UploadFile):
+        file_bytes = await file.read()
+        file_id = str(uuid.uuid4())
+        file_extension = os.path.splitext(file.filename)[1]
+        file_path = os.path.join(UPLOAD_DIR, f"{file_id}{file_extension}")
+        
+        with open(file_path, "wb") as buffer:
+            buffer.write(file_bytes)
+            
+        raw_text = await run_in_threadpool(extract_text_from_file, file_path, file_bytes)
+        parsed_json = await run_in_threadpool(parse_resume_text, raw_text)
+        evaluation = await run_in_threadpool(evaluate_candidate_fit, parsed_json, job.description)
+        
+        return {
+            "file_id": file_id,
+            "file_path": file_path,
+            "raw_text": raw_text,
+            "parsed_json": parsed_json,
+            "evaluation": evaluation
+        }
+
+    # Run AI processing concurrently for all uploaded files
+    results = await asyncio.gather(*(process_file(f) for f in files))
+    
+    # Synchronously write to database to avoid connection issues
+    for res in results:
+        new_resume = models.Resume(
+            id=res["file_id"],
+            user_id=current_user.id,
+            original_file_path=res["file_path"]
+        )
+        db.add(new_resume)
+        
+        parsed_data = models.ParsedData(
+            resume_id=res["file_id"],
+            parsed_json=res["parsed_json"],
+            raw_text=res["raw_text"]
+        )
+        db.add(parsed_data)
+        
+        application = models.Application(
+            job_id=job_id,
+            resume_id=res["file_id"],
+            match_score=res["evaluation"].get("match_score", 0),
+            match_summary=res["evaluation"].get("match_summary", "Evaluation failed."),
+            status="pending"
+        )
+        db.add(application)
+        
+    db.commit()
+    return {"message": f"Successfully uploaded and processed {len(files)} candidates."}
