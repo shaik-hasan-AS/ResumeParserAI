@@ -5,7 +5,7 @@ from ..database import get_db
 from ..models import models
 from ..schemas import schemas
 from .auth import get_current_user
-from ..parsers.resume.main import extract_text_from_pdf, parse_resume_text
+from ..parsers.resume.main import extract_text_from_pdf, extract_text_from_docx, parse_resume_text
 from starlette.concurrency import run_in_threadpool
 from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text
 from ..parsers.ocr import local_ocr_image, local_ocr_pdf
@@ -29,7 +29,9 @@ def extract_text_from_file(file_path: str, file_bytes: bytes) -> str:
         if len(text.strip()) < 100:
             text = local_ocr_pdf(file_bytes)
         return text
-    return "DOCX extraction not fully implemented yet."
+    elif lower.endswith(".docx"):
+        return extract_text_from_docx(file_bytes)
+    return "File format not supported for text extraction."
 
 
 # NOTE: Static routes (GET /) must come BEFORE dynamic routes (GET /{id}/...)

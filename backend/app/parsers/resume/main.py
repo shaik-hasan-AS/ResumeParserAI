@@ -1,6 +1,7 @@
 import spacy
 import re
 import pdfplumber
+import docx
 from io import BytesIO
 
 from .taxonomy import SKILL_TAXONOMY, categorize_skills
@@ -18,6 +19,13 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
             if page_text:
                 text += page_text + "\n"
     return text
+
+def extract_text_from_docx(file_bytes: bytes) -> str:
+    try:
+        doc = docx.Document(BytesIO(file_bytes))
+        return "\n".join([para.text for para in doc.paragraphs])
+    except Exception as e:
+        return f"Error extracting DOCX text: {e}"
 
 def parse_resume_text(text: str) -> dict:
     doc = nlp(text)

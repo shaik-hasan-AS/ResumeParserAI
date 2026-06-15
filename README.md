@@ -60,7 +60,7 @@ The project is split into a separated frontend and backend architecture:
    ALGORITHM=HS256
    ACCESS_TOKEN_EXPIRE_MINUTES=30
    GOOGLE_CLIENT_ID=your_google_client_id
-   DATABASE_URL=postgresql+psycopg2://user:password@localhost/dbname
+   DATABASE_URL=sqlite:///./sqlite.db
    ```
 5. Run the server:
    ```bash
@@ -97,6 +97,18 @@ The backend is configured to be deployed on Railway. It utilizes the root `Aptfi
 
 ### Frontend (Vercel)
 The frontend is optimized for deployment on Vercel. Connect your repository to Vercel, set the Root Directory to `frontend`, and ensure the `NEXT_PUBLIC_API_URL` environment variable points to your production Railway backend URL.
+
+---
+
+## 🗺️ Roadmap & Future Features
+
+Here are some upcoming features and architectural improvements planned for VinentoAI:
+
+- **Full DOCX Support:** Implement robust `.docx` parsing utilizing `python-docx` to compliment the existing PDF/Image support.
+- **Dedicated Cover Letter UI:** The backend currently supports AI cover letter generation (`generate_cover_letter`). A dedicated frontend builder will be added to export ATS-optimized cover letters.
+- **Asynchronous Task Queue (Celery/Redis):** Migrate the blocking OCR/NLP tasks from simple threadpools to a dedicated Celery worker queue to prevent HTTP timeouts on massive, image-heavy PDFs.
+- **Database Migrations:** Integrate `Alembic` to handle SQLAlchemy database schema migrations safely in production.
+- **LinkedIn Profile Import:** Allow users to instantly generate a base resume by scraping their public LinkedIn profile URL.
 
 ---
 
