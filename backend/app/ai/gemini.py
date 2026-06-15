@@ -238,6 +238,7 @@ def generate_mock_interview(parsed_data: dict, raw_text: str, target_role: str =
             )
         )
         return response.text
+    except Exception as e:
         return json.dumps({"questions": [{"question": f"Error generating interview: {str(e)}", "type": "error", "expected_answer_hints": []}]})
 
 class CandidateEvaluation(BaseModel):

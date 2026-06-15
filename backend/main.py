@@ -6,7 +6,7 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.routes import auth, resume
+from app.routes import auth, resume, jobs
 
 # Create database tables safely so app doesn't crash on startup if DB is down
 try:
