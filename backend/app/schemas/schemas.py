@@ -69,3 +69,15 @@ class CoverLetterResponse(BaseModel):
 class RewriteRequest(BaseModel):
     text: str
     context: Optional[str] = None
+
+class MockInterviewRequest(BaseModel):
+    target_role: Optional[str] = None
+    job_description: Optional[str] = None
+
+class MockInterviewQuestion(BaseModel):
+    question: str
+    type: str  # e.g., "technical", "behavioral", "situational"
+    expected_answer_hints: List[str]
+
+class MockInterviewResponse(BaseModel):
+    questions: List[MockInterviewQuestion]

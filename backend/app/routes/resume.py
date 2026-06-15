@@ -7,7 +7,7 @@ from ..schemas import schemas
 from .auth import get_current_user
 from ..parsers.resume.main import extract_text_from_pdf, extract_text_from_docx, parse_resume_text
 from starlette.concurrency import run_in_threadpool
-from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text
+from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text, generate_mock_interview
 from ..parsers.ocr import local_ocr_image, local_ocr_pdf
 import os
 import shutil
@@ -244,3 +244,38 @@ def rewrite_resume_text(
 ):
     rewritten = rewrite_text(req.text, req.context)
     return {"text": rewritten}
+
+@router.post("/{id}/mock-interview", response_model=schemas.MockInterviewResponse)
+def create_mock_interview(
+    id: str,
+    req: schemas.MockInterviewRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    resume = db.query(models.Resume).filter(models.Resume.id == id, models.Resume.user_id == current_user.id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+        
+    parsed = db.query(models.ParsedData).filter(models.ParsedData.resume_id == id).first()
+    if not parsed:
+        raise HTTPException(status_code=404, detail="Parsed data not found")
+
+    raw_text = getattr(parsed, "raw_text", None) or ""
+    if not raw_text and os.path.exists(resume.original_file_path):
+        with open(resume.original_file_path, "rb") as f:
+            file_bytes = f.read()
+        raw_text = extract_text_from_file(resume.original_file_path, file_bytes)
+
+    interview_text = generate_mock_interview(
+        parsed.parsed_json if parsed else {}, 
+        raw_text, 
+        job_description=req.job_description,
+        target_role=req.target_role
+    )
+    
+    import json
+    try:
+        parsed_interview = json.loads(interview_text)
+        return parsed_interview
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to parse mock interview response: {str(e)}")

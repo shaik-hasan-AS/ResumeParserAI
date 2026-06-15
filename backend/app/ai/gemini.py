@@ -186,3 +186,57 @@ def rewrite_text(text: str, context: str = None) -> str:
         return response.text.strip()
     except Exception as e:
         return f"Error rewriting text: {str(e)}"
+
+class MockInterviewQuestion(BaseModel):
+    question: str = Field(description="The interview question.")
+    type: str = Field(description="The type of question (e.g., technical, behavioral, situational).")
+    expected_answer_hints: List[str] = Field(description="Key points the candidate should hit in their answer.")
+
+class MockInterviewResponse(BaseModel):
+    questions: List[MockInterviewQuestion] = Field(description="List of 5 to 7 mock interview questions.")
+
+def generate_mock_interview(parsed_data: dict, raw_text: str, target_role: str = None, job_description: str = None) -> str:
+    redacted_text = redact_pii(raw_text, parsed_data)
+    
+    # Redact PII from the parsed_data dict itself before sending to API
+    redacted_parsed_data = parsed_data.copy()
+    if redacted_parsed_data.get("name"):
+        redacted_parsed_data["name"] = "[REDACTED NAME]"
+    if redacted_parsed_data.get("email"):
+        redacted_parsed_data["email"] = "[REDACTED EMAIL]"
+    if redacted_parsed_data.get("phone"):
+        redacted_parsed_data["phone"] = "[REDACTED PHONE]"
+        
+    role_context = f"The candidate is applying for the role of: **{target_role}**." if target_role else "The candidate is applying for a role based on their skills."
+    jd_context = f"\n\nHere is the Job Description for the target role:\n{job_description}\n" if job_description else ""
+    
+    prompt = f"""
+    You are an expert technical interviewer and hiring manager.
+    Your task is to generate 5 to 7 highly tailored mock interview questions for this candidate based on their resume and the target role/job description.
+    
+    {role_context}{jd_context}
+    
+    Candidate's Parsed Resume Data: {redacted_parsed_data}
+    Candidate's Raw Resume Text: {redacted_text}
+    
+    Guidelines:
+    1. Ask a mix of technical, behavioral, and situational questions.
+    2. Focus on areas where the candidate claims expertise, but also probe into potential weaknesses or gaps compared to the job description.
+    3. Make the questions realistic, challenging, and specific to the technologies or experiences listed in their resume.
+    4. For each question, provide 2-3 brief "expected answer hints" - key concepts or structural points (like STAR method) the candidate should include in a strong answer.
+    """
+    
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash-lite',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=MockInterviewResponse,
+                temperature=0.4,
+            )
+        )
+        return response.text
+    except Exception as e:
+        return json.dumps({"questions": [{"question": f"Error generating interview: {str(e)}", "type": "error", "expected_answer_hints": []}]})
