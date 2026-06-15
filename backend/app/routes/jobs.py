@@ -111,7 +111,37 @@ def get_job_applications(
             "candidate_name": name,
             "match_score": app.match_score,
             "match_summary": app.match_summary,
+            "status": app.status,
+            "notes": app.notes,
             "applied_at": app.applied_at
         })
         
     return results
+
+@router.put("/{job_id}/applications/{app_id}", response_model=schemas.ApplicationResponse)
+def update_application(
+    job_id: str,
+    app_id: str,
+    update_data: schemas.ApplicationUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if current_user.role != "recruiter":
+        raise HTTPException(status_code=403, detail="Only recruiters can update applications")
+        
+    job = db.query(models.JobListing).filter(models.JobListing.id == job_id, models.JobListing.recruiter_id == current_user.id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found or does not belong to you")
+        
+    application = db.query(models.Application).filter(models.Application.id == app_id, models.Application.job_id == job_id).first()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+        
+    if update_data.status is not None:
+        application.status = update_data.status
+    if update_data.notes is not None:
+        application.notes = update_data.notes
+        
+    db.commit()
+    db.refresh(application)
+    return application

@@ -39,9 +39,15 @@ class ApplicationResponse(BaseModel):
     resume_id: str
     match_score: Optional[int]
     match_summary: Optional[str]
+    status: str
+    notes: Optional[str]
     applied_at: datetime
     class Config:
         from_attributes = True
+
+class ApplicationUpdate(BaseModel):
+    status: Optional[str] = None
+    notes: Optional[str] = None
 
 class Token(BaseModel):
     access_token: str

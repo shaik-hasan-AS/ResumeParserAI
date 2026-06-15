@@ -61,6 +61,8 @@ class Application(Base):
     resume_id = Column(String, ForeignKey("resumes.id"))
     match_score = Column(Integer, nullable=True)
     match_summary = Column(Text, nullable=True)
+    status = Column(String, default="pending") # "pending", "reviewing", "interviewing", "offered", "rejected"
+    notes = Column(Text, nullable=True)
     applied_at = Column(DateTime, default=datetime.utcnow)
     job_listing = relationship("JobListing", back_populates="applications")
     resume = relationship("Resume", back_populates="applications")

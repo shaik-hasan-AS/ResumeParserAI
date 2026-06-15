@@ -12,14 +12,20 @@ from app.routes import auth, resume, jobs
 try:
     Base.metadata.create_all(bind=engine)
     # HOTFIX: Since Alembic migration failed due to create_all creating tables out of band,
-    # we manually ensure the role column exists.
+    # we manually ensure the new columns exist.
     from sqlalchemy import text
     with engine.begin() as conn:
         try:
             conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR"))
-            print("Successfully added role column")
         except Exception:
-            # Column probably already exists
+            pass
+        try:
+            conn.execute(text("ALTER TABLE applications ADD COLUMN status VARCHAR DEFAULT 'pending'"))
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE applications ADD COLUMN notes VARCHAR"))
+        except Exception:
             pass
     print("Database tables created successfully or already exist.")
 except Exception as e:
