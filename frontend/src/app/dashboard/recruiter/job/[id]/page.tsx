@@ -216,7 +216,7 @@ export default function JobDetailsPage() {
                               variant="ghost" 
                               size="icon" 
                               className="h-7 w-7 rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                              onClick={() => window.open(`/dashboard/resume/${app.resume_id}`, '_blank')}
+                              onClick={() => window.open(`/dashboard/recruiter/resume/${app.resume_id}`, '_blank')}
                               title="View Full Resume"
                             >
                               <FileText className="w-3.5 h-3.5" />

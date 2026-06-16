@@ -130,9 +130,9 @@ export default function ScreenerDetailsPage() {
                         variant="ghost" 
                         size="sm" 
                         className="rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary flex items-center gap-1.5 h-8 px-3"
-                        onClick={() => window.open(`/dashboard/resume/${result.resume_id}`, '_blank')}
+                        onClick={() => window.open(`/dashboard/recruiter/resume/${result.resume_id}`, '_blank')}
                       >
-                        <FileText className="w-3.5 h-3.5" /> View Resume
+                        <FileText className="w-3.5 h-3.5" /> View Candidate Profile
                       </Button>
                     </div>
                   </div>

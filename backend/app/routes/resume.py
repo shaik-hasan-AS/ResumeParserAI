@@ -279,3 +279,26 @@ def create_mock_interview(
         return parsed_interview
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to parse mock interview response: {str(e)}")
+
+from fastapi.responses import FileResponse
+
+@router.get("/{id}/download")
+def download_resume_original(
+    id: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    # Recruiters can download any resume they have access to, candidates can only download their own.
+    # For simplicity, if current_user is recruiter, allow it. Otherwise verify ownership.
+    resume = db.query(models.Resume).filter(models.Resume.id == id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+        
+    if current_user.role != "recruiter" and resume.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to download this resume")
+
+    if not os.path.exists(resume.original_file_path):
+        raise HTTPException(status_code=404, detail="Original file no longer exists on server")
+
+    filename = os.path.basename(resume.original_file_path)
+    return FileResponse(path=resume.original_file_path, filename=filename)
