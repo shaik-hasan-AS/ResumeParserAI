@@ -64,6 +64,22 @@ export default function RecruiterDashboard() {
   return (
     <div className="min-h-screen bg-background relative p-4 md:p-8 overflow-hidden font-sans">
       <div className="max-w-6xl mx-auto space-y-8 relative z-10">
+        
+        {/* Navigation Tabs */}
+        <div className="flex gap-4 border-b border-border mb-6">
+          <button 
+            className="py-2 px-4 border-b-2 border-primary text-foreground font-bold"
+          >
+            Job Postings
+          </button>
+          <button 
+            onClick={() => router.push('/dashboard/recruiter/screener')} 
+            className="py-2 px-4 text-muted-foreground hover:text-foreground font-medium transition-colors"
+          >
+            Quick ATS Screener
+          </button>
+        </div>
+
         <header className="flex justify-between items-center bg-card p-6 rounded-lg shadow-sm border border-border">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">

@@ -113,3 +113,25 @@ class MockInterviewQuestion(BaseModel):
 
 class MockInterviewResponse(BaseModel):
     questions: List[MockInterviewQuestion]
+
+class QuickScanResultResponse(BaseModel):
+    id: str
+    scan_id: str
+    resume_id: str
+    candidate_name: str
+    match_score: Optional[int]
+    match_summary: Optional[str]
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class QuickScanResponse(BaseModel):
+    id: str
+    recruiter_id: str
+    title: str
+    description: str
+    keywords: Optional[str]
+    created_at: datetime
+    results_count: Optional[int] = 0
+    class Config:
+        from_attributes = True

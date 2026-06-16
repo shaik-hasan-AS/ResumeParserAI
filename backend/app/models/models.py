@@ -66,3 +66,27 @@ class Application(Base):
     applied_at = Column(DateTime, default=datetime.utcnow)
     job_listing = relationship("JobListing", back_populates="applications")
     resume = relationship("Resume", back_populates="applications")
+
+class QuickScan(Base):
+    __tablename__ = "quick_scans"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    recruiter_id = Column(String, ForeignKey("users.id"))
+    title = Column(String)
+    description = Column(Text)
+    keywords = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    recruiter = relationship("User")
+    results = relationship("QuickScanResult", back_populates="scan", cascade="all, delete-orphan")
+
+class QuickScanResult(Base):
+    __tablename__ = "quick_scan_results"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    scan_id = Column(String, ForeignKey("quick_scans.id"))
+    resume_id = Column(String, ForeignKey("resumes.id"))
+    match_score = Column(Integer, nullable=True)
+    match_summary = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    scan = relationship("QuickScan", back_populates="results")
+    resume = relationship("Resume")

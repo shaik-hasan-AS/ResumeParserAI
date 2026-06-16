@@ -54,9 +54,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from app.routes import auth, resume, jobs, screener
+
 app.include_router(auth.router)
 app.include_router(resume.router)
 app.include_router(jobs.router)
+app.include_router(screener.router)
 
 @app.get("/")
 def read_root():
