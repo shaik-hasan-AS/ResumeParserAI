@@ -176,10 +176,15 @@ async def bulk_upload_candidates(
         with open(file_path, "wb") as buffer:
             buffer.write(file_bytes)
             
-        raw_text = await run_in_threadpool(extract_text_from_file, file_path, file_bytes)
-        parsed_json = await run_in_threadpool(parse_resume_text, raw_text)
-        evaluation = await run_in_threadpool(evaluate_candidate_fit, parsed_json, job.description)
-        
+        try:
+            raw_text = await run_in_threadpool(extract_text_from_file, file_path, file_bytes)
+            parsed_json = await run_in_threadpool(parse_resume_text, raw_text)
+            evaluation = await run_in_threadpool(evaluate_candidate_fit, parsed_json, job.description)
+        except Exception as e:
+            raw_text = "Error extracting text."
+            parsed_json = {}
+            evaluation = {"match_score": 0, "match_summary": f"Failed to process resume: {str(e)}"}
+            
         return {
             "file_id": file_id,
             "file_path": file_path,
