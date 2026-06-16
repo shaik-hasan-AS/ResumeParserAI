@@ -22,6 +22,7 @@ def create_job(
     new_job = models.JobListing(
         title=job.title,
         description=job.description,
+        auto_reject_threshold=job.auto_reject_threshold,
         recruiter_id=current_user.id
     )
     db.add(new_job)
@@ -71,11 +72,17 @@ async def apply_to_job(
     # Evaluate candidate async
     evaluation = await run_in_threadpool(evaluate_candidate_fit, parsed_json, job.description)
     
+    score = evaluation.get("match_score", 0)
+    initial_status = "pending"
+    if job.auto_reject_threshold is not None and score < job.auto_reject_threshold:
+        initial_status = "rejected"
+        
     application = models.Application(
         job_id=job_id,
         resume_id=resume_id,
-        match_score=evaluation.get("match_score", 0),
-        match_summary=evaluation.get("match_summary", "Evaluation failed.")
+        match_score=score,
+        match_summary=evaluation.get("match_summary", "Evaluation failed."),
+        status=initial_status
     )
     db.add(application)
     db.commit()
@@ -114,6 +121,7 @@ def get_job_applications(
             "match_summary": app.match_summary,
             "status": app.status,
             "notes": app.notes,
+            "rating": app.rating,
             "applied_at": app.applied_at
         })
         
@@ -142,6 +150,8 @@ def update_application(
         application.status = update_data.status
     if update_data.notes is not None:
         application.notes = update_data.notes
+    if update_data.rating is not None:
+        application.rating = update_data.rating
         
     db.commit()
     db.refresh(application)
@@ -212,12 +222,17 @@ async def bulk_upload_candidates(
         )
         db.add(parsed_data)
         
+        score = res["evaluation"].get("match_score", 0)
+        initial_status = "pending"
+        if job.auto_reject_threshold is not None and score < job.auto_reject_threshold:
+            initial_status = "rejected"
+
         application = models.Application(
             job_id=job_id,
             resume_id=res["file_id"],
-            match_score=res["evaluation"].get("match_score", 0),
+            match_score=score,
             match_summary=res["evaluation"].get("match_summary", "Evaluation failed."),
-            status="pending"
+            status=initial_status
         )
         db.add(application)
         

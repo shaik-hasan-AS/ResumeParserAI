@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import api from '@/lib/api';
-import { ArrowLeft, Users, FileText, CheckCircle2, AlertTriangle, MessageSquare, GripVertical, Plus, UploadCloud, X } from 'lucide-react';
+import { ArrowLeft, Users, FileText, CheckCircle2, AlertTriangle, MessageSquare, GripVertical, Plus, UploadCloud, X, Search } from 'lucide-react';
 
 interface Application {
   application_id: string;
@@ -14,6 +14,7 @@ interface Application {
   match_summary: string;
   status: string;
   notes: string | null;
+  rating: number | null;
   applied_at: string;
 }
 
@@ -30,6 +31,7 @@ export default function JobDetailsPage() {
   const router = useRouter();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [activeNoteApp, setActiveNoteApp] = useState<Application | null>(null);
   const [noteText, setNoteText] = useState("");
   const [savingNote, setSavingNote] = useState(false);
@@ -103,11 +105,28 @@ export default function JobDetailsPage() {
     }
   };
 
+  const updateRating = async (appId: string, rating: number) => {
+    setApplications(apps => apps.map(app => app.application_id === appId ? { ...app, rating } : app));
+    try {
+      await api.put(`/api/jobs/${id}/applications/${appId}`, { rating });
+    } catch (e) {
+      console.error("Failed to update rating", e);
+      fetchApplications();
+    }
+  };
+
   const scoreColor = (score: number) => {
     if (score >= 80) return "text-emerald-500 bg-emerald-500/10 border-emerald-500/30";
     if (score >= 60) return "text-amber-500 bg-amber-500/10 border-amber-500/30";
     return "text-rose-500 bg-rose-500/10 border-rose-500/30";
   };
+
+  const filteredApplications = applications.filter(app => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return app.candidate_name.toLowerCase().includes(q) || 
+           (app.match_summary && app.match_summary.toLowerCase().includes(q));
+  });
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden font-sans flex flex-col h-screen">
@@ -123,6 +142,20 @@ export default function JobDetailsPage() {
             <p className="text-muted-foreground mt-1 text-xs md:text-sm">Drag or update status to move candidates through the pipeline.</p>
           </div>
         </div>
+        
+        <div className="flex-1 max-w-md mx-6 hidden md:block">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+            <input 
+              type="text" 
+              placeholder="Search candidates by name or keywords..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-muted border border-border rounded-full pl-10 pr-4 py-2 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none"
+            />
+          </div>
+        </div>
+
         <div className="flex items-center gap-3">
           <Button 
             onClick={() => setUploadModalOpen(true)}
@@ -144,7 +177,7 @@ export default function JobDetailsPage() {
         ) : (
           <div className="flex gap-6 h-full min-w-max items-start">
             {STATUSES.map((column) => {
-              const columnApps = applications.filter(app => (app.status || 'pending') === column.id);
+              const columnApps = filteredApplications.filter(app => (app.status || 'pending') === column.id);
               
               return (
                 <div key={column.id} className="w-[350px] h-full flex flex-col bg-muted/20 border border-border rounded-lg overflow-hidden shadow-sm">
@@ -164,13 +197,13 @@ export default function JobDetailsPage() {
                   <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
                     {columnApps.length === 0 ? (
                       <div className="h-24 flex items-center justify-center border-2 border-dashed border-border rounded-xl">
-                        <span className="text-xs font-medium text-muted-foreground/50">Drop candidates here</span>
+                        <span className="text-xs font-medium text-muted-foreground/50">No candidates</span>
                       </div>
                     ) : (
                       columnApps.map(app => (
-                        <div key={app.application_id} className="bg-card border border-border rounded-md p-4 shadow-sm hover:border-primary/50 transition-all group">
+                        <div key={app.application_id} className="bg-card border border-border rounded-md p-4 shadow-sm hover:border-primary/50 transition-all group flex flex-col gap-3">
                           
-                          <div className="flex justify-between items-start mb-3">
+                          <div className="flex justify-between items-start">
                             <h3 className="font-bold text-foreground text-base truncate pr-2" title={app.candidate_name}>
                               {app.candidate_name}
                             </h3>
@@ -178,8 +211,21 @@ export default function JobDetailsPage() {
                               <span className="text-xs font-black">{app.match_score}</span>
                             </div>
                           </div>
+                          
+                          {/* Star Rating */}
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button 
+                                key={star}
+                                onClick={() => updateRating(app.application_id, star === app.rating ? 0 : star)}
+                                className={`text-lg leading-none ${star <= (app.rating || 0) ? 'text-amber-400 drop-shadow-sm' : 'text-muted-foreground/30 hover:text-amber-400/50'}`}
+                              >
+                                ★
+                              </button>
+                            ))}
+                          </div>
 
-                          <div className="flex items-start gap-1.5 mb-4">
+                          <div className="flex items-start gap-1.5">
                             {app.match_score >= 80 ? (
                               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
                             ) : (
@@ -190,7 +236,7 @@ export default function JobDetailsPage() {
                             </p>
                           </div>
 
-                          <div className="flex items-center gap-2 pt-3 border-t border-border">
+                          <div className="flex items-center gap-2 pt-2 border-t border-border mt-auto">
                             <select 
                               className="text-xs bg-muted border border-border rounded-lg px-2 py-1.5 text-foreground font-medium outline-none focus:ring-1 focus:ring-primary flex-1"
                               value={app.status || 'pending'}

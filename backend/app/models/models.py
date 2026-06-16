@@ -50,6 +50,7 @@ class JobListing(Base):
     recruiter_id = Column(String, ForeignKey("users.id"))
     title = Column(String)
     description = Column(Text)
+    auto_reject_threshold = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     recruiter = relationship("User", back_populates="job_listings")
     applications = relationship("Application", back_populates="job_listing")
@@ -63,6 +64,7 @@ class Application(Base):
     match_summary = Column(Text, nullable=True)
     status = Column(String, default="pending") # "pending", "reviewing", "interviewing", "offered", "rejected"
     notes = Column(Text, nullable=True)
+    rating = Column(Integer, nullable=True)
     applied_at = Column(DateTime, default=datetime.utcnow)
     job_listing = relationship("JobListing", back_populates="applications")
     resume = relationship("Resume", back_populates="applications")
@@ -86,6 +88,8 @@ class QuickScanResult(Base):
     resume_id = Column(String, ForeignKey("resumes.id"))
     match_score = Column(Integer, nullable=True)
     match_summary = Column(Text, nullable=True)
+    notes = Column(Text, nullable=True)
+    rating = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     scan = relationship("QuickScan", back_populates="results")

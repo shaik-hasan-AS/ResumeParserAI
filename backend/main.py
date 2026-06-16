@@ -27,6 +27,22 @@ try:
             conn.execute(text("ALTER TABLE applications ADD COLUMN notes VARCHAR"))
         except Exception:
             pass
+        try:
+            conn.execute(text("ALTER TABLE applications ADD COLUMN rating INTEGER"))
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE job_listings ADD COLUMN auto_reject_threshold INTEGER"))
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE quick_scan_results ADD COLUMN rating INTEGER"))
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE quick_scan_results ADD COLUMN notes VARCHAR"))
+        except Exception:
+            pass
     print("Database tables created successfully or already exist.")
 except Exception as e:
     print(f"Error creating database tables: {e}")

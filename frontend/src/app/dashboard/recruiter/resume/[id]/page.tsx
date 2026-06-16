@@ -176,6 +176,13 @@ export default function RecruiterResumeViewer() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [parsedData, setParsedData] = useState<any>(null);
 
+  const [generatingEmail, setGeneratingEmail] = useState(false);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [emailType, setEmailType] = useState('interview');
+  const [emailJobDesc, setEmailJobDesc] = useState('');
+  const [emailTargetRole, setEmailTargetRole] = useState('');
+  const [generatedEmail, setGeneratedEmail] = useState('');
+
   useEffect(() => {
     const fetchParsedData = async () => {
       try {
@@ -196,7 +203,6 @@ export default function RecruiterResumeViewer() {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      // Get filename from content-disposition header if available, otherwise fallback
       let fileName = `${parsedData?.name?.replace(/\s+/g, '_') || 'candidate'}_original_resume`;
       const contentDisposition = response.headers['content-disposition'];
       if (contentDisposition) {
@@ -205,7 +211,6 @@ export default function RecruiterResumeViewer() {
           fileName = fileNameMatch[1];
         }
       } else {
-         // Default extension if we can't extract it, usually PDF
          fileName += ".pdf";
       }
       
@@ -216,6 +221,24 @@ export default function RecruiterResumeViewer() {
     } catch (err) {
       console.error('Failed to download file', err);
       alert('Failed to download the original resume. It may have been removed.');
+    }
+  };
+
+  const handleGenerateEmail = async () => {
+    if (!emailJobDesc.trim() || !emailTargetRole.trim()) return;
+    setGeneratingEmail(true);
+    try {
+      const res = await api.post(`/api/resume/${id}/outreach_email`, {
+        target_role: emailTargetRole,
+        job_description: emailJobDesc,
+        email_type: emailType
+      });
+      setGeneratedEmail(res.data.email_text);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to generate email.');
+    } finally {
+      setGeneratingEmail(false);
     }
   };
 
@@ -245,11 +268,19 @@ export default function RecruiterResumeViewer() {
           </div>
           <div className="flex items-center gap-4">
             <Button
+              variant="outline"
+              onClick={() => setEmailModalOpen(true)}
+              className="border-primary/30 text-primary hover:bg-primary/10 shadow-sm h-9 px-4 rounded-lg font-semibold flex items-center gap-2"
+            >
+              <Mail className="w-4 h-4" />
+              AI Outreach
+            </Button>
+            <Button
               onClick={handleDownloadOriginal}
               className="bg-primary hover:bg-primary/90 text-white shadow-sm h-9 px-4 rounded-lg font-semibold flex items-center gap-2"
             >
               <Download className="w-4 h-4" />
-              Download Original Resume
+              Download
             </Button>
             <ThemeToggle />
           </div>
@@ -267,6 +298,89 @@ export default function RecruiterResumeViewer() {
           </div>
         </div>
       </div>
+
+      {/* Outreach Email Modal */}
+      {emailModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-card border border-border rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col animate-in zoom-in-95">
+            <div className="p-6 border-b border-border flex justify-between items-center bg-muted/30 shrink-0">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <Mail className="w-5 h-5 text-primary" />
+                Generate AI Outreach Email
+              </h3>
+              <button onClick={() => setEmailModalOpen(false)} className="text-muted-foreground hover:text-foreground">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1 custom-scrollbar space-y-4">
+              {generatedEmail ? (
+                <div className="space-y-4 h-full flex flex-col">
+                  <div className="flex justify-between items-center">
+                    <h4 className="text-sm font-semibold text-foreground">Generated Draft</h4>
+                    <Button variant="outline" size="sm" onClick={() => {navigator.clipboard.writeText(generatedEmail); alert("Copied!");}}>Copy to Clipboard</Button>
+                  </div>
+                  <textarea 
+                    value={generatedEmail}
+                    onChange={(e) => setGeneratedEmail(e.target.value)}
+                    className="w-full flex-1 min-h-[300px] bg-muted border border-border rounded-md p-4 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none custom-scrollbar"
+                  />
+                  <div className="flex justify-end pt-2">
+                    <Button variant="ghost" onClick={() => setGeneratedEmail('')}>Draft Another</Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Email Type</label>
+                    <select 
+                      value={emailType}
+                      onChange={(e) => setEmailType(e.target.value)}
+                      className="w-full bg-muted border border-border rounded-md px-4 py-3 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none"
+                    >
+                      <option value="interview">Invite to Interview</option>
+                      <option value="initial_contact">Initial Reach Out / Sourcing</option>
+                      <option value="rejection">Polite Rejection</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Target Role</label>
+                    <input 
+                      type="text"
+                      placeholder="e.g. Senior Frontend Engineer"
+                      value={emailTargetRole}
+                      onChange={(e) => setEmailTargetRole(e.target.value)}
+                      className="w-full bg-muted border border-border rounded-md px-4 py-3 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Job Description / Context</label>
+                    <textarea 
+                      placeholder="Paste the job description or context about why you are reaching out..."
+                      value={emailJobDesc}
+                      onChange={(e) => setEmailJobDesc(e.target.value)}
+                      className="w-full bg-muted border border-border rounded-md px-4 py-3 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none min-h-[150px] resize-y custom-scrollbar"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            {!generatedEmail && (
+              <div className="p-4 border-t border-border bg-muted/30 flex justify-end gap-3 shrink-0">
+                <Button variant="ghost" className="rounded-md" onClick={() => setEmailModalOpen(false)}>Cancel</Button>
+                <Button 
+                  onClick={handleGenerateEmail} 
+                  disabled={generatingEmail || !emailTargetRole || !emailJobDesc} 
+                  className="rounded-md bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  {generatingEmail ? 'Generating...' : 'Generate Email'}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

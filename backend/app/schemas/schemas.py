@@ -23,12 +23,14 @@ class UserResponse(BaseModel):
 class JobListingCreate(BaseModel):
     title: str
     description: str
+    auto_reject_threshold: Optional[int] = None
 
 class JobListingResponse(BaseModel):
     id: str
     recruiter_id: str
     title: str
     description: str
+    auto_reject_threshold: Optional[int] = None
     created_at: datetime
     class Config:
         from_attributes = True
@@ -41,6 +43,7 @@ class ApplicationResponse(BaseModel):
     match_summary: Optional[str]
     status: str
     notes: Optional[str]
+    rating: Optional[int]
     applied_at: datetime
     class Config:
         from_attributes = True
@@ -48,6 +51,7 @@ class ApplicationResponse(BaseModel):
 class ApplicationUpdate(BaseModel):
     status: Optional[str] = None
     notes: Optional[str] = None
+    rating: Optional[int] = None
 
 class Token(BaseModel):
     access_token: str
@@ -98,6 +102,14 @@ class CoverLetterRequest(BaseModel):
 class CoverLetterResponse(BaseModel):
     cover_letter_text: str
 
+class OutreachEmailRequest(BaseModel):
+    target_role: str
+    job_description: str
+    email_type: str # 'interview', 'rejection', 'initial_contact'
+
+class OutreachEmailResponse(BaseModel):
+    email_text: str
+
 class RewriteRequest(BaseModel):
     text: str
     context: Optional[str] = None
@@ -121,9 +133,15 @@ class QuickScanResultResponse(BaseModel):
     candidate_name: str
     match_score: Optional[int]
     match_summary: Optional[str]
+    notes: Optional[str]
+    rating: Optional[int]
     created_at: datetime
     class Config:
         from_attributes = True
+
+class QuickScanResultUpdate(BaseModel):
+    notes: Optional[str] = None
+    rating: Optional[int] = None
 
 class QuickScanResponse(BaseModel):
     id: str

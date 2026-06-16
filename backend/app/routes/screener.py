@@ -65,10 +65,57 @@ def get_scan_results(
             "candidate_name": name,
             "match_score": res.match_score,
             "match_summary": res.match_summary,
+            "notes": res.notes,
+            "rating": res.rating,
             "created_at": res.created_at
         })
         
     return response_data
+
+@router.put("/{scan_id}/results/{result_id}", response_model=schemas.QuickScanResultResponse)
+def update_scan_result(
+    scan_id: str,
+    result_id: str,
+    update_data: schemas.QuickScanResultUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if current_user.role != "recruiter":
+        raise HTTPException(status_code=403, detail="Only recruiters can update scan results")
+        
+    scan = db.query(models.QuickScan).filter(models.QuickScan.id == scan_id, models.QuickScan.recruiter_id == current_user.id).first()
+    if not scan:
+        raise HTTPException(status_code=404, detail="Scan not found")
+        
+    result = db.query(models.QuickScanResult).filter(models.QuickScanResult.id == result_id, models.QuickScanResult.scan_id == scan_id).first()
+    if not result:
+        raise HTTPException(status_code=404, detail="Result not found")
+        
+    if update_data.notes is not None:
+        result.notes = update_data.notes
+    if update_data.rating is not None:
+        result.rating = update_data.rating
+        
+    db.commit()
+    db.refresh(result)
+    
+    # Needs candidate_name for response model
+    resume_info = db.query(models.ParsedData).filter(models.ParsedData.resume_id == result.resume_id).first()
+    name = "Unknown Candidate"
+    if resume_info and resume_info.parsed_json:
+        name = resume_info.parsed_json.get("name", "Unknown Candidate")
+        
+    return {
+        "id": result.id,
+        "scan_id": result.scan_id,
+        "resume_id": result.resume_id,
+        "candidate_name": name,
+        "match_score": result.match_score,
+        "match_summary": result.match_summary,
+        "notes": result.notes,
+        "rating": result.rating,
+        "created_at": result.created_at
+    }
 
 @router.post("")
 async def create_scan(

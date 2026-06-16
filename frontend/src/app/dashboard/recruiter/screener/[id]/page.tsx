@@ -13,6 +13,8 @@ interface ScanResult {
   candidate_name: string;
   match_score: number;
   match_summary: string;
+  notes: string | null;
+  rating: number | null;
   created_at: string;
 }
 
@@ -21,20 +23,50 @@ export default function ScreenerDetailsPage() {
   const router = useRouter();
   const [results, setResults] = useState<ScanResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  const [activeNoteRes, setActiveNoteRes] = useState<ScanResult | null>(null);
+  const [noteText, setNoteText] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
 
   useEffect(() => {
-    const fetchResults = async () => {
-      try {
-        const res = await api.get(`/api/screener/${id}`);
-        setResults(res.data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchResults();
   }, [id]);
+
+  const fetchResults = async () => {
+    try {
+      const res = await api.get(`/api/screener/${id}`);
+      setResults(res.data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateRating = async (resultId: string, rating: number) => {
+    setResults(res => res.map(r => r.id === resultId ? { ...r, rating } : r));
+    try {
+      await api.put(`/api/screener/${id}/results/${resultId}`, { rating });
+    } catch (e) {
+      console.error("Failed to update rating", e);
+      fetchResults();
+    }
+  };
+
+  const saveNotes = async () => {
+    if (!activeNoteRes) return;
+    setSavingNote(true);
+    try {
+      await api.put(`/api/screener/${id}/results/${activeNoteRes.id}`, { notes: noteText });
+      setResults(res => res.map(r => r.id === activeNoteRes.id ? { ...r, notes: noteText } : r));
+      setActiveNoteRes(null);
+    } catch (e) {
+      console.error("Failed to save notes", e);
+    } finally {
+      setSavingNote(false);
+    }
+  };
 
   const scoreColor = (score: number) => {
     if (score >= 80) return "text-emerald-500 bg-emerald-500/10 border-emerald-500/30";
@@ -43,10 +75,10 @@ export default function ScreenerDetailsPage() {
   };
 
   const exportCSV = () => {
-    const headers = ["Candidate Name", "Match Score", "Summary", "Date Scanned"];
+    const headers = ["Candidate Name", "Match Score", "Summary", "Date Scanned", "Rating", "Notes"];
     const csvContent = [
       headers.join(","),
-      ...results.map(r => `"${r.candidate_name}",${r.match_score},"${r.match_summary.replace(/"/g, '""')}","${new Date(r.created_at).toLocaleDateString()}"`)
+      ...results.map(r => `"${r.candidate_name}",${r.match_score},"${r.match_summary.replace(/"/g, '""')}","${new Date(r.created_at).toLocaleDateString()}",${r.rating || ''},"${(r.notes || '').replace(/"/g, '""')}"`)
     ].join("\n");
     
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -59,6 +91,13 @@ export default function ScreenerDetailsPage() {
     link.click();
     document.body.removeChild(link);
   };
+
+  const filteredResults = results.filter(r => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return r.candidate_name.toLowerCase().includes(q) || 
+           (r.match_summary && r.match_summary.toLowerCase().includes(q));
+  });
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden font-sans flex flex-col h-screen">
@@ -74,6 +113,20 @@ export default function ScreenerDetailsPage() {
             <p className="text-muted-foreground mt-1 text-xs md:text-sm">Candidates are automatically ranked by their AI match score.</p>
           </div>
         </div>
+
+        <div className="flex-1 max-w-md mx-6 hidden md:block">
+          <div className="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <input 
+              type="text" 
+              placeholder="Search candidates..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-muted border border-border rounded-full pl-10 pr-4 py-2 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none"
+            />
+          </div>
+        </div>
+
         <div className="flex items-center gap-3">
           <Button onClick={exportCSV} variant="outline" className="rounded-md flex items-center gap-2 text-sm border-primary/30 text-primary hover:bg-primary/10">
             <Download className="w-4 h-4" /> Export CSV
@@ -89,17 +142,17 @@ export default function ScreenerDetailsPage() {
               <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
               <p>Loading scan results...</p>
             </div>
-          ) : results.length === 0 ? (
+          ) : filteredResults.length === 0 ? (
             <div className="bg-card border border-border rounded-lg p-16 text-center shadow-sm">
-              <h3 className="text-xl font-bold text-foreground mb-2">No candidates found in this scan.</h3>
+              <h3 className="text-xl font-bold text-foreground mb-2">No candidates found.</h3>
             </div>
           ) : (
             <div className="space-y-4">
-              {results.map((result, idx) => (
+              {filteredResults.map((result, idx) => (
                 <div key={result.id} className="bg-card border border-border rounded-lg p-5 shadow-sm hover:border-primary/50 transition-all flex flex-col md:flex-row gap-5 items-start">
                   
                   {/* Rank Badge */}
-                  <div className="hidden md:flex shrink-0 w-8 h-8 rounded-full bg-muted text-muted-foreground items-center justify-center font-bold text-xs">
+                  <div className="hidden md:flex shrink-0 w-8 h-8 rounded-full bg-muted text-muted-foreground items-center justify-center font-bold text-xs mt-1">
                     #{idx + 1}
                   </div>
 
@@ -113,6 +166,19 @@ export default function ScreenerDetailsPage() {
                         <span className="text-sm font-black">{result.match_score}</span>
                       </div>
                     </div>
+
+                    {/* Star Rating */}
+                    <div className="flex items-center gap-1 mb-3">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button 
+                          key={star}
+                          onClick={() => updateRating(result.id, star === result.rating ? 0 : star)}
+                          className={`text-xl leading-none ${star <= (result.rating || 0) ? 'text-amber-400 drop-shadow-sm' : 'text-muted-foreground/30 hover:text-amber-400/50'}`}
+                        >
+                          ★
+                        </button>
+                      ))}
+                    </div>
                     
                     <div className="flex items-start gap-2 mb-4">
                       {result.match_score >= 80 ? (
@@ -125,7 +191,19 @@ export default function ScreenerDetailsPage() {
                       </p>
                     </div>
 
-                    <div className="flex justify-end pt-3 border-t border-border">
+                    <div className="flex justify-end gap-2 pt-3 border-t border-border mt-auto">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className={`rounded-md border-border h-8 px-3 ${result.notes ? 'bg-primary/10 text-primary border-primary/30' : 'text-muted-foreground hover:text-foreground'}`}
+                        onClick={() => {
+                          setActiveNoteRes(result);
+                          setNoteText(result.notes || "");
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 mr-1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        Notes
+                      </Button>
                       <Button 
                         variant="ghost" 
                         size="sm" 
@@ -142,6 +220,35 @@ export default function ScreenerDetailsPage() {
           )}
         </div>
       </div>
+
+      {/* Notes Modal */}
+      {activeNoteRes && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-card border border-border rounded-lg shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95">
+            <div className="p-6 border-b border-border flex justify-between items-center">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-primary"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                Notes for {activeNoteRes.candidate_name}
+              </h3>
+            </div>
+            <div className="p-6">
+              <textarea 
+                value={noteText}
+                onChange={(e) => setNoteText(e.target.value)}
+                placeholder="Add private recruiter notes here. For example: 'Great communication skills, schedule for round 2 technical screen...'"
+                className="w-full h-40 bg-muted border border-border rounded-md p-4 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none resize-none custom-scrollbar"
+              />
+            </div>
+            <div className="p-4 border-t border-border bg-muted/30 flex justify-end gap-3">
+              <Button variant="ghost" className="rounded-md" onClick={() => setActiveNoteRes(null)}>Cancel</Button>
+              <Button onClick={saveNotes} disabled={savingNote} className="rounded-md bg-primary hover:bg-primary/90 text-primary-foreground">
+                {savingNote ? 'Saving...' : 'Save Notes'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

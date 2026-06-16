@@ -289,3 +289,51 @@ def evaluate_candidate_fit(parsed_data: dict, job_description: str) -> dict:
             "match_score": 0,
             "match_summary": f"Error evaluating candidate: {str(e)}"
         }
+
+def generate_outreach_email(parsed_data: dict, raw_text: str, job_description: str, target_role: str, email_type: str) -> str:
+    redacted_text = redact_pii(raw_text, parsed_data)
+    
+    redacted_parsed_data = parsed_data.copy()
+    if redacted_parsed_data.get("email"):
+        redacted_parsed_data["email"] = "[REDACTED EMAIL]"
+    if redacted_parsed_data.get("phone"):
+        redacted_parsed_data["phone"] = "[REDACTED PHONE]"
+
+    # If email type is interview or initial_contact, sound excited. If rejection, be polite.
+    tone_instruction = "professional, excited, and welcoming"
+    if email_type == "rejection":
+        tone_instruction = "professional, polite, and respectful"
+        
+    prompt = f"""
+    You are an expert technical recruiter.
+    Draft an email to the candidate (whose name is {parsed_data.get('name', 'the candidate')}) regarding the position of **{target_role}**.
+    The purpose of the email is: {email_type.upper().replace('_', ' ')}.
+    The tone should be {tone_instruction}.
+    
+    If it's an interview or outreach email, briefly highlight 1 or 2 specific, impressive things from their resume that caught your eye, connecting it to the job description.
+    If it's a rejection email, keep it brief, polite, and do not mention specific flaws unless helpful and encouraging.
+    
+    Job Description:
+    {job_description or 'No specific description provided.'}
+    
+    Candidate's Resume Data:
+    {redacted_parsed_data}
+    
+    Guidelines:
+    1. Output ONLY the email subject line and body. No pleasantries before or after.
+    2. Format it clearly with a "Subject: " line at the top.
+    3. Use placeholders like [Insert Company Name] or [Link to Calendar] where appropriate.
+    """
+
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash-lite',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.5,
+            )
+        )
+        return response.text.strip()
+    except Exception as e:
+        return f"Subject: Error Generating Email\n\nError: {str(e)}"

@@ -237,6 +237,42 @@ def create_cover_letter(
     
     return schemas.CoverLetterResponse(cover_letter_text=cover_letter_text)
 
+from ..ai.gemini import generate_outreach_email
+
+@router.post("/{id}/outreach_email", response_model=schemas.OutreachEmailResponse)
+def create_outreach_email(
+    id: str,
+    req: schemas.OutreachEmailRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if current_user.role != "recruiter":
+        raise HTTPException(status_code=403, detail="Only recruiters can generate outreach emails")
+
+    resume = db.query(models.Resume).filter(models.Resume.id == id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+        
+    parsed = db.query(models.ParsedData).filter(models.ParsedData.resume_id == id).first()
+    if not parsed:
+        raise HTTPException(status_code=404, detail="Parsed data not found")
+
+    raw_text = getattr(parsed, "raw_text", None) or ""
+    if not raw_text and os.path.exists(resume.original_file_path):
+        with open(resume.original_file_path, "rb") as f:
+            file_bytes = f.read()
+        raw_text = extract_text_from_file(resume.original_file_path, file_bytes)
+
+    email_text = generate_outreach_email(
+        parsed.parsed_json if parsed else {}, 
+        raw_text, 
+        job_description=req.job_description,
+        target_role=req.target_role,
+        email_type=req.email_type
+    )
+    
+    return schemas.OutreachEmailResponse(email_text=email_text)
+
 @router.post("/rewrite")
 def rewrite_resume_text(
     req: schemas.RewriteRequest,

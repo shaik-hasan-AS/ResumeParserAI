@@ -20,6 +20,7 @@ export default function RecruiterDashboard() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
+  const [autoRejectThreshold, setAutoRejectThreshold] = useState("");
   const [creating, setCreating] = useState(false);
   const router = useRouter();
 
@@ -42,13 +43,18 @@ export default function RecruiterDashboard() {
     if (!newTitle.trim() || !newDescription.trim()) return;
     setCreating(true);
     try {
-      await api.post('/api/jobs', {
+      const payload: any = {
         title: newTitle,
         description: newDescription
-      });
+      };
+      if (autoRejectThreshold.trim() !== "") {
+        payload.auto_reject_threshold = parseInt(autoRejectThreshold, 10);
+      }
+      await api.post('/api/jobs', payload);
       setShowCreateModal(false);
       setNewTitle("");
       setNewDescription("");
+      setAutoRejectThreshold("");
       fetchJobs();
     } catch (e) {
       console.error(e);
@@ -164,9 +170,20 @@ export default function RecruiterDashboard() {
                     placeholder="Paste the full job description including requirements, responsibilities, etc..."
                     value={newDescription}
                     onChange={(e) => setNewDescription(e.target.value)}
-                    className="w-full bg-muted border border-border rounded-md px-4 py-3 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none min-h-[250px] resize-y custom-scrollbar"
+                    className="w-full bg-muted border border-border rounded-md px-4 py-3 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none min-h-[150px] resize-y custom-scrollbar"
                   />
-                  <p className="text-xs text-muted-foreground mt-2">The more detailed the description, the better the AI can match candidates.</p>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Auto-Reject Threshold (Optional)</label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    max="100"
+                    placeholder="e.g. 60 (Candidates scoring below this will be marked Rejected)"
+                    value={autoRejectThreshold}
+                    onChange={(e) => setAutoRejectThreshold(e.target.value)}
+                    className="w-full bg-muted border border-border rounded-md px-4 py-3 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none"
+                  />
                 </div>
               </div>
 
