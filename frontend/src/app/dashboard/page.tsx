@@ -43,8 +43,7 @@ function ATSAnalyticsBoard({ resumes }: { resumes: Resume[] }) {
     new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(new Date(ds));
 
   return (
-    <div className="bg-card border border-border rounded-3xl p-6 shadow-xl space-y-6 animate-in fade-in duration-500">
-      {/* Title */}
+    <div className="bg-card border border-border rounded-lg p-6 shadow-sm space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
           <BarChart2 className="w-5 h-5 text-primary" /> ATS Score Analytics
@@ -61,7 +60,7 @@ function ATSAnalyticsBoard({ resumes }: { resumes: Resume[] }) {
         ].map(({ label, value, icon }) => {
           const c = scoreColor(value);
           return (
-            <div key={label} className={`rounded-2xl border p-4 flex flex-col items-center gap-1 ${c.bg} ${c.border}`}>
+            <div key={label} className={`rounded-md border p-4 flex flex-col items-center gap-1 ${c.bg} ${c.border}`}>
               <div className={`${c.text} mb-1`}>{icon}</div>
               <span className={`text-3xl font-extrabold ${c.text}`}>{value}</span>
               <span className="text-xs font-medium text-muted-foreground">{label}</span>
@@ -202,10 +201,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background relative p-4 md:p-8 overflow-hidden font-sans">
-      {/* Decorative Elements */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[150px] pointer-events-none" />
-
       <div className="max-w-6xl mx-auto space-y-8 relative z-10">
         <header className="flex justify-between items-center bg-card p-6 rounded-2xl shadow-sm border border-border">
           <div>
@@ -228,7 +223,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-8">
-            <div className="bg-card border border-border shadow-xl rounded-3xl p-8 flex flex-col gap-6">
+            <div className="bg-card border border-border shadow-sm rounded-lg p-8 flex flex-col gap-6">
               
               <div className="mb-2">
                 <h2 className="text-xl font-bold text-foreground">Upload Document</h2>
@@ -237,10 +232,10 @@ export default function Dashboard() {
 
               {/* Upload Zone */}
               <div className="relative group">
-                <div className={`relative border-2 border-dashed rounded-3xl p-16 w-full flex flex-col items-center justify-center transition-all duration-300 ease-in-out cursor-pointer ${file ? 'border-primary/50 bg-primary/5' : 'border-border bg-muted/50 hover:bg-muted hover:border-primary/40'}`}>
+                <div className={`relative border-2 border-dashed rounded-lg p-16 w-full flex flex-col items-center justify-center transition-all duration-300 ease-in-out cursor-pointer ${file ? 'border-primary/50 bg-primary/5' : 'border-border bg-muted/50 hover:bg-muted hover:border-primary/40'}`}>
                   
                   <div className="flex flex-col items-center text-center">
-                    <div className="p-5 bg-muted rounded-full mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg border border-border">
+                    <div className="p-5 bg-card rounded-md mb-6 transition-transform duration-300 shadow-sm border border-border">
                       <CloudUpload className="w-10 h-10 text-primary" />
                     </div>
                     <p className="font-medium text-lg text-foreground mb-2">Drop your PDF or DOCX here</p>
@@ -320,7 +315,7 @@ export default function Dashboard() {
                 onClick={handleUpload} 
                 disabled={!file || loading} 
                 size="lg"
-                className={`w-full rounded-xl text-base font-semibold h-14 mt-4 transition-all duration-300 ${!file ? 'opacity-50 cursor-not-allowed bg-muted text-muted-foreground border border-border hover:bg-muted' : 'bg-primary hover:bg-primary/90 text-white shadow-[0_0_20px_rgba(147,51,234,0.3)]'}`}
+                className={`w-full rounded-md text-base font-semibold h-14 mt-4 transition-all duration-300 ${!file ? 'opacity-50 cursor-not-allowed bg-muted text-muted-foreground border border-border hover:bg-muted' : 'bg-primary hover:bg-primary/90 text-primary-foreground'}`}
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
@@ -337,7 +332,7 @@ export default function Dashboard() {
           </div>
           
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-card border border-border shadow-xl rounded-3xl h-full max-h-[650px] flex flex-col">
+            <div className="bg-card border border-border shadow-sm rounded-lg h-full max-h-[650px] flex flex-col">
               <div className="p-6 border-b border-border">
                 <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                   <Clock className="w-5 h-5 text-primary" /> Recent Uploads
@@ -358,7 +353,7 @@ export default function Dashboard() {
                   resumes.map((resume) => (
                     <div 
                       key={resume.id} 
-                      className="group flex flex-col gap-3 p-4 rounded-2xl bg-muted hover:bg-primary/10 dark:hover:bg-[#222230] border border-border transition-all cursor-pointer"
+                      className="group flex flex-col gap-3 p-4 rounded-lg bg-card hover:bg-muted border border-border transition-all cursor-pointer"
                       onClick={() => router.push(`/dashboard/resume/${resume.id}`)}
                     >
                       <div className="flex items-start justify-between">

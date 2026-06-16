@@ -111,8 +111,6 @@ export default function JobDetailsPage() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden font-sans flex flex-col h-screen">
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[150px] pointer-events-none" />
-      
       <header className="flex-none flex justify-between items-center bg-card p-4 md:p-6 shadow-sm border-b border-border z-10 relative">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/recruiter')} className="rounded-full hover:bg-muted/50 text-muted-foreground hover:text-foreground">
@@ -128,7 +126,7 @@ export default function JobDetailsPage() {
         <div className="flex items-center gap-3">
           <Button 
             onClick={() => setUploadModalOpen(true)}
-            className="bg-primary hover:bg-primary/90 text-white rounded-full flex items-center gap-2 text-sm"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-md flex items-center gap-2 text-sm"
           >
             <UploadCloud className="w-4 h-4" /> Bulk Upload PDFs
           </Button>
@@ -149,7 +147,7 @@ export default function JobDetailsPage() {
               const columnApps = applications.filter(app => (app.status || 'pending') === column.id);
               
               return (
-                <div key={column.id} className="w-[350px] h-full flex flex-col bg-muted/20 border border-border rounded-2xl overflow-hidden shadow-sm">
+                <div key={column.id} className="w-[350px] h-full flex flex-col bg-muted/20 border border-border rounded-lg overflow-hidden shadow-sm">
                   {/* Column Header */}
                   <div className={`p-4 border-b flex items-center justify-between bg-card ${column.color.split(' ')[0]}`}>
                     <div className="flex items-center gap-2">
@@ -170,7 +168,7 @@ export default function JobDetailsPage() {
                       </div>
                     ) : (
                       columnApps.map(app => (
-                        <div key={app.application_id} className="bg-card border border-border rounded-xl p-4 shadow-sm hover:border-primary/40 transition-all group">
+                        <div key={app.application_id} className="bg-card border border-border rounded-md p-4 shadow-sm hover:border-primary/50 transition-all group">
                           
                           <div className="flex justify-between items-start mb-3">
                             <h3 className="font-bold text-foreground text-base truncate pr-2" title={app.candidate_name}>
@@ -217,7 +215,7 @@ export default function JobDetailsPage() {
                             <Button 
                               variant="ghost" 
                               size="icon" 
-                              className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-indigo-500/10 hover:text-indigo-500"
+                              className="h-7 w-7 rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary"
                               onClick={() => window.open(`/dashboard/resume/${app.resume_id}`, '_blank')}
                               title="View Full Resume"
                             >
@@ -239,7 +237,7 @@ export default function JobDetailsPage() {
       {/* Notes Modal */}
       {activeNoteApp && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-card border border-border rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95">
+          <div className="bg-card border border-border rounded-lg shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95">
             <div className="p-6 border-b border-border flex justify-between items-center">
               <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <MessageSquare className="w-5 h-5 text-primary" />
@@ -251,12 +249,12 @@ export default function JobDetailsPage() {
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
                 placeholder="Add private recruiter notes here. For example: 'Great communication skills, schedule for round 2 technical screen...'"
-                className="w-full h-40 bg-muted border border-border rounded-xl p-4 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none resize-none custom-scrollbar"
+                className="w-full h-40 bg-muted border border-border rounded-md p-4 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none resize-none custom-scrollbar"
               />
             </div>
             <div className="p-4 border-t border-border bg-muted/30 flex justify-end gap-3">
-              <Button variant="ghost" className="rounded-xl" onClick={() => setActiveNoteApp(null)}>Cancel</Button>
-              <Button onClick={saveNotes} disabled={savingNote} className="rounded-xl bg-primary hover:bg-primary/90 text-white">
+              <Button variant="ghost" className="rounded-md" onClick={() => setActiveNoteApp(null)}>Cancel</Button>
+              <Button onClick={saveNotes} disabled={savingNote} className="rounded-md bg-primary hover:bg-primary/90 text-primary-foreground">
                 {savingNote ? 'Saving...' : 'Save Notes'}
               </Button>
             </div>
@@ -267,7 +265,7 @@ export default function JobDetailsPage() {
       {/* Bulk Upload Modal */}
       {uploadModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-card border border-border rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95">
+          <div className="bg-card border border-border rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95">
             <div className="p-6 border-b border-border flex justify-between items-center bg-muted/30">
               <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <UploadCloud className="w-5 h-5 text-primary" />
@@ -290,7 +288,7 @@ export default function JobDetailsPage() {
                 </div>
               ) : (
                 <div className="text-center">
-                  <div className="border-2 border-dashed border-border rounded-2xl p-10 bg-muted/20 hover:bg-muted/40 transition-colors relative group">
+                  <div className="border-2 border-dashed border-border rounded-lg p-10 bg-muted/20 hover:bg-muted/40 transition-colors relative group">
                     <input 
                       type="file" 
                       multiple 

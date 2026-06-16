@@ -50,75 +50,52 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #09090b;
+  --foreground: #171717;
   --card: #ffffff;
-  --card-foreground: #09090b;
+  --card-foreground: #171717;
   --popover: #ffffff;
-  --popover-foreground: #09090b;
-  --primary: #9333ea;
-  --primary-foreground: #ffffff;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #09090b;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
-  --accent-foreground: #09090b;
+  --popover-foreground: #171717;
+  --primary: #3ecf8e;
+  --primary-foreground: #171717;
+  --secondary: #fafafa;
+  --secondary-foreground: #171717;
+  --muted: #fafafa;
+  --muted-foreground: #707070;
+  --accent: #fafafa;
+  --accent-foreground: #171717;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #9333ea;
-  --radius: 1rem;
+  --border: #dfdfdf;
+  --input: #dfdfdf;
+  --ring: #3ecf8e;
+  --radius: 0.5rem;
 }
 
 .dark {
-  --background: #0a0a0f;
+  --background: #1c1c1c;
   --foreground: #ffffff;
-  --card: #12121a;
+  --card: #202020;
   --card-foreground: #ffffff;
-  --popover: #12121a;
+  --popover: #202020;
   --popover-foreground: #ffffff;
-  --primary: #a855f7;
-  --primary-foreground: #ffffff;
-  --secondary: #1a1a24;
+  --primary: #3ecf8e;
+  --primary-foreground: #171717;
+  --secondary: #2a2a2a;
   --secondary-foreground: #ffffff;
-  --muted: #1a1a24;
-  --muted-foreground: #a1a1aa;
-  --accent: #1a1a24;
+  --muted: #2a2a2a;
+  --muted-foreground: #9a9a9a;
+  --accent: #2a2a2a;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: rgba(255, 255, 255, 0.1);
   --input: rgba(255, 255, 255, 0.1);
-  --ring: #a855f7;
+  --ring: #3ecf8e;
 }
 
 @layer utilities {
   .glass-panel {
     @apply bg-card/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)];
-  }
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400;
-  }
-  .glow-effect {
-    @apply relative before:absolute before:-inset-1 before:bg-gradient-to-r before:from-indigo-500 before:to-purple-500 before:rounded-2xl before:blur-md before:opacity-30 before:transition-opacity hover:before:opacity-100;
-  }
-  
-  .mesh-bg {
-    background-color: var(--background);
-    background-image: 
-      radial-gradient(at 0% 0%, rgba(147, 51, 234, 0.15) 0, transparent 50%), 
-      radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.15) 0, transparent 50%);
-  }
-  .mesh-bg::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.04;
-    mix-blend-mode: overlay;
-    z-index: 50;
   }
 }
 

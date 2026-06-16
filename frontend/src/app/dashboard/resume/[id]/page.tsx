@@ -429,12 +429,8 @@ export default function ResumeViewer() {
 
   return (
     <div className="min-h-screen bg-background relative p-4 md:p-8 pb-24 font-sans text-[16px] overflow-hidden">
-      {/* Decorative Elements */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[150px] pointer-events-none" />
-
       <div className="max-w-7xl mx-auto space-y-8 relative z-10">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-6 rounded-2xl shadow-sm border border-border">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-6 rounded-lg shadow-sm border border-border">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard')} className="rounded-full hover:bg-muted/50 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-5 h-5" />
@@ -534,9 +530,9 @@ export default function ResumeViewer() {
           {/* Right Column: ATS Score & Feedback */}
           <div className="lg:col-span-8 space-y-6">
             {!feedback ? (
-              <div className="bg-card border border-border rounded-3xl p-12 text-center shadow-xl h-full flex flex-col justify-center min-h-[500px]">
+              <div className="bg-card border border-border rounded-lg p-12 text-center shadow-sm h-full flex flex-col justify-center min-h-[500px]">
                 <div className="max-w-sm mx-auto space-y-6">
-                  <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-primary/20 shadow-[0_0_30px_rgba(147,51,234,0.2)]">
+                  <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-primary/20 shadow-sm">
                     {loadingFeedback ? (
                       <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
                     ) : (
@@ -582,7 +578,7 @@ export default function ResumeViewer() {
                       <Button 
                         onClick={() => generateFeedback()} 
                         disabled={loadingFeedback}
-                        className="w-full bg-primary hover:bg-primary/90 text-white shadow-[0_0_20px_rgba(147,51,234,0.3)] h-12 rounded-xl font-semibold"
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm h-12 rounded-md font-semibold"
                       >
                         Generate Score
                       </Button>
@@ -593,8 +589,7 @@ export default function ResumeViewer() {
             ) : (
               <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
                 {/* Score Rings Section */}
-                <div className="bg-card border border-border rounded-3xl p-8 shadow-xl flex flex-col md:flex-row items-center gap-8 justify-between relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
+                <div className="bg-card border border-border rounded-lg p-8 shadow-sm flex flex-col md:flex-row items-center gap-8 justify-between relative overflow-hidden">
                   
                   <div className="flex-1 space-y-3 z-10 text-center md:text-left">
                     <h2 className="text-2xl font-bold text-foreground">ATS Analysis Results</h2>
@@ -613,7 +608,7 @@ export default function ResumeViewer() {
                   
                   <div className="flex gap-8 z-10">
                     <div className="flex flex-col items-center gap-3">
-                      <CircularProgress value={feedback.score} color="#a855f7" size={130} strokeWidth={12} />
+                      <CircularProgress value={feedback.score} color="#3ecf8e" size={130} strokeWidth={12} />
                       <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">ATS Score</span>
                     </div>
                     {structData?.keyword_match_rate !== undefined && (
@@ -669,7 +664,7 @@ export default function ResumeViewer() {
                     </div>
 
                     {/* Tab Content */}
-                    <div className="bg-card border border-border rounded-3xl p-6 md:p-8 shadow-xl min-h-[300px]">
+                    <div className="bg-card border border-border rounded-lg p-6 md:p-8 shadow-sm min-h-[300px]">
                       
                       {activeTab === 'strengths' && (
                         <div className="space-y-6 animate-in fade-in duration-300">
@@ -736,9 +731,9 @@ export default function ResumeViewer() {
                         <div className="space-y-8 animate-in fade-in duration-300">
                           <div className="flex items-center justify-between">
                             <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-                              <Edit3 className="w-5 h-5 text-indigo-400" /> AI Bullet Rewrites
+                              <Edit3 className="w-5 h-5 text-primary" /> AI Bullet Rewrites
                             </h3>
-                            <span className="text-xs bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/20">
+                            <span className="text-xs bg-primary/20 text-primary px-3 py-1 rounded-full border border-primary/20">
                               Impact-driven format
                             </span>
                           </div>
@@ -792,7 +787,7 @@ export default function ResumeViewer() {
                         <div className="space-y-6 animate-in fade-in duration-300">
                           <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-                              <FileText className="w-5 h-5 text-indigo-400" /> AI Cover Letter
+                              <FileText className="w-5 h-5 text-primary" /> AI Cover Letter
                             </h3>
                             {coverLetter && (
                               <PDFDownloadLink
