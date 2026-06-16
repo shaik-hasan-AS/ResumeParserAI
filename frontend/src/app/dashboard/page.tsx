@@ -183,9 +183,7 @@ export default function Dashboard() {
     formData.append('file', file);
 
     try {
-      const response = await api.post('/api/resume/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await api.post('/api/resume/upload', formData);
       router.push(`/dashboard/resume/${response.data.id}?role=${encodeURIComponent(targetRole)}&jd=${encodeURIComponent(jobDescription)}`);
     } catch (error) {
       console.error('Upload failed:', error);

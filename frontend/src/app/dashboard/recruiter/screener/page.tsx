@@ -59,9 +59,7 @@ export default function ScreenerDashboard() {
     });
 
     try {
-      const res = await api.post('/api/screener', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const res = await api.post('/api/screener', formData);
       setShowCreateModal(false);
       
       // Navigate directly to the new scan results

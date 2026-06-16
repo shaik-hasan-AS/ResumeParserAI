@@ -66,9 +66,7 @@ export default function JobDetailsPage() {
     });
 
     try {
-      await api.post(`/api/jobs/${id}/upload_candidates`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await api.post(`/api/jobs/${id}/upload_candidates`, formData);
       setUploadModalOpen(false);
       fetchApplications(); // Refresh board
     } catch (err) {
