@@ -14,33 +14,19 @@ try:
     # HOTFIX: Since Alembic migration failed due to create_all creating tables out of band,
     # we manually ensure the new columns exist.
     from sqlalchemy import text
-    with engine.begin() as conn:
+    hotfixes = [
+        "ALTER TABLE users ADD COLUMN role VARCHAR",
+        "ALTER TABLE applications ADD COLUMN status VARCHAR DEFAULT 'pending'",
+        "ALTER TABLE applications ADD COLUMN notes VARCHAR",
+        "ALTER TABLE applications ADD COLUMN rating INTEGER",
+        "ALTER TABLE job_listings ADD COLUMN auto_reject_threshold INTEGER",
+        "ALTER TABLE quick_scan_results ADD COLUMN rating INTEGER",
+        "ALTER TABLE quick_scan_results ADD COLUMN notes VARCHAR"
+    ]
+    for query in hotfixes:
         try:
-            conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR"))
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE applications ADD COLUMN status VARCHAR DEFAULT 'pending'"))
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE applications ADD COLUMN notes VARCHAR"))
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE applications ADD COLUMN rating INTEGER"))
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE job_listings ADD COLUMN auto_reject_threshold INTEGER"))
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE quick_scan_results ADD COLUMN rating INTEGER"))
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE quick_scan_results ADD COLUMN notes VARCHAR"))
+            with engine.begin() as conn:
+                conn.execute(text(query))
         except Exception:
             pass
     print("Database tables created successfully or already exist.")
