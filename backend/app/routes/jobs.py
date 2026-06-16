@@ -10,7 +10,7 @@ from starlette.concurrency import run_in_threadpool
 
 router = APIRouter(prefix="/api/jobs", tags=["jobs"])
 
-@router.post("/", response_model=schemas.JobListingResponse)
+@router.post("", response_model=schemas.JobListingResponse)
 def create_job(
     job: schemas.JobListingCreate,
     db: Session = Depends(get_db),
@@ -29,7 +29,7 @@ def create_job(
     db.refresh(new_job)
     return new_job
 
-@router.get("/", response_model=list[schemas.JobListingResponse])
+@router.get("", response_model=list[schemas.JobListingResponse])
 def list_jobs(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
