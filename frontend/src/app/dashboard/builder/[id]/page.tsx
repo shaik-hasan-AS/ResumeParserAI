@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save, Plus, Trash2, Sparkles, Loader2, Eye, EyeOff, ArrowUp, ArrowDown, Edit2 } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Sparkles, Loader2, Eye, EyeOff, ArrowUp, ArrowDown, Edit2, Download } from 'lucide-react';
 import api from '@/lib/api';
 import dynamic from 'next/dynamic';
+import { generateDocx } from '@/lib/docxGenerator';
 import ResumePDF from '@/components/ResumePDF';
 import { useResumeStore, DEFAULT_SECTION_ORDER } from '@/store/useResumeStore';
 
@@ -342,6 +343,70 @@ export default function BuilderPage() {
     fetchData();
   }, [id, setParsedData]);
 
+  const handleDownloadDocx = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const docxData: any = {
+      name: parsedData?.name || '',
+      email: parsedData?.email || '',
+      phone: parsedData?.phone || '',
+      location: parsedData?.location || '',
+      linkedin: parsedData?.linkedin || '',
+      github: parsedData?.github || '',
+      summary: parsedData?.summary || '',
+      technical_skills: (parsedData?.skills_categorized?.technical || []).join(', '),
+      soft_skills: (parsedData?.skills_categorized?.soft || []).join(', '),
+      tools: (parsedData?.skills_categorized?.tools || []).join(', '),
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let experience: any[] = [];
+    if (parsedData?.structured_experience) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      experience = parsedData.structured_experience.map((exp: any) => ({
+        title: exp.job_title || exp.title || '',
+        company: exp.company || '',
+        date: exp.dates || exp.date || '',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        bullets: (exp.bullet_points || exp.bullets || []).map((b: string) => ({ text: b }))
+      }));
+    } else if (parsedData?.experience) {
+      experience = [{
+        title: 'Experience',
+        company: '',
+        date: '',
+        bullets: [{ text: parsedData.experience }]
+      }];
+    }
+    docxData.experience = experience;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let education: any[] = [];
+    if (parsedData?.education_entries && parsedData.education_entries.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      education = parsedData.education_entries.map((edu: any) => ({
+        degree: edu.degree || '',
+        institution: edu.institution || '',
+        year: edu.year || ''
+      }));
+    } else if (parsedData?.education) {
+      education = [{
+        degree: 'Education',
+        institution: parsedData.education,
+        year: ''
+      }];
+    }
+    docxData.education = education;
+
+    const fileName = `${docxData.name ? docxData.name.replace(/\s+/g, '_') : 'Resume'}.docx`;
+    
+    try {
+      await generateDocx(docxData, fileName);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to generate DOCX');
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -390,9 +455,14 @@ export default function BuilderPage() {
           </Button>
           <h1 className="text-xl font-bold">Interactive Resume Builder</h1>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="bg-primary hover:bg-primary/90 text-white flex gap-2">
-          <Save className="w-4 h-4" /> {saving ? "Saving..." : "Save Changes"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleDownloadDocx} className="bg-blue-600 hover:bg-blue-700 text-white flex gap-2">
+            <Download className="w-4 h-4" /> Download DOCX
+          </Button>
+          <Button onClick={handleSave} disabled={saving} className="bg-primary hover:bg-primary/90 text-white flex gap-2">
+            <Save className="w-4 h-4" /> {saving ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
       </header>
 
       {/* Main Split View */}
