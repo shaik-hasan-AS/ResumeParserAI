@@ -8,8 +8,7 @@ services:
   - type: web
     name: vinentoai-backend
     env: docker
-    dockerContext: ./backend
-    dockerfilePath: ./backend/Dockerfile
+    rootDir: backend
     plan: free
     envVars:
       - key: DATABASE_URL
@@ -19,15 +18,3 @@ services:
       - key: PORT
         value: "8000"
 
-  - type: web
-    name: vinentoai-frontend
-    env: node
-    buildCommand: "cd frontend && npm install && npm run build"
-    startCommand: "cd frontend && npm run start"
-    plan: free
-    envVars:
-      - key: NEXT_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: vinentoai-backend
-          envVarKey: RENDER_EXTERNAL_URL
