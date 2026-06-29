@@ -1,0 +1,33 @@
+databases:
+  - name: vinentoai-db
+    databaseName: vinentoai
+    user: vinentoai
+    plan: free
+
+services:
+  - type: web
+    name: vinentoai-backend
+    env: docker
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vinentoai-db
+          property: connectionString
+      - key: PORT
+        value: "8000"
+
+  - type: web
+    name: vinentoai-frontend
+    env: node
+    buildCommand: "cd frontend && npm install && npm run build"
+    startCommand: "cd frontend && npm run start"
+    plan: free
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: vinentoai-backend
+          envVarKey: RENDER_EXTERNAL_URL

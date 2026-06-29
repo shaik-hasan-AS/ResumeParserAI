@@ -35,3 +35,6 @@ postgres_data/
 
 # Design files
 frontend/design.md
+
+# AI Agents
+.agents/
