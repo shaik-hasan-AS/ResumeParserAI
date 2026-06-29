@@ -1,7 +1,5 @@
 import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
-import { saveAs } from 'file-saver';
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function generateDocx(data: any, fileName: string) {
   try {
@@ -31,7 +29,14 @@ export async function generateDocx(data: any, fileName: string) {
     });
 
     // 6. Download the file
-    saveAs(blob, fileName);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   } catch (error) {
     console.error('Error generating docx:', error);
     throw error;
