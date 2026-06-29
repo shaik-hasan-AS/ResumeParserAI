@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic';
 import ResumePDF from '@/components/ResumePDF';
 import CoverLetterPDF from '@/components/CoverLetterPDF';
 import { Download } from 'lucide-react';
+import { generateDocx } from '@/lib/docxGenerator';
 
 const PDFDownloadLink = dynamic(
   () => import('@react-pdf/renderer').then((mod) => mod.PDFDownloadLink),
@@ -415,6 +416,96 @@ export default function ResumeViewer() {
 
   // `generateFeedback` is now defined above
 
+  const handleDownloadDocx = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const docxData: any = {
+      name: overrides.name || parsedData?.name || '',
+      email: overrides.email || parsedData?.email || '',
+      phone: overrides.phone || parsedData?.phone || '',
+      location: overrides.location || parsedData?.location || '',
+      linkedin: overrides.linkedin || parsedData?.linkedin || '',
+      github: overrides.github || parsedData?.github || '',
+      summary: structData?.professional_summary || parsedData?.professional_summary || '',
+      technical_skills: (parsedData?.skills_categorized?.technical || []).join(', '),
+      soft_skills: (parsedData?.skills_categorized?.soft || []).join(', '),
+      tools: (parsedData?.skills_categorized?.tools || []).join(', '),
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let experience: any[] = [];
+    if (structData?.structured_experience) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      experience = structData.structured_experience.map((exp: any) => ({
+        title: exp.title,
+        company: exp.company,
+        date: exp.date,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        bullets: exp.bullets.map((b: string) => ({ text: b }))
+      }));
+    } else if (parsedData?.experience_entries) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       experience = parsedData.experience_entries.map((exp: any) => ({
+        title: exp.title || '',
+        company: exp.company || '',
+        date: exp.date || '',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        bullets: (exp.bullets || []).map((b: string) => ({ text: b }))
+      }));
+    } else if (parsedData?.experience) {
+      experience = [{
+        title: 'Experience',
+        company: '',
+        date: '',
+        bullets: [{ text: parsedData.experience }]
+      }];
+    }
+    
+    if (structData?.bullet_point_rewrites) {
+      const rewriteMap = new Map();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      structData.bullet_point_rewrites.forEach((r: any) => rewriteMap.set(r.original.trim(), r.improved));
+      
+      experience.forEach(exp => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        exp.bullets.forEach((b: any) => {
+          const original = b.text.trim();
+          if (rewriteMap.has(original)) {
+            b.text = rewriteMap.get(original);
+          }
+        });
+      });
+    }
+
+    docxData.experience = experience;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let education: any[] = [];
+    if (parsedData?.education_entries && parsedData.education_entries.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      education = parsedData.education_entries.map((edu: any) => ({
+        degree: edu.degree || '',
+        institution: edu.institution || '',
+        year: edu.year || ''
+      }));
+    } else if (parsedData?.education) {
+      education = [{
+        degree: 'Education',
+        institution: parsedData.education,
+        year: ''
+      }];
+    }
+    docxData.education = education;
+
+    const fileName = `${docxData.name ? docxData.name.replace(/\s+/g, '_') : 'Resume'}.docx`;
+    
+    try {
+      await generateDocx(docxData, fileName);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to generate DOCX');
+    }
+  };
+
 
   if (!parsedData) return (
     <div className="min-h-screen bg-background flex items-center justify-center">
@@ -477,6 +568,14 @@ export default function ResumeViewer() {
                     </Button>
                   )}
                 </PDFDownloadLink>
+                <div className="w-px h-6 bg-border" />
+                <Button 
+                  onClick={handleDownloadDocx}
+                  className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-9 px-4 rounded-lg font-semibold flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Resume DOCX
+                </Button>
                 {coverLetter && (
                   <>
                     <div className="w-px h-6 bg-border" />
