@@ -58,7 +58,7 @@ The app will be available at:
 The project is split into a separated frontend and backend architecture:
 
 - **`/frontend`**: Next.js 15 application (App Router) styled with Tailwind CSS. Deployed on Vercel.
-- **`/backend`**: Python FastAPI application using SQLModel/SQLite for database management. Deployed on Railway.
+- **`/backend`**: Python FastAPI application using SQLModel/PostgreSQL for database management. Deployed on Render.
 
 ---
 
@@ -126,11 +126,11 @@ The project is split into a separated frontend and backend architecture:
 
 ## 📦 Deployment
 
-### Backend (Railway)
-The backend is configured to be deployed on Railway. It utilizes the root `Aptfile` and `nixpacks.toml` (or the included Dockerfile) to ensure that `tesseract-ocr` system dependencies are installed in the production environment. Set your root directory to `/backend` or configure the deployment command to run from the root.
+### Backend (Render)
+The backend is configured to be deployed on Render using the included `render.yaml` Infrastructure-as-Code file. This file automatically provisions a free PostgreSQL database and builds the FastAPI Docker container (which installs the required `tesseract-ocr` dependencies).
 
 ### Frontend (Vercel)
-The frontend is optimized for deployment on Vercel. Connect your repository to Vercel, set the Root Directory to `frontend`, and ensure the `NEXT_PUBLIC_API_URL` environment variable points to your production Railway backend URL.
+The frontend is optimized for deployment on Vercel. Connect your repository to Vercel, set the Root Directory to `frontend`, and ensure the `NEXT_PUBLIC_API_URL` environment variable points to your production Render backend URL.
 
 ---
 
