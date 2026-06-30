@@ -34,12 +34,14 @@ interface ParsedData {
   section_labels?: Record<string, string>;
   custom_sections?: CustomSection[];
   section_order?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
 interface ResumeStore {
   parsedData: ParsedData;
   setParsedData: (data: ParsedData) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateField: (field: keyof ParsedData, value: any) => void;
   updateExperience: (index: number, updatedExp: Experience) => void;
   reorderExperiences: (startIndex: number, endIndex: number) => void;
@@ -57,6 +59,7 @@ export const DEFAULT_SECTION_ORDER = ['summary', 'experience', 'education', 'pro
 export const useResumeStore = create<ResumeStore>((set) => ({
   parsedData: {},
   setParsedData: (data) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const addIds = (arr: any[]) => {
       if (arr) {
         arr.forEach(item => {

@@ -1,15 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Save, Plus, Trash2, Sparkles, Loader2, Eye, EyeOff, ArrowUp, ArrowDown, Edit2, Download } from 'lucide-react';
 import api from '@/lib/api';
-import dynamic from 'next/dynamic';
-import { generateDocx } from '@/lib/docxGenerator';
-import ResumePDF from '@/components/ResumePDF';
+import ResumeHTML from '@/components/ResumeHTML';
 import { useResumeStore, DEFAULT_SECTION_ORDER } from '@/store/useResumeStore';
-
-const PDFViewer = dynamic(() => import('@react-pdf/renderer').then(mod => mod.PDFViewer), { ssr: false });
 
 const RewritableTextarea = ({ value, onChange, placeholder, context, className }: { value: string, onChange: (val: string) => void, placeholder: string, context: string, className?: string }) => {
   const [rewriting, setRewriting] = useState(false);
@@ -343,68 +340,30 @@ export default function BuilderPage() {
     fetchData();
   }, [id, setParsedData]);
 
-  const handleDownloadDocx = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const docxData: any = {
-      name: parsedData?.name || '',
-      email: parsedData?.email || '',
-      phone: parsedData?.phone || '',
-      location: parsedData?.location || '',
-      linkedin: parsedData?.linkedin || '',
-      github: parsedData?.github || '',
-      summary: parsedData?.summary || '',
-      technical_skills: (parsedData?.skills_categorized?.technical || []).join(', '),
-      soft_skills: (parsedData?.skills_categorized?.soft || []).join(', '),
-      tools: (parsedData?.skills_categorized?.tools || []).join(', '),
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let experience: any[] = [];
-    if (parsedData?.structured_experience) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      experience = parsedData.structured_experience.map((exp: any) => ({
-        title: exp.job_title || exp.title || '',
-        company: exp.company || '',
-        date: exp.dates || exp.date || '',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        bullets: (exp.bullet_points || exp.bullets || []).map((b: string) => ({ text: b }))
-      }));
-    } else if (parsedData?.experience) {
-      experience = [{
-        title: 'Experience',
-        company: '',
-        date: '',
-        bullets: [{ text: parsedData.experience }]
-      }];
+  const handleDownloadDocx = () => {
+    const htmlContent = document.getElementById('resume-html-content')?.outerHTML;
+    if (!htmlContent) {
+      alert('Could not find resume content to export.');
+      return;
     }
-    docxData.experience = experience;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let education: any[] = [];
-    if (parsedData?.education_entries && parsedData.education_entries.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      education = parsedData.education_entries.map((edu: any) => ({
-        degree: edu.degree || '',
-        institution: edu.institution || '',
-        year: edu.year || ''
-      }));
-    } else if (parsedData?.education) {
-      education = [{
-        degree: 'Education',
-        institution: parsedData.education,
-        year: ''
-      }];
-    }
-    docxData.education = education;
-
-    const fileName = `${docxData.name ? docxData.name.replace(/\s+/g, '_') : 'Resume'}.docx`;
     
-    try {
-      await generateDocx(docxData, fileName);
-    } catch (e) {
-      console.error(e);
-      alert('Failed to generate DOCX');
-    }
+    const preHtml = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Resume</title></head><body>`;
+    const postHtml = "</body></html>";
+    const html = preHtml + htmlContent + postHtml;
+    
+    const url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
+    const fileName = `${parsedData?.name ? parsedData.name.replace(/\s+/g, '_') : 'Resume'}.doc`;
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handlePrintPDF = () => {
+    window.print();
   };
 
   const handleSave = async () => {
@@ -448,18 +407,21 @@ export default function BuilderPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col font-sans h-screen overflow-hidden">
       {/* Header */}
-      <header className="flex justify-between items-center p-4 border-b border-border bg-card z-10 shrink-0">
+      <header className="flex justify-between items-center p-4 border-b border-border bg-card z-10 shrink-0 print:hidden">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.push(`/dashboard/resume/${id}`)} className="rounded-full">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <h1 className="text-xl font-bold">Interactive Resume Builder</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 print:hidden">
+          <Button onClick={handlePrintPDF} className="bg-primary hover:bg-primary/90 text-white flex gap-2">
+            <Download className="w-4 h-4" /> Download PDF
+          </Button>
           <Button onClick={handleDownloadDocx} className="bg-blue-600 hover:bg-blue-700 text-white flex gap-2">
             <Download className="w-4 h-4" /> Download DOCX
           </Button>
-          <Button onClick={handleSave} disabled={saving} className="bg-primary hover:bg-primary/90 text-white flex gap-2">
+          <Button onClick={handleSave} disabled={saving} variant="outline" className="flex gap-2">
             <Save className="w-4 h-4" /> {saving ? "Saving..." : "Save Changes"}
           </Button>
         </div>
@@ -469,7 +431,7 @@ export default function BuilderPage() {
       <div className="flex flex-1 overflow-hidden">
         
         {/* Left Pane: Editor */}
-        <div className="w-1/2 p-6 overflow-y-auto custom-scrollbar border-r border-border bg-background space-y-8 pb-24">
+        <div className="w-1/2 p-6 overflow-y-auto custom-scrollbar border-r border-border bg-background space-y-8 pb-24 print:hidden">
           
           <section className="space-y-4">
             <h2 className="text-lg font-bold">Personal Information</h2>
@@ -603,10 +565,10 @@ export default function BuilderPage() {
           </section>
         </div>
 
-        {/* Right Pane: PDF Preview */}
-        <div className="w-1/2 bg-muted/30 p-4 h-full relative flex flex-col">
+        {/* Right Pane: HTML Preview */}
+        <div className="w-1/2 bg-muted/30 p-4 h-full relative flex flex-col overflow-y-auto print:w-full print:p-0 print:overflow-visible">
           {/* Theme Selector */}
-          <div className="flex justify-center gap-2 mb-4 shrink-0">
+          <div className="flex justify-center gap-2 mb-4 shrink-0 print:hidden">
             {(['modern', 'harvard', 'executive'] as const).map((t) => (
               <Button
                 key={t}
@@ -620,14 +582,15 @@ export default function BuilderPage() {
             ))}
           </div>
           
-          <PDFViewer width="100%" height="100%" className="rounded-xl shadow-xl border border-border flex-1">
-            <ResumePDF 
+          <div className="flex-1 w-full max-w-3xl mx-auto rounded-xl shadow-xl border border-border bg-white overflow-hidden print:shadow-none print:border-none print:max-w-none">
+            <ResumeHTML 
               parsedData={parsedData} 
               overrides={{ name: '', email: '', phone: '', linkedin: '', github: '', location: '' }}
               theme={theme}
               structuredExperience={experienceItems}
+              id="resume-html-content"
             />
-          </PDFViewer>
+          </div>
         </div>
       </div>
     </div>

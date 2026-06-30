@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import api from '@/lib/api';
-import { Briefcase, Plus, Users, Clock, Target, UploadCloud, Search, ListFilter, ArrowLeft } from 'lucide-react';
+import { Plus, Users, Clock, UploadCloud, Search, ListFilter } from 'lucide-react';
 
 interface QuickScan {
   id: string;
@@ -42,6 +42,7 @@ export default function ScreenerDashboard() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchScans();
   }, []);
 

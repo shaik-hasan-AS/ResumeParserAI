@@ -29,10 +29,6 @@ export default function ScreenerDetailsPage() {
   const [noteText, setNoteText] = useState("");
   const [savingNote, setSavingNote] = useState(false);
 
-  useEffect(() => {
-    fetchResults();
-  }, [id]);
-
   const fetchResults = async () => {
     try {
       const res = await api.get(`/api/screener/${id}`);
@@ -43,6 +39,12 @@ export default function ScreenerDetailsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchResults();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const updateRating = async (resultId: string, rating: number) => {
     setResults(res => res.map(r => r.id === resultId ? { ...r, rating } : r));

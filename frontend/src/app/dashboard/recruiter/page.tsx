@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import api from '@/lib/api';
-import { Briefcase, Plus, Users, Clock, Target, Search } from 'lucide-react';
+import { Briefcase, Plus, Users, Clock, Target } from 'lucide-react';
 
 interface JobListing {
   id: string;
@@ -36,6 +36,7 @@ export default function RecruiterDashboard() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchJobs();
   }, []);
 
@@ -43,6 +44,7 @@ export default function RecruiterDashboard() {
     if (!newTitle.trim() || !newDescription.trim()) return;
     setCreating(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload: any = {
         title: newTitle,
         description: newDescription

@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import api from '@/lib/api';
-import { ArrowLeft, Users, FileText, CheckCircle2, AlertTriangle, MessageSquare, GripVertical, Plus, UploadCloud, X, Search } from 'lucide-react';
+import { ArrowLeft, FileText, CheckCircle2, AlertTriangle, MessageSquare, UploadCloud, X, Search } from 'lucide-react';
 
 interface Application {
   application_id: string;
@@ -39,10 +39,6 @@ export default function JobDetailsPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
 
-  useEffect(() => {
-    fetchApplications();
-  }, [id]);
-
   const fetchApplications = async () => {
     try {
       const res = await api.get(`/api/jobs/${id}/applications`);
@@ -53,6 +49,12 @@ export default function JobDetailsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchApplications();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleBulkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;

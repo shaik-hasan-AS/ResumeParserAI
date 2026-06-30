@@ -55,6 +55,7 @@ export default function CandidateJobsBoard() {
     try {
       await api.post(`/api/jobs/${jobId}/apply?resume_id=${selectedResume}`);
       setAppliedJobs(prev => new Set(prev).add(jobId));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error.response?.data?.detail === "Already applied to this job with this resume") {
         setAppliedJobs(prev => new Set(prev).add(jobId));
@@ -98,7 +99,7 @@ export default function CandidateJobsBoard() {
           <div className="bg-card border border-border rounded-3xl p-16 text-center flex flex-col items-center justify-center shadow-sm">
             <Briefcase className="w-16 h-16 text-muted-foreground/30 mb-4" />
             <h3 className="text-xl font-bold text-foreground mb-2">No jobs available right now</h3>
-            <p className="text-muted-foreground mb-6 max-w-md">Recruiters haven't posted any jobs yet. Check back later!</p>
+            <p className="text-muted-foreground mb-6 max-w-md">Recruiters haven&apos;t posted any jobs yet. Check back later!</p>
           </div>
         ) : (
           <div className="space-y-6">

@@ -27,9 +27,8 @@ const FIELD_META: Record<ContactField, { label: string; icon: React.ReactNode }>
 };
 
 function ContactBlock({ parsedData }: { parsedData: Record<string, unknown> | null | undefined }) {
-  const detected = CONTACT_FIELDS.reduce((acc, key) => acc + (parsedData?.[key] && parsedData[key] !== '' ? 1 : 0), 0);
-  const total = CONTACT_FIELDS.length;
-  const pct = Math.round((detected / total) * 100);
+
+
 
   return (
     <div className="bg-card border border-border rounded-3xl p-6 shadow-xl space-y-5">

@@ -5,19 +5,9 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, User, Mail, Phone, Briefcase, Sparkles, GraduationCap, ArrowRight, CheckCircle2, AlertTriangle, ListOrdered, Edit3, Target, Link2, Code2, MapPin, Pencil, Award, FileText } from 'lucide-react';
 import api from '@/lib/api';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import dynamic from 'next/dynamic';
-import ResumePDF from '@/components/ResumePDF';
-import CoverLetterPDF from '@/components/CoverLetterPDF';
+import ResumeHTML from '@/components/ResumeHTML';
+import CoverLetterHTML from '@/components/CoverLetterHTML';
 import { Download } from 'lucide-react';
-import { generateDocx } from '@/lib/docxGenerator';
-
-const PDFDownloadLink = dynamic(
-  () => import('@react-pdf/renderer').then((mod) => mod.PDFDownloadLink),
-  { 
-    ssr: false, 
-    loading: () => <Button disabled variant="outline" className="h-9 px-4 text-sm rounded-lg border-border"><Download className="w-4 h-4 mr-2" /> Loading PDF...</Button> 
-  }
-);
 
 
 
@@ -295,6 +285,8 @@ export default function ResumeViewer() {
   const urlRole = searchParams.get('role');
   const urlJd = searchParams.get('jd');
   
+  const [printTarget, setPrintTarget] = useState<'none' | 'resume' | 'cover_letter'>('none');
+  
   const [overrides, setOverrides] = useState<Record<ContactField, string>>(
     CONTACT_FIELDS.reduce((acc, k) => ({ ...acc, [k]: '' }), {} as Record<ContactField, string>)
   );
@@ -361,7 +353,7 @@ export default function ResumeViewer() {
     } finally {
       setLoadingFeedback(false);
     }
-  }, [id, targetRole]);
+  }, [id, targetRole, jobDescription]);
 
   const generateCoverLetter = async () => {
     setLoadingCoverLetter(true);
@@ -416,94 +408,24 @@ export default function ResumeViewer() {
 
   // `generateFeedback` is now defined above
 
-  const handleDownloadDocx = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const docxData: any = {
-      name: overrides.name || parsedData?.name || '',
-      email: overrides.email || parsedData?.email || '',
-      phone: overrides.phone || parsedData?.phone || '',
-      location: overrides.location || parsedData?.location || '',
-      linkedin: overrides.linkedin || parsedData?.linkedin || '',
-      github: overrides.github || parsedData?.github || '',
-      summary: structData?.professional_summary || parsedData?.professional_summary || '',
-      technical_skills: (parsedData?.skills_categorized?.technical || []).join(', '),
-      soft_skills: (parsedData?.skills_categorized?.soft || []).join(', '),
-      tools: (parsedData?.skills_categorized?.tools || []).join(', '),
-    };
+  const handleDownloadDocx = () => {
+    const htmlContent = document.getElementById('resume-html-content')?.outerHTML;
+    if (!htmlContent) return alert('Content not found');
+    const preHtml = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Resume</title></head><body>`;
+    const postHtml = "</body></html>";
+    const html = preHtml + htmlContent + postHtml;
+    const url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
+    const fileName = `${parsedData?.name ? parsedData.name.replace(/\s+/g, '_') : 'Resume'}.doc`;
+    const link = document.createElement('a');
+    link.href = url; link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let experience: any[] = [];
-    if (structData?.structured_experience) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      experience = structData.structured_experience.map((exp: any) => ({
-        title: exp.title,
-        company: exp.company,
-        date: exp.date,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        bullets: exp.bullets.map((b: string) => ({ text: b }))
-      }));
-    } else if (parsedData?.experience_entries) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-       experience = parsedData.experience_entries.map((exp: any) => ({
-        title: exp.title || '',
-        company: exp.company || '',
-        date: exp.date || '',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        bullets: (exp.bullets || []).map((b: string) => ({ text: b }))
-      }));
-    } else if (parsedData?.experience) {
-      experience = [{
-        title: 'Experience',
-        company: '',
-        date: '',
-        bullets: [{ text: parsedData.experience }]
-      }];
-    }
-    
-    if (structData?.bullet_point_rewrites) {
-      const rewriteMap = new Map();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      structData.bullet_point_rewrites.forEach((r: any) => rewriteMap.set(r.original.trim(), r.improved));
-      
-      experience.forEach(exp => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        exp.bullets.forEach((b: any) => {
-          const original = b.text.trim();
-          if (rewriteMap.has(original)) {
-            b.text = rewriteMap.get(original);
-          }
-        });
-      });
-    }
-
-    docxData.experience = experience;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let education: any[] = [];
-    if (parsedData?.education_entries && parsedData.education_entries.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      education = parsedData.education_entries.map((edu: any) => ({
-        degree: edu.degree || '',
-        institution: edu.institution || '',
-        year: edu.year || ''
-      }));
-    } else if (parsedData?.education) {
-      education = [{
-        degree: 'Education',
-        institution: parsedData.education,
-        year: ''
-      }];
-    }
-    docxData.education = education;
-
-    const fileName = `${docxData.name ? docxData.name.replace(/\s+/g, '_') : 'Resume'}.docx`;
-    
-    try {
-      await generateDocx(docxData, fileName);
-    } catch (e) {
-      console.error(e);
-      alert('Failed to generate DOCX');
-    }
+  const handlePrintPDF = (target: 'resume' | 'cover_letter') => {
+    setPrintTarget(target);
+    setTimeout(() => {
+      window.print();
+      setPrintTarget('none');
+    }, 100);
   };
 
 
@@ -519,7 +441,8 @@ export default function ResumeViewer() {
   const structData = feedback?.structured_data;
 
   return (
-    <div className="min-h-screen bg-background relative p-4 md:p-8 pb-24 font-sans text-[16px] overflow-hidden">
+    <>
+    <div className={`min-h-screen bg-background relative p-4 md:p-8 pb-24 font-sans text-[16px] overflow-hidden ${printTarget !== 'none' ? 'hidden' : 'block print:hidden'}`}>
       <div className="max-w-7xl mx-auto space-y-8 relative z-10">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-6 rounded-lg shadow-sm border border-border">
           <div className="flex items-center gap-4">
@@ -545,29 +468,13 @@ export default function ResumeViewer() {
                   <option value="harvard" className="bg-background text-foreground">Harvard Format</option>
                   <option value="executive" className="bg-background text-foreground">Executive</option>
                 </select>
-                <PDFDownloadLink
-                  document={
-                    <ResumePDF 
-                      parsedData={parsedData} 
-                      overrides={overrides} 
-                      aiRewrites={structData?.bullet_point_rewrites}
-                      structuredExperience={structData?.structured_experience}
-                      theme={pdfTheme}
-                      aiSummary={structData?.professional_summary}
-                    />
-                  }
-                  fileName={`${parsedData?.name ? parsedData.name.replace(/\s+/g, '_') : 'Resume'}.pdf`}
+                <Button
+                  onClick={() => handlePrintPDF('resume')}
+                  className="bg-primary hover:bg-primary/90 text-white shadow-sm h-9 px-4 rounded-lg font-semibold flex items-center gap-2"
                 >
-                  {({ loading }: { loading: boolean }) => (
-                    <Button 
-                      disabled={loading}
-                      className="bg-primary hover:bg-primary/90 text-white shadow-sm h-9 px-4 rounded-lg font-semibold flex items-center gap-2"
-                    >
-                      <Download className="w-4 h-4" />
-                      {loading ? 'Preparing...' : 'Resume PDF'}
-                    </Button>
-                  )}
-                </PDFDownloadLink>
+                  <Download className="w-4 h-4" />
+                  Resume PDF
+                </Button>
                 <div className="w-px h-6 bg-border" />
                 <Button 
                   onClick={handleDownloadDocx}
@@ -579,28 +486,14 @@ export default function ResumeViewer() {
                 {coverLetter && (
                   <>
                     <div className="w-px h-6 bg-border" />
-                    <PDFDownloadLink
-                      document={
-                        <CoverLetterPDF
-                          parsedData={parsedData}
-                          overrides={overrides}
-                          coverLetterText={coverLetter}
-                          theme={pdfTheme}
-                        />
-                      }
-                      fileName={`${parsedData?.name ? parsedData.name.replace(/\s+/g, '_') : 'Candidate'}_Cover_Letter.pdf`}
+                    <Button
+                      onClick={() => handlePrintPDF('cover_letter')}
+                      variant="outline"
+                      className="border-primary/40 text-primary hover:bg-primary/10 h-9 px-4 rounded-lg font-semibold flex items-center gap-2 bg-transparent"
                     >
-                      {({ loading }: { loading: boolean }) => (
-                        <Button
-                          disabled={loading}
-                          variant="outline"
-                          className="border-primary/40 text-primary hover:bg-primary/10 h-9 px-4 rounded-lg font-semibold flex items-center gap-2 bg-transparent"
-                        >
-                          <FileText className="w-4 h-4" />
-                          {loading ? 'Preparing...' : 'Cover Letter'}
-                        </Button>
-                      )}
-                    </PDFDownloadLink>
+                      <FileText className="w-4 h-4" />
+                      Cover Letter PDF
+                    </Button>
                   </>
                 )}
               </div>
@@ -889,27 +782,13 @@ export default function ResumeViewer() {
                               <FileText className="w-5 h-5 text-primary" /> AI Cover Letter
                             </h3>
                             {coverLetter && (
-                              <PDFDownloadLink
-                                document={
-                                  <CoverLetterPDF 
-                                    parsedData={parsedData} 
-                                    overrides={overrides} 
-                                    coverLetterText={coverLetter}
-                                    theme={pdfTheme}
-                                  />
-                                }
-                                fileName={`${parsedData?.name ? parsedData.name.replace(/\s+/g, '_') : 'Candidate'}_Cover_Letter.pdf`}
+                              <Button
+                                onClick={() => handlePrintPDF('cover_letter')}
+                                className="bg-primary hover:bg-primary/90 text-white shadow-sm h-9 px-4 rounded-lg font-semibold flex items-center gap-2 text-sm"
                               >
-                                {({ loading }: { loading: boolean }) => (
-                                  <Button 
-                                    disabled={loading}
-                                    className="bg-primary hover:bg-primary/90 text-white shadow-sm h-9 px-4 rounded-lg font-semibold flex items-center gap-2 text-sm"
-                                  >
-                                    <Download className="w-4 h-4" />
-                                    {loading ? 'Preparing...' : 'Download PDF'}
-                                  </Button>
-                                )}
-                              </PDFDownloadLink>
+                                <Download className="w-4 h-4" />
+                                Download PDF
+                              </Button>
                             )}
                           </div>
                           
@@ -1003,6 +882,7 @@ export default function ResumeViewer() {
                                 </Button>
                               </div>
                               <div className="grid gap-6">
+                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                 {mockInterview.questions?.map((q: any, i: number) => (
                                   <div key={i} className="bg-muted border border-border rounded-xl p-6 shadow-sm group">
                                     <div className="flex items-start justify-between gap-4 mb-3">
@@ -1051,5 +931,29 @@ export default function ResumeViewer() {
         </div>
       </div>
     </div>
+    
+    {/* Hidden Print Targets */}
+    <div className={printTarget === 'resume' ? 'block' : 'hidden'}>
+      <ResumeHTML 
+        parsedData={parsedData} 
+        overrides={overrides} 
+        aiRewrites={structData?.bullet_point_rewrites}
+        structuredExperience={structData?.structured_experience}
+        theme={pdfTheme}
+        aiSummary={structData?.professional_summary}
+        id="resume-html-content"
+      />
+    </div>
+    
+    <div className={printTarget === 'cover_letter' ? 'block' : 'hidden'}>
+      <CoverLetterHTML 
+        parsedData={parsedData}
+        overrides={overrides}
+        coverLetterText={coverLetter || ''}
+        theme={pdfTheme}
+        id="cover-letter-html-content"
+      />
+    </div>
+    </>
   );
 }
