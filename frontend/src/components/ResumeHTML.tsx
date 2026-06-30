@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, MapPin, Link2, Github, Globe } from 'lucide-react';
+import { Mail, Phone, MapPin, Link2, Code2, Globe } from 'lucide-react';
 
 const DEFAULT_SECTION_ORDER = ['summary', 'experience', 'education', 'projects', 'skills', 'certifications', 'awards', 'languages', 'custom_sections'];
 
@@ -129,7 +129,7 @@ export default function ResumeHTML({
     const isGithub = github.toLowerCase().includes('github.com');
     const isLinkedin = github.toLowerCase().includes('linkedin.com');
     let icon = <Globe size={12} />;
-    if (isGithub) icon = <Github size={12} />;
+    if (isGithub) icon = <Code2 size={12} />;
     else if (isLinkedin) icon = <Link2 size={12} />;
     contactItems.push({ type: 'github', val: github, icon, link: true });
   }
