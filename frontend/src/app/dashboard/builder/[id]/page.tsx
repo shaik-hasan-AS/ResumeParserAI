@@ -3,10 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save, Plus, Trash2, Sparkles, Loader2, Eye, EyeOff, ArrowUp, ArrowDown, Edit2, Download } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Sparkles, Loader2, Eye, EyeOff, ArrowUp, ArrowDown, Download } from 'lucide-react';
 import api from '@/lib/api';
 import ResumeHTML from '@/components/ResumeHTML';
-import { useResumeStore, DEFAULT_SECTION_ORDER } from '@/store/useResumeStore';
+import { useResumeStore } from '@/store/useResumeStore';
 
 const RewritableTextarea = ({ value, onChange, placeholder, context, className }: { value: string, onChange: (val: string) => void, placeholder: string, context: string, className?: string }) => {
   const [rewriting, setRewriting] = useState(false);
@@ -312,8 +312,8 @@ const SectionOrderEditor = () => {
 export default function BuilderPage() {
   const { id } = useParams();
   const router = useRouter();
-  const { parsedData, setParsedData, updateField, reorderExperiences } = useResumeStore();
-  const [loading, setLoading] = useState(true);
+  const { parsedData, setParsedData, updateField } = useResumeStore();
+  
   const [saving, setSaving] = useState(false);
   const { toggleSectionVisibility } = useResumeStore();
   const isVisible = (section: string) => parsedData.visible_sections?.[section] !== false;
@@ -333,8 +333,6 @@ export default function BuilderPage() {
         setParsedData(data);
       } catch (err) {
         console.error('Failed to fetch data', err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchData();
