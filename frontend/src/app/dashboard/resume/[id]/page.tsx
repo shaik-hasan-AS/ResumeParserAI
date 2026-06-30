@@ -638,6 +638,29 @@ export default function ResumeViewer() {
                 Record or upload an audio clip of yourself talking about your experience. Gemini will transcribe it and merge it with your resume to create an optimized version.
               </p>
 
+              {/* Guided Prompts Accordion */}
+              <div className="bg-muted/40 border border-border rounded-2xl p-4.5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" /> Speech suggestions
+                  </span>
+                </div>
+                <ul className="space-y-2.5 text-xs text-muted-foreground leading-relaxed">
+                  <li className="flex gap-2">
+                    <span className="text-primary font-bold">1.</span>
+                    <span>Explain what you did on your daily job role (technologies, day-to-day workflow, team size).</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-primary font-bold">2.</span>
+                    <span>Mention a specific challenge or feature you built, and describe the measurable outcome (e.g. <b>improved API speeds by 30%</b>).</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-primary font-bold">3.</span>
+                    <span>State any hidden skills, certifications, or tools you know that aren't on your resume.</span>
+                  </li>
+                </ul>
+              </div>
+
               {/* Drop zone */}
               <div
                 onDragOver={(e) => { e.preventDefault(); setAudioDragging(true); }}
