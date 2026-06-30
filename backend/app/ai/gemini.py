@@ -545,3 +545,52 @@ Perform a deep analysis:
             "missing_keywords": [],
             "suggested_bullet_fixes": [f"Evaluation error: {str(e)}"]
         }
+
+
+class SpeechSuggestionsReport(BaseModel):
+    suggestions: List[str] = Field(description="3 tailored, industry-specific speech prompts suggesting what the candidate should talk about in their audio clip (e.g. key projects, technical stacks, or clinical procedures based on their exact profile).")
+
+
+def generate_speech_suggestions(parsed_data: dict) -> dict:
+    """Generate 3 industry-specific, tailored speech suggestions based on parsed resume experience to guide their audio recording."""
+    redacted_data = parsed_data.copy()
+    for field in ("name", "email", "phone", "linkedin", "github", "location"):
+        if redacted_data.get(field):
+            redacted_data[field] = "[REDACTED]"
+            
+    prompt = f"""
+You are an expert career coach and resume builder. 
+Your goal is to guide candidates in recording a voice clip describing their professional experience.
+To ensure the voice recording is highly relevant to their field and helps create a "goated" resume, generate exactly 3 tailored, industry-specific speech suggestions based on their resume profile below.
+
+For tech candidates, ask about system architecture, stack decisions, or metrics.
+For medical/health candidates, ask about patient volume, clinical procedures, or patient care.
+For other fields, tailor it specifically to their core responsibilities.
+
+CANDIDATE PROFILE:
+{json.dumps(redacted_data, indent=2)}
+
+Generate a clean JSON response containing a list of 3 highly-actionable, customized speech suggestions to prompt them.
+"""
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=SpeechSuggestionsReport,
+                temperature=0.4,
+            ),
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        print(f"Failed to generate speech suggestions: {e}")
+        # Default fallback questions
+        return {
+            "suggestions": [
+                "Explain what you did on your daily job role (technologies, day-to-day workflow, team size).",
+                "Mention a specific challenge or feature you built, and describe the measurable outcome (e.g. improved API speeds by 30%).",
+                "State any hidden skills, certifications, or tools you know that aren't on your resume."
+            ]
+        }

@@ -174,3 +174,7 @@ class ATSMatchResponse(BaseModel):
     matched_keywords: List[str]
     missing_keywords: List[str]
     suggested_bullet_fixes: List[str]
+
+
+class SpeechSuggestionsResponse(BaseModel):
+    suggestions: List[str]

@@ -7,7 +7,7 @@ from ..schemas import schemas
 from .auth import get_current_user
 from ..parsers.resume.main import extract_text_from_pdf, extract_text_from_docx, parse_resume_text
 from starlette.concurrency import run_in_threadpool
-from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text, generate_mock_interview, transcribe_audio, enhance_resume_with_audio, evaluate_interview_answer, evaluate_ats_match
+from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text, generate_mock_interview, transcribe_audio, enhance_resume_with_audio, evaluate_interview_answer, evaluate_ats_match, generate_speech_suggestions
 from ..parsers.ocr import local_ocr_image, local_ocr_pdf
 import os
 import shutil
@@ -449,3 +449,24 @@ def get_ats_match_score(
 
     result = evaluate_ats_match(parsed.parsed_json or {}, raw_text, req.job_description)
     return schemas.ATSMatchResponse(**result)
+
+
+@router.get("/{id}/speech-suggestions", response_model=schemas.SpeechSuggestionsResponse)
+def get_speech_suggestions(
+    id: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Retrieve 3 industry-specific, tailored speech suggestions based on parsed resume experience to guide their audio recording."""
+    resume = db.query(models.Resume).filter(
+        models.Resume.id == id, models.Resume.user_id == current_user.id
+    ).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    parsed = db.query(models.ParsedData).filter(models.ParsedData.resume_id == id).first()
+    if not parsed:
+        raise HTTPException(status_code=404, detail="Parsed data not found")
+
+    result = generate_speech_suggestions(parsed.parsed_json or {})
+    return schemas.SpeechSuggestionsResponse(**result)
