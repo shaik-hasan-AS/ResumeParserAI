@@ -658,3 +658,138 @@ For other fields, tailor it specifically to their core responsibilities.
                 "State any hidden skills, certifications, or tools you know that aren't on your resume."
             ]
         }
+
+
+# ─── Resume Roast ────────────────────────────────────────────────────────────
+
+class RoastItem(BaseModel):
+    section: str = Field(description="The resume section being roasted (e.g. 'Summary', 'Experience at Acme Corp', 'Skills').")
+    critique: str = Field(description="The savage, Simon Cowell-style critique of this section. Funny but with a grain of truth.")
+    fix: str = Field(description="The one concrete thing they need to fix in this section.")
+
+class RoastResult(BaseModel):
+    overall_roast: str = Field(description="The brutal opening verdict on the resume as a whole. One or two punchy sentences. Think Simon Cowell at his most ruthless.")
+    section_roasts: List[RoastItem] = Field(description="Per-section savage critiques. Cover 3-5 sections.")
+    redemption_arc: List[str] = Field(description="3-5 genuinely actionable improvements that would save this resume, written in a slightly encouraging tone after the roasting.")
+    cringe_score: int = Field(description="A 'cringe score' from 0 (pristine) to 100 (career-ending). Be honest.")
+
+def roast_resume(parsed_data: dict, raw_text: str) -> dict:
+    redacted = redact_pii(raw_text, parsed_data)
+    redacted_parsed = {**parsed_data}
+    for field in ("name", "email", "phone"):
+        if redacted_parsed.get(field):
+            redacted_parsed[field] = f"[REDACTED {field.upper()}]"
+
+    prompt = f"""
+### System Instruction
+You are a brutally honest, sardonic career coach channeling Simon Cowell's energy.
+Your job is to roast this resume like it's a bad audition — savage, specific, and funny —
+but you MUST back every critique with a real flaw you can see in the document.
+Do NOT make things up. Do NOT be generic. Read the actual content and tear it apart.
+
+### Resume Parsed Data
+{json.dumps(redacted_parsed, indent=2)}
+
+### Resume Raw Text
+{redacted}
+
+### Instructions
+1. Write a devastating `overall_roast` opening verdict.
+2. Pick 3-5 specific sections (summary, job entries, skills, formatting, etc.) and roast each with a `critique` and a concrete `fix`.
+3. End with `redemption_arc`: 3-5 real, actionable improvements that would actually help.
+4. Give an honest `cringe_score` from 0-100.
+"""
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=RoastResult,
+                temperature=0.85,
+                system_instruction="You are a brutally funny but insightful career coach. Roast the resume with specific, evidence-based critiques. Never be generic. Be savage but fair."
+            )
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        return {
+            "overall_roast": f"Even my error handler is embarrassed for you. (API error: {str(e)})",
+            "section_roasts": [],
+            "redemption_arc": ["Fix your resume so the AI can actually read it."],
+            "cringe_score": 50
+        }
+
+
+# ─── Resume Battle ────────────────────────────────────────────────────────────
+
+class BattleResult(BaseModel):
+    winner: int = Field(description="1 or 2 — which candidate wins the interview slot.")
+    winner_verdict: str = Field(description="A punchy 1-2 sentence verdict explaining why the winner gets the call.")
+    candidate_1_score: int = Field(description="Match score 0-100 for Candidate 1 against the job description.")
+    candidate_2_score: int = Field(description="Match score 0-100 for Candidate 2 against the job description.")
+    candidate_1_strengths: List[str] = Field(description="Top 3 strengths of Candidate 1 for this specific role.")
+    candidate_2_strengths: List[str] = Field(description="Top 3 strengths of Candidate 2 for this specific role.")
+    candidate_1_fatal_flaw: str = Field(description="The single biggest weakness that hurt Candidate 1's chances.")
+    candidate_2_fatal_flaw: str = Field(description="The single biggest weakness that hurt Candidate 2's chances.")
+    loser_redemption: List[str] = Field(description="3 specific things the losing candidate must fix to win next time.")
+
+def battle_resumes(parsed_json_1: dict, parsed_json_2: dict, job_description: str) -> dict:
+    # Redact PII from both
+    def strip_pii(d: dict) -> dict:
+        out = dict(d)
+        for f in ("name", "email", "phone"):
+            if out.get(f):
+                out[f] = f"[CANDIDATE {f.upper()} REDACTED]"
+        return out
+
+    c1 = strip_pii(parsed_json_1)
+    c2 = strip_pii(parsed_json_2)
+
+    prompt = f"""
+### System Instruction
+You are a senior technical recruiter who has seen thousands of resumes.
+You have two candidates and ONE open interview slot. Pick the winner.
+Be specific — reference actual content from each resume. No generic commentary.
+
+### Job Description
+{job_description}
+
+### Candidate 1 Profile
+{json.dumps(c1, indent=2)}
+
+### Candidate 2 Profile
+{json.dumps(c2, indent=2)}
+
+### Instructions
+1. Score both candidates 0-100 against the job description.
+2. Declare a `winner` (1 or 2) and write a punchy `winner_verdict`.
+3. List the top 3 `strengths` for each candidate specific to this role.
+4. Identify the single `fatal_flaw` that hurt each candidate's chances.
+5. Give the loser 3 concrete `loser_redemption` steps to win next time.
+"""
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=BattleResult,
+                temperature=0.3,
+                system_instruction="You are a decisive, experienced technical recruiter. Compare two candidates head-to-head for a specific role. Be specific, evidence-based, and decisive. One candidate must win."
+            )
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        return {
+            "winner": 1,
+            "winner_verdict": f"Battle failed due to API error: {str(e)}",
+            "candidate_1_score": 0,
+            "candidate_2_score": 0,
+            "candidate_1_strengths": [],
+            "candidate_2_strengths": [],
+            "candidate_1_fatal_flaw": "Unknown",
+            "candidate_2_fatal_flaw": "Unknown",
+            "loser_redemption": []
+        }

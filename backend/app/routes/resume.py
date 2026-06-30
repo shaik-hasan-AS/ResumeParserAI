@@ -7,7 +7,7 @@ from ..schemas import schemas
 from .auth import get_current_user
 from ..parsers.resume.main import extract_text_from_pdf, extract_text_from_docx, parse_resume_text
 from starlette.concurrency import run_in_threadpool
-from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text, generate_mock_interview, transcribe_audio, enhance_resume_with_audio, evaluate_interview_answer, evaluate_ats_match, generate_speech_suggestions
+from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text, generate_mock_interview, transcribe_audio, enhance_resume_with_audio, evaluate_interview_answer, evaluate_ats_match, generate_speech_suggestions, roast_resume, battle_resumes
 from ..parsers.ocr import local_ocr_image, local_ocr_pdf
 from ..services.rate_limit import rate_limit
 import os
@@ -499,3 +499,59 @@ def get_speech_suggestions(
 
     result = generate_speech_suggestions(parsed.parsed_json or {})
     return schemas.SpeechSuggestionsResponse(**result)
+
+
+@router.post("/battle", dependencies=[Depends(rate_limit(5, 60))])
+async def resume_battle(
+    resume_id_1: str,
+    resume_id_2: str,
+    job_description: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Head-to-head AI comparison: two resumes, one job, one winner."""
+    if resume_id_1 == resume_id_2:
+        raise HTTPException(status_code=400, detail="Select two different resumes to battle.")
+
+    parsed_1 = db.query(models.ParsedData).filter(
+        models.ParsedData.resume_id == resume_id_1
+    ).first()
+    parsed_2 = db.query(models.ParsedData).filter(
+        models.ParsedData.resume_id == resume_id_2
+    ).first()
+
+    if not parsed_1 or not parsed_2:
+        raise HTTPException(status_code=404, detail="One or both resumes not found.")
+
+    result = await run_in_threadpool(
+        battle_resumes,
+        parsed_1.parsed_json or {},
+        parsed_2.parsed_json or {},
+        job_description
+    )
+    return result
+
+
+@router.post("/{id}/roast", dependencies=[Depends(rate_limit(5, 60))])
+async def roast_my_resume(
+    id: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Get a savage Simon Cowell-style roast of a resume."""
+    resume = db.query(models.Resume).filter(
+        models.Resume.id == id, models.Resume.user_id == current_user.id
+    ).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    parsed = db.query(models.ParsedData).filter(models.ParsedData.resume_id == id).first()
+    if not parsed:
+        raise HTTPException(status_code=404, detail="Parsed data not found")
+
+    result = await run_in_threadpool(
+        roast_resume,
+        parsed.parsed_json or {},
+        parsed.raw_text or ""
+    )
+    return result
