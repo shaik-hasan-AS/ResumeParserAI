@@ -72,7 +72,7 @@ def generate_feedback(parsed_data: dict, raw_text: str, target_role: str = None,
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-1.5-pro',
+            model='gemini-2.0-pro-exp-02-05',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -149,7 +149,7 @@ def generate_cover_letter(parsed_data: dict, raw_text: str, job_description: str
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-1.5-pro',
+            model='gemini-2.0-pro-exp-02-05',
             contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=0.4,
@@ -177,7 +177,7 @@ def rewrite_text(text: str, context: str = None) -> str:
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-1.5-pro',
+            model='gemini-2.0-pro-exp-02-05',
             contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=0.3,
@@ -229,7 +229,7 @@ def generate_mock_interview(parsed_data: dict, raw_text: str, target_role: str =
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-1.5-pro',
+            model='gemini-2.0-pro-exp-02-05',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -271,7 +271,7 @@ def evaluate_candidate_fit(parsed_data: dict, job_description: str) -> dict:
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-1.5-pro',
+            model='gemini-2.0-pro-exp-02-05',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -328,7 +328,7 @@ def generate_outreach_email(parsed_data: dict, raw_text: str, job_description: s
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-1.5-pro',
+            model='gemini-2.0-pro-exp-02-05',
             contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=0.5,
