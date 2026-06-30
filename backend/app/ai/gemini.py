@@ -490,3 +490,58 @@ Evaluate the response objectively. Return the evaluation JSON structured with:
             "score": 0,
             "better_phrasing": "N/A"
         }
+
+
+class ATSMatchReport(BaseModel):
+    match_score: int = Field(description="Match score out of 100 based on keyword overlap and role relevance.")
+    matched_keywords: List[str] = Field(description="Important skill keywords present in both resume and Job Description.")
+    missing_keywords: List[str] = Field(description="Skills or tool keywords found in the Job Description but missing on the resume.")
+    suggested_bullet_fixes: List[str] = Field(description="3 draft bullet points candidates can add to their experience, incorporating missing keywords naturally based on their background.")
+
+
+def evaluate_ats_match(parsed_data: dict, raw_text: str, job_description: str) -> dict:
+    """Evaluate resume data against job description to provide match score, keyword details, and draft bullet fixes."""
+    redacted_text = redact_pii(raw_text, parsed_data)
+    redacted_parsed_data = parsed_data.copy()
+    for field in ("name", "email", "phone", "linkedin", "github", "location"):
+        if redacted_parsed_data.get(field):
+            redacted_parsed_data[field] = "[REDACTED]"
+
+    prompt = f"""
+You are an expert ATS (Applicant Tracking System) optimizer and career coach.
+Analyze the candidate's resume details and raw text against the target Job Description.
+
+TARGET JOB DESCRIPTION:
+{job_description}
+
+CANDIDATE'S RESUME DATA:
+{json.dumps(redacted_parsed_data, indent=2)}
+
+CANDIDATE'S RAW RESUME TEXT:
+{redacted_text}
+
+Perform a deep analysis:
+1. Identify key hard/soft skills matching between both.
+2. Identify major skills, frameworks, tools, or requirements in the Job Description that are missing from the resume.
+3. Compute an ATS match score (0-100) based on keyword coverage and depth.
+4. Draft 3 tailored experience bullet points the candidate could add to their resume. These bullets must naturally incorporate the missing keywords while aligning with their existing professional experience background.
+"""
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=ATSMatchReport,
+                temperature=0.2,
+            ),
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        return {
+            "match_score": 0,
+            "matched_keywords": [],
+            "missing_keywords": [],
+            "suggested_bullet_fixes": [f"Evaluation error: {str(e)}"]
+        }

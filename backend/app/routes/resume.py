@@ -7,11 +7,12 @@ from ..schemas import schemas
 from .auth import get_current_user
 from ..parsers.resume.main import extract_text_from_pdf, extract_text_from_docx, parse_resume_text
 from starlette.concurrency import run_in_threadpool
-from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text, generate_mock_interview, transcribe_audio, enhance_resume_with_audio, evaluate_interview_answer
+from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text, generate_mock_interview, transcribe_audio, enhance_resume_with_audio, evaluate_interview_answer, evaluate_ats_match
 from ..parsers.ocr import local_ocr_image, local_ocr_pdf
 import os
 import shutil
 import uuid
+import json
 
 router = APIRouter(prefix="/api/resume", tags=["resume"])
 
@@ -420,3 +421,31 @@ async def evaluate_mock_interview_answer_route(
 
     res = await run_in_threadpool(_evaluate)
     return schemas.InterviewAnswerEvaluationResponse(**res)
+
+
+@router.post("/{id}/ats-match", response_model=schemas.ATSMatchResponse)
+def get_ats_match_score(
+    id: str,
+    req: schemas.ATSMatchRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Analyze resume details against a job description to provide match score, keyword differences, and suggested experience bullet fixes."""
+    resume = db.query(models.Resume).filter(
+        models.Resume.id == id, models.Resume.user_id == current_user.id
+    ).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    parsed = db.query(models.ParsedData).filter(models.ParsedData.resume_id == id).first()
+    if not parsed:
+        raise HTTPException(status_code=404, detail="Parsed data not found")
+
+    raw_text = getattr(parsed, "raw_text", None) or ""
+    if not raw_text and os.path.exists(resume.original_file_path):
+        with open(resume.original_file_path, "rb") as f:
+            file_bytes = f.read()
+        raw_text = extract_text_from_file(resume.original_file_path, file_bytes)
+
+    result = evaluate_ats_match(parsed.parsed_json or {}, raw_text, req.job_description)
+    return schemas.ATSMatchResponse(**result)

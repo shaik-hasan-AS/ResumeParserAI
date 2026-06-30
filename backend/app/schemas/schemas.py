@@ -162,3 +162,15 @@ class InterviewAnswerEvaluationResponse(BaseModel):
     feedback: str
     score: int
     better_phrasing: str
+
+
+class ATSMatchRequest(BaseModel):
+    job_description: str
+    target_role: Optional[str] = None
+
+
+class ATSMatchResponse(BaseModel):
+    match_score: int
+    matched_keywords: List[str]
+    missing_keywords: List[str]
+    suggested_bullet_fixes: List[str]
