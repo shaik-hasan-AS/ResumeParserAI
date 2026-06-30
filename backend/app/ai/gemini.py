@@ -445,3 +445,48 @@ Return a complete enhanced resume object.
         return enhanced
     except Exception as e:
         return {"error": str(e), **parsed_data}
+
+
+class InterviewAnswerEvaluation(BaseModel):
+    feedback: str = Field(description="Constructive critique of the answer. Highlight strengths, what was missed, and structural improvements.")
+    score: int = Field(description="Score out of 10 for the quality of the answer relative to expectations.")
+    better_phrasing: str = Field(description="A highly optimized rewrite of the candidate's answer using proper structure (e.g. STAR method).")
+
+
+def evaluate_interview_answer(question: str, expected_hints: List[str], answer_text: str) -> dict:
+    """Evaluate candidate's interview answer using Gemini."""
+    prompt = f"""
+You are an expert technical and behavioral interviewer evaluating a candidate's response to the following question.
+
+QUESTION:
+"{question}"
+
+EXPECTED KEY POINTS / HINTS:
+{json.dumps(expected_hints, indent=2)}
+
+CANDIDATE'S TRANSCRIPTION:
+"{answer_text}"
+
+Evaluate the response objectively. Return the evaluation JSON structured with:
+- Constructive feedback detailing what was strong, what could be added, and structural tips.
+- An honest score out of 10.
+- An example of how the candidate could have phrased the response much more impactfully (e.g., using STAR technique).
+"""
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=InterviewAnswerEvaluation,
+                temperature=0.2,
+            ),
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        return {
+            "feedback": f"Failed to evaluate answer: {str(e)}",
+            "score": 0,
+            "better_phrasing": "N/A"
+        }

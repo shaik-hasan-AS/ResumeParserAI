@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.orm.attributes import flag_modified
 from ..database import get_db
@@ -7,7 +7,7 @@ from ..schemas import schemas
 from .auth import get_current_user
 from ..parsers.resume.main import extract_text_from_pdf, extract_text_from_docx, parse_resume_text
 from starlette.concurrency import run_in_threadpool
-from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text, generate_mock_interview, transcribe_audio, enhance_resume_with_audio
+from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text, generate_mock_interview, transcribe_audio, enhance_resume_with_audio, evaluate_interview_answer
 from ..parsers.ocr import local_ocr_image, local_ocr_pdf
 import os
 import shutil
@@ -368,3 +368,55 @@ async def enhance_resume_with_audio_route(
     db.commit()
 
     return schemas.AudioEnhanceResponse(parsed_json=enhanced_json)
+
+
+@router.post("/{id}/mock-interview/evaluate", response_model=schemas.InterviewAnswerEvaluationResponse)
+async def evaluate_mock_interview_answer_route(
+    id: str,
+    audio: UploadFile = File(...),
+    question: str = Form(...),
+    expected_hints: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Accept an audio recording of a mock interview answer, transcribe it, evaluate it, and return feedback + score."""
+    resume = db.query(models.Resume).filter(
+        models.Resume.id == id, models.Resume.user_id == current_user.id
+    ).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    content_type = audio.content_type or ""
+    if content_type not in ALLOWED_AUDIO_TYPES and not content_type.startswith("audio/"):
+        ext = os.path.splitext(audio.filename or "")[1].lower()
+        if ext not in {".mp3", ".wav", ".webm", ".ogg", ".m4a", ".mp4"}:
+            raise HTTPException(status_code=400, detail=f"Unsupported audio format: {content_type}")
+
+    audio_bytes = await audio.read()
+    mime = content_type or "audio/mpeg"
+
+    # Transcribe and evaluate in threadpool
+    def _evaluate():
+        # transcribe
+        transcript_json_str = transcribe_audio(audio_bytes, mime)
+        transcript = ""
+        try:
+            parsed_trans = json.loads(transcript_json_str)
+            transcript = parsed_trans.get("transcript", transcript_json_str)
+        except Exception:
+            transcript = transcript_json_str
+
+        # parse hints back to list
+        hints_list = [h.strip() for h in expected_hints.split(",") if h.strip()]
+
+        # evaluate
+        eval_res = evaluate_interview_answer(question, hints_list, transcript)
+        return {
+            "transcript": transcript,
+            "feedback": eval_res.get("feedback", "No feedback available."),
+            "score": eval_res.get("score", 0),
+            "better_phrasing": eval_res.get("better_phrasing", "N/A")
+        }
+
+    res = await run_in_threadpool(_evaluate)
+    return schemas.InterviewAnswerEvaluationResponse(**res)

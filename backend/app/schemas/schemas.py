@@ -156,3 +156,9 @@ class QuickScanResponse(BaseModel):
 
 class AudioEnhanceResponse(BaseModel):
     parsed_json: Dict[str, Any]
+
+class InterviewAnswerEvaluationResponse(BaseModel):
+    transcript: str
+    feedback: str
+    score: int
+    better_phrasing: str
