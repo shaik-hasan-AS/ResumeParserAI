@@ -21,4 +21,7 @@ services:
         generateValue: true
       - key: FRONTEND_URL
         value: "https://resume-parser-ai-red.vercel.app"
+      - key: GOOGLE_CLIENT_ID
+        value: "180043284369-jufm27kbvrt8dd5ktm6g9q8aodr69cv6.apps.googleusercontent.com"
+
 
