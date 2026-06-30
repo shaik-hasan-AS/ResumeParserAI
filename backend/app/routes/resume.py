@@ -9,6 +9,7 @@ from ..parsers.resume.main import extract_text_from_pdf, extract_text_from_docx,
 from starlette.concurrency import run_in_threadpool
 from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text, generate_mock_interview, transcribe_audio, enhance_resume_with_audio, evaluate_interview_answer, evaluate_ats_match, generate_speech_suggestions
 from ..parsers.ocr import local_ocr_image, local_ocr_pdf
+from ..services.rate_limit import rate_limit
 import os
 import shutil
 import uuid
@@ -18,6 +19,37 @@ router = APIRouter(prefix="/api/resume", tags=["resume"])
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+async def validate_uploaded_file(file: UploadFile, max_size_mb: int = 10) -> bytes:
+    """
+    Validate the uploaded file's extension, mime type, and maximum file size.
+    Returns the file bytes.
+    """
+    filename = file.filename or ""
+    ext = os.path.splitext(filename)[1].lower()
+    if ext not in {".pdf", ".docx", ".jpg", ".jpeg", ".png"}:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Only PDF, DOCX, JPG, and PNG files are allowed. Invalid extension: {ext}"
+        )
+        
+    # Read file content in chunks of 1MB to verify size (prevents memory exhaustion)
+    max_bytes = max_size_mb * 1024 * 1024
+    content = bytearray()
+    while True:
+        chunk = await file.read(1024 * 1024)
+        if not chunk:
+            break
+        content.extend(chunk)
+        if len(content) > max_bytes:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File exceeds maximum allowed size of {max_size_mb} MB"
+            )
+            
+    await file.seek(0)
+    return bytes(content)
 
 
 def extract_text_from_file(file_path: str, file_bytes: bytes) -> str:
@@ -45,20 +77,17 @@ def get_user_resumes(
     return resumes
 
 
-@router.post("/upload", response_model=schemas.ResumeResponse)
+@router.post("/upload", response_model=schemas.ResumeResponse, dependencies=[Depends(rate_limit(10, 60))])
 async def upload_resume(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    if not file.filename.lower().endswith((".pdf", ".docx", ".jpg", ".jpeg", ".png")):
-        raise HTTPException(status_code=400, detail="Only PDF, DOCX, JPG, and PNG files are allowed")
+    file_bytes = await validate_uploaded_file(file, 10)
         
     file_id = str(uuid.uuid4())
     file_extension = os.path.splitext(file.filename)[1]
     file_path = os.path.join(UPLOAD_DIR, f"{file_id}{file_extension}")
-    
-    file_bytes = await file.read()
 
     # Save to disk (best-effort; Railway filesystem is ephemeral)
     with open(file_path, "wb") as buffer:

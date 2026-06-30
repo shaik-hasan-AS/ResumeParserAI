@@ -139,7 +139,7 @@ async def create_scan(
     db.commit()
     db.refresh(new_scan)
     
-    from .resume import extract_text_from_file, UPLOAD_DIR
+    from .resume import extract_text_from_file, UPLOAD_DIR, validate_uploaded_file
     from ..parsers.resume.main import parse_resume_text
     
     # Inject keywords into job description for AI evaluation
@@ -148,7 +148,7 @@ async def create_scan(
         eval_description += f"\n\nCRITICAL KEYWORDS TO MATCH: {keywords}"
 
     async def process_file(file: UploadFile):
-        file_bytes = await file.read()
+        file_bytes = await validate_uploaded_file(file, 10)
         file_id = str(uuid.uuid4())
         file_extension = os.path.splitext(file.filename)[1]
         file_path = os.path.join(UPLOAD_DIR, f"{file_id}{file_extension}")

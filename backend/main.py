@@ -38,6 +38,17 @@ except Exception as e:
     # ponytail: capture single connection timeout/failure and proceed so uvicorn starts
     print(f"Error connecting to database or running migrations: {e}")
 
+from app.services import auth as auth_service
+import re
+
+# Enforce secure SECRET_KEY in production environments
+is_prod = "postgresql" in os.getenv("DATABASE_URL", "") or os.getenv("ENV") == "production"
+if is_prod and (not auth_service.SECRET_KEY or auth_service.SECRET_KEY in ("your-secret-key-for-local-dev", "change-me-to-a-strong-random-secret")):
+    raise RuntimeError(
+        "CRITICAL SECURITY ERROR: The SECRET_KEY environment variable is not configured securely "
+        "for production. Please set a strong, random SECRET_KEY in your environment."
+    )
+
 app = FastAPI(title="MyAIProfile API")
 
 # Build CORS origins list — always include localhost for dev,
@@ -51,11 +62,25 @@ allowed_origins = [
 if _frontend_url:
     allowed_origins.append(_frontend_url)
 
+# Build CORS origin regex to restrict wildcards
+allowed_origin_regex = None
+if _frontend_url:
+    if ".vercel.app" in _frontend_url:
+        project_match = re.match(r"https://([^.-]+)", _frontend_url)
+        if project_match:
+            project_name = project_match.group(1)
+            allowed_origin_regex = rf"https://{re.escape(project_name)}-.*\.vercel\.app"
+    elif ".ai" in _frontend_url or ".com" in _frontend_url:
+        domain_match = re.search(r"https://([^/]+)", _frontend_url)
+        if domain_match:
+            domain = domain_match.group(1).replace("www.", "")
+            allowed_origin_regex = rf"https://(.*)\.{re.escape(domain)}"
+
 # Configure CORS for Next.js frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_origin_regex=allowed_origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

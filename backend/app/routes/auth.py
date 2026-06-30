@@ -8,19 +8,25 @@ from ..database import get_db
 from ..models import models
 from ..schemas import schemas
 from ..services import auth as auth_service
+from ..services.rate_limit import rate_limit
 from datetime import timedelta
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
 
-@router.post("/google", response_model=schemas.Token)
+@router.post("/google", response_model=schemas.Token, dependencies=[Depends(rate_limit(5, 60))])
 def google_auth(request: schemas.GoogleAuthRequest, db: Session = Depends(get_db)):
+    if not GOOGLE_CLIENT_ID:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Google OAuth is not configured on the server."
+        )
     try:
         idinfo = id_token.verify_oauth2_token(
             request.credential,
             requests.Request(),
-            audience=GOOGLE_CLIENT_ID if GOOGLE_CLIENT_ID else None,
+            audience=GOOGLE_CLIENT_ID,
         )
         email = idinfo.get("email")
         name = idinfo.get("name", "Google User")
@@ -40,7 +46,7 @@ def google_auth(request: schemas.GoogleAuthRequest, db: Session = Depends(get_db
     except ValueError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google token")
 
-@router.post("/register", response_model=schemas.UserResponse)
+@router.post("/register", response_model=schemas.UserResponse, dependencies=[Depends(rate_limit(5, 60))])
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.email == user.email).first()
     if db_user:
@@ -52,7 +58,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
-@router.post("/login", response_model=schemas.Token)
+@router.post("/login", response_model=schemas.Token, dependencies=[Depends(rate_limit(5, 60))])
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == form_data.username).first()
     if not user or not auth_service.verify_password(form_data.password, user.password_hash):
