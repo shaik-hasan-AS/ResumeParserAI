@@ -565,19 +565,115 @@ export default function BuilderPage() {
 
         {/* Right Pane: HTML Preview */}
         <div className="w-1/2 bg-muted/30 p-4 h-full relative flex flex-col overflow-y-auto print:w-full print:p-0 print:overflow-visible">
-          {/* Theme Selector */}
-          <div className="flex justify-center gap-2 mb-4 shrink-0 print:hidden">
-            {(['modern', 'harvard', 'executive'] as const).map((t) => (
-              <Button
-                key={t}
-                variant={theme === t ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setTheme(t)}
-                className="capitalize"
-              >
-                {t}
-              </Button>
-            ))}
+          {/* Theme & Design Customizer Panel */}
+          <div className="bg-card border border-border rounded-2xl p-4 mb-4 space-y-4 shrink-0 print:hidden shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              {/* Theme Selector */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-muted-foreground">Theme:</span>
+                <div className="flex gap-1">
+                  {(['modern', 'harvard', 'executive'] as const).map((t) => (
+                    <Button
+                      key={t}
+                      variant={theme === t ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTheme(t)}
+                      className="capitalize h-8 text-xs"
+                    >
+                      {t}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Accent Color (skip for harvard since it is strict black/white) */}
+              {theme !== 'harvard' && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-muted-foreground">Accent Color:</span>
+                  <div className="flex items-center gap-1.5">
+                    {[
+                      { name: 'Indigo', value: '#4F46E5' },
+                      { name: 'Emerald', value: '#10B981' },
+                      { name: 'Slate', value: '#475569' },
+                      { name: 'Crimson', value: '#DC2626' },
+                      { name: 'Black', value: '#111827' }
+                    ].map((col) => (
+                      <button
+                        key={col.value}
+                        title={col.name}
+                        onClick={() => {
+                          const cust = parsedData.customizations || {};
+                          updateField('customizations', { ...cust, accentColor: col.value });
+                        }}
+                        style={{ backgroundColor: col.value }}
+                        className={`w-5 h-5 rounded-full border transition-all ${
+                          (parsedData.customizations?.accentColor || (theme === 'executive' ? '#4F46E5' : '#111827')) === col.value
+                            ? 'ring-2 ring-primary ring-offset-2 scale-110'
+                            : 'border-border'
+                        }`}
+                      />
+                    ))}
+                    <input 
+                      type="color" 
+                      value={parsedData.customizations?.accentColor || (theme === 'executive' ? '#4F46E5' : '#111827')}
+                      onChange={(e) => {
+                        const cust = parsedData.customizations || {};
+                        updateField('customizations', { ...cust, accentColor: e.target.value });
+                      }}
+                      className="w-5 h-5 rounded border border-border cursor-pointer p-0 bg-transparent"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border/50 pt-3">
+              {/* Font Size Selector */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-muted-foreground">Font Size:</span>
+                <div className="flex gap-1 bg-muted p-0.5 rounded-lg border border-border">
+                  {(['small', 'medium', 'large'] as const).map((sz) => (
+                    <button
+                      key={sz}
+                      onClick={() => {
+                        const cust = parsedData.customizations || {};
+                        updateField('customizations', { ...cust, fontSize: sz });
+                      }}
+                      className={`text-xs font-semibold px-2.5 py-1 rounded-md capitalize transition-all ${
+                        (parsedData.customizations?.fontSize || 'medium') === sz
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {sz}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Spacing Selector */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-muted-foreground">Spacing:</span>
+                <div className="flex gap-1 bg-muted p-0.5 rounded-lg border border-border">
+                  {(['compact', 'normal', 'spacious'] as const).map((sp) => (
+                    <button
+                      key={sp}
+                      onClick={() => {
+                        const cust = parsedData.customizations || {};
+                        updateField('customizations', { ...cust, spacing: sp });
+                      }}
+                      className={`text-xs font-semibold px-2.5 py-1 rounded-md capitalize transition-all ${
+                        (parsedData.customizations?.spacing || 'normal') === sp
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {sp}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
           
           <div className="flex-1 w-full max-w-3xl mx-auto rounded-xl shadow-xl border border-border bg-white overflow-hidden print:shadow-none print:border-none print:max-w-none">
@@ -587,6 +683,9 @@ export default function BuilderPage() {
               theme={theme}
               structuredExperience={experienceItems}
               id="resume-html-content"
+              customAccentColor={parsedData.customizations?.accentColor}
+              customFontSize={parsedData.customizations?.fontSize}
+              customSpacing={parsedData.customizations?.spacing}
             />
           </div>
         </div>

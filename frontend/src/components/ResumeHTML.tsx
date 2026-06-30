@@ -20,6 +20,11 @@ export interface ResumeHTMLProps {
   aiSummary?: string;
   // An optional ID for printing targeting
   id?: string;
+  // Custom design overrides
+  customAccentColor?: string;
+  customFontSize?: 'small' | 'medium' | 'large';
+  customSpacing?: 'compact' | 'normal' | 'spacious';
+  customFontFamily?: string;
 }
 
 export default function ResumeHTML({
@@ -30,6 +35,10 @@ export default function ResumeHTML({
   theme = 'modern',
   aiSummary,
   id = 'resume-html-content',
+  customAccentColor,
+  customFontSize,
+  customSpacing,
+  customFontFamily,
 }: ResumeHTMLProps) {
   const getVal = (key: string) => overrides?.[key] || parsedData?.[key];
 
@@ -140,67 +149,102 @@ export default function ResumeHTML({
   // rather than solely complex tailwind classes (Word doesn't run Tailwind).
   
   const getThemeVars = () => {
+    // Resolve spacing override
+    let spacingPadding = '18px';
+    let entrySpacing = '12px';
+    if (customSpacing === 'compact') {
+      spacingPadding = '10px';
+      entrySpacing = '6px';
+    } else if (customSpacing === 'spacious') {
+      spacingPadding = '26px';
+      entrySpacing = '18px';
+    }
+
+    // Resolve font size override
+    let bodySize = '10pt';
+    let titleSize = '12pt';
+    let nameTextSize = '22pt';
+    if (customFontSize === 'small') {
+      bodySize = '8.5pt';
+      titleSize = '10.5pt';
+      nameTextSize = '18pt';
+    } else if (customFontSize === 'large') {
+      bodySize = '11.5pt';
+      titleSize = '13.5pt';
+      nameTextSize = '26pt';
+    }
+
+    const defaultFontFamily = customFontFamily || 'Arial, Helvetica, sans-serif';
+
     switch (theme) {
       case 'harvard':
         return {
-          fontFamily: '"Times New Roman", Times, serif',
+          fontFamily: customFontFamily || '"Times New Roman", Times, serif',
           color: '#000000',
           headerAlign: 'center' as const,
-          nameSize: '24pt',
+          nameSize: nameTextSize,
           nameWeight: 'bold',
           nameTransform: 'none' as const,
           nameColor: '#000000',
-          sectionTitleSize: '12pt',
+          sectionTitleSize: titleSize,
           sectionTitleWeight: 'bold',
           sectionTitleTransform: 'uppercase' as const,
           sectionTitleColor: '#000000',
           sectionTitleBorder: '1px solid #000000',
-          fontSize: '11pt',
+          fontSize: bodySize,
           headerBg: 'transparent',
           headerColor: '#000000',
           contactJustify: 'center' as const,
           showContactIcons: false,
+          spacingPadding,
+          entrySpacing,
         };
       case 'executive':
+        const execAccent = customAccentColor || '#4F46E5';
         return {
-          fontFamily: 'Arial, Helvetica, sans-serif',
+          fontFamily: defaultFontFamily,
           color: '#111827',
           headerAlign: 'left' as const,
-          nameSize: '24pt',
+          nameSize: nameTextSize,
           nameWeight: 'bold',
           nameTransform: 'none' as const,
           nameColor: '#ffffff',
-          sectionTitleSize: '11pt',
+          sectionTitleSize: titleSize,
           sectionTitleWeight: 'bold',
           sectionTitleTransform: 'uppercase' as const,
-          sectionTitleColor: '#4F46E5',
-          sectionTitleBorder: '2px solid #4F46E5',
-          fontSize: '10pt',
+          sectionTitleColor: execAccent,
+          sectionTitleBorder: `2px solid ${execAccent}`,
+          fontSize: bodySize,
           headerBg: '#1E3A5F',
           headerColor: '#CBD5E1',
           contactJustify: 'flex-end' as const,
           showContactIcons: true,
+          spacingPadding,
+          entrySpacing,
         };
       case 'modern':
       default:
+        const modAccent = customAccentColor || '#111827';
         return {
-          fontFamily: 'Arial, Helvetica, sans-serif',
+          fontFamily: defaultFontFamily,
           color: '#111827',
           headerAlign: 'center' as const,
-          nameSize: '22pt',
+          nameSize: nameTextSize,
           nameWeight: 'bold',
           nameTransform: 'uppercase' as const,
-          nameColor: '#111827',
-          sectionTitleSize: '12pt',
+          nameColor: modAccent,
+          sectionTitleSize: titleSize,
           sectionTitleWeight: 'bold',
           sectionTitleTransform: 'uppercase' as const,
-          sectionTitleColor: '#111827',
-          sectionTitleBorder: '1px solid #D1D5DB',
-          fontSize: '10pt',
+          sectionTitleColor: modAccent,
+          sectionTitleBorder: `1px solid ${customAccentColor ? customAccentColor + '40' : '#D1D5DB'}`,
+          fontSize: bodySize,
           headerBg: 'transparent',
           headerColor: '#4B5563',
           contactJustify: 'center' as const,
           showContactIcons: true,
+          spacingPadding,
+          entrySpacing,
         };
     }
   };
@@ -349,7 +393,7 @@ export default function ResumeHTML({
           if (sectionKey === 'summary') {
             if (!isVisible('summary') || !summary || !summary.trim()) return null;
             return (
-              <div key="summary" style={{ marginBottom: '18px' }}>
+              <div key="summary" style={{ marginBottom: t.spacingPadding }}>
                 <div style={{ fontSize: t.sectionTitleSize, fontWeight: t.sectionTitleWeight, textTransform: t.sectionTitleTransform, color: t.sectionTitleColor, borderBottom: t.sectionTitleBorder, paddingBottom: '4px', marginBottom: '10px' }}>
                   {labels.summary || 'Professional Summary'}
                 </div>
@@ -362,13 +406,13 @@ export default function ResumeHTML({
             const hasExp = structuredExperience?.length ? structuredExperience.length > 0 : experience;
             if (!isVisible('experience') || !hasExp) return null;
             return (
-              <div key="experience" style={{ marginBottom: '18px' }}>
+              <div key="experience" style={{ marginBottom: t.spacingPadding }}>
                 <div style={{ fontSize: t.sectionTitleSize, fontWeight: t.sectionTitleWeight, textTransform: t.sectionTitleTransform, color: t.sectionTitleColor, borderBottom: t.sectionTitleBorder, paddingBottom: '4px', marginBottom: '10px' }}>
                   {labels.experience || 'Experience'}
                 </div>
                 {structuredExperience && structuredExperience.length > 0 ? (
                   structuredExperience.map((exp, i) => (
-                    <div key={i} style={{ marginBottom: '12px' }}>
+                     <div key={i} style={{ marginBottom: t.entrySpacing }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2px' }}>
                         <div style={{ fontWeight: 'bold' }}>{exp.job_title}</div>
                         <div style={{ fontSize: '0.9em' }}>{exp.dates}</div>
@@ -391,14 +435,14 @@ export default function ResumeHTML({
           if (sectionKey === 'education') {
             if (!isVisible('education') || (!eduEntries.length && !parsedData?.education)) return null;
             return (
-              <div key="education" style={{ marginBottom: '18px' }}>
+              <div key="education" style={{ marginBottom: t.spacingPadding }}>
                 <div style={{ fontSize: t.sectionTitleSize, fontWeight: t.sectionTitleWeight, textTransform: t.sectionTitleTransform, color: t.sectionTitleColor, borderBottom: t.sectionTitleBorder, paddingBottom: '4px', marginBottom: '10px' }}>
                   {labels.education || 'Education'}
                 </div>
                 {eduEntries.length > 0 ? (
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   eduEntries.map((entry: any, i: number) => (
-                    <div key={i} style={{ marginBottom: '12px' }}>
+                    <div key={i} style={{ marginBottom: t.entrySpacing }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2px' }}>
                         <div style={{ fontWeight: 'bold' }}>{entry.degree}</div>
                         {entry.year && <div style={{ fontSize: '0.9em' }}>{entry.year}</div>}
@@ -416,7 +460,7 @@ export default function ResumeHTML({
           if (sectionKey === 'projects') {
             if (!isVisible('projects') || !projects || !projects.trim()) return null;
             return (
-              <div key="projects" style={{ marginBottom: '18px' }}>
+              <div key="projects" style={{ marginBottom: t.spacingPadding }}>
                 <div style={{ fontSize: t.sectionTitleSize, fontWeight: t.sectionTitleWeight, textTransform: t.sectionTitleTransform, color: t.sectionTitleColor, borderBottom: t.sectionTitleBorder, paddingBottom: '4px', marginBottom: '10px' }}>
                   {labels.projects || 'Projects'}
                 </div>
@@ -428,7 +472,7 @@ export default function ResumeHTML({
           if (sectionKey === 'skills') {
             if (!isVisible('skills') || !categorized) return null;
             return (
-              <div key="skills" style={{ marginBottom: '18px' }}>
+              <div key="skills" style={{ marginBottom: t.spacingPadding }}>
                 <div style={{ fontSize: t.sectionTitleSize, fontWeight: t.sectionTitleWeight, textTransform: t.sectionTitleTransform, color: t.sectionTitleColor, borderBottom: t.sectionTitleBorder, paddingBottom: '4px', marginBottom: '10px' }}>
                   {labels.skills || 'Skills'}
                 </div>
@@ -464,7 +508,7 @@ export default function ResumeHTML({
                    const keyStr = sec.id ? `custom_${sec.id}` : `custom_${idx}`;
                    if (!isVisible(keyStr) || !sec.content?.trim()) return null;
                    return (
-                     <div key={keyStr} style={{ marginBottom: '18px' }}>
+                     <div key={keyStr} style={{ marginBottom: t.spacingPadding }}>
                         <div style={{ fontSize: t.sectionTitleSize, fontWeight: t.sectionTitleWeight, textTransform: t.sectionTitleTransform, color: t.sectionTitleColor, borderBottom: t.sectionTitleBorder, paddingBottom: '4px', marginBottom: '10px' }}>
                           {sec.title}
                         </div>
@@ -479,6 +523,7 @@ export default function ResumeHTML({
           return null;
         })}
       </div>
+
     </div>
   );
 }
