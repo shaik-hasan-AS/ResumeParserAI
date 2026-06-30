@@ -10,6 +10,10 @@ from app.routes import auth, resume, jobs
 
 # Create database tables safely so app doesn't crash on startup if DB is down
 try:
+    # Test connection first to avoid multiple slow timeout loops if DB is unreachable
+    with engine.connect() as conn:
+        pass
+
     Base.metadata.create_all(bind=engine)
     # HOTFIX: Since Alembic migration failed due to create_all creating tables out of band,
     # we manually ensure the new columns exist.
@@ -23,15 +27,16 @@ try:
         "ALTER TABLE quick_scan_results ADD COLUMN rating INTEGER",
         "ALTER TABLE quick_scan_results ADD COLUMN notes VARCHAR"
     ]
-    for query in hotfixes:
-        try:
-            with engine.begin() as conn:
+    with engine.begin() as conn:
+        for query in hotfixes:
+            try:
                 conn.execute(text(query))
-        except Exception:
-            pass
+            except Exception:
+                pass
     print("Database tables created successfully or already exist.")
 except Exception as e:
-    print(f"Error creating database tables: {e}")
+    # ponytail: capture single connection timeout/failure and proceed so uvicorn starts
+    print(f"Error connecting to database or running migrations: {e}")
 
 app = FastAPI(title="MyAIProfile API")
 
