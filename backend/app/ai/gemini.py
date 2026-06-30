@@ -57,17 +57,32 @@ def generate_feedback(parsed_data: dict, raw_text: str, target_role: str = None,
     if redacted_parsed_data.get("phone"):
         redacted_parsed_data["phone"] = "[REDACTED PHONE]"
     
-    role_context = f"The candidate is specifically applying for the role of: **{target_role}**." if target_role else "The candidate has not specified a target role, so evaluate based on general professional standards and the skills present."
-    jd_context = f"\n\nHere is the Job Description for the target role:\n{job_description}\n\nPlease strictly evaluate the candidate's fit against the requirements, keywords, and skills mentioned in this job description." if job_description else ""
+    role_context = f"Target Role: {target_role}" if target_role else "Target Role: General (not specified)"
+    jd_context = f"\nTarget Job Description:\n{job_description}" if job_description else ""
     
     prompt = f"""
-    Review the following redacted resume text and parsed data.
-    
-    {role_context}{jd_context}
-    
-    Parsed Data: {redacted_parsed_data}
-    Raw Text: {redacted_text}
-    """
+### System Instruction
+You are an expert recruiter and senior Applicant Tracking System (ATS) auditor.
+Evaluate the candidate's resume details and calculate an accurate, realistic ATS match score.
+If a Job Description is provided, calculate the score based on keyword match, requirement coverage, and role relevance. If no Job Description is provided, evaluate based on general professional standards.
+
+### Context
+{role_context}
+{jd_context}
+
+### Candidate Parsed Profile
+{json.dumps(redacted_parsed_data, indent=2)}
+
+### Candidate Raw Resume Text
+{redacted_text}
+
+### Instructions
+1. Analyze key strengths and weaknesses in the candidate's profile.
+2. Formulate 3-5 recommended certifications and concrete actionable steps to improve the resume.
+3. Suggest 3 impact-driven bullet point rewrites using the STAR method (Situation, Task, Action, Result) with metrics.
+4. Extract the candidate's structured experience cleanly, optimizing experience bullets without changing factual details.
+5. Generate a powerful professional summary tailored to the target role.
+"""
     
     try:
         client = genai.Client()
@@ -124,27 +139,33 @@ def generate_cover_letter(parsed_data: dict, raw_text: str, job_description: str
     if redacted_parsed_data.get("phone"):
         redacted_parsed_data["phone"] = "[REDACTED PHONE]"
         
-    role_context = f"The candidate is applying for the role of: **{target_role}**." if target_role else "The candidate is applying for the job described below."
-    jd_context = f"\n\nHere is the Job Description for the target role:\n{job_description}\n"
+    role_context = f"Target Role: {target_role}" if target_role else "Target Role: General (not specified)"
+    jd_context = f"\nTarget Job Description:\n{job_description}"
     
     prompt = f"""
-    You are an expert career coach and professional cover letter writer.
-    Write a compelling, professional, and ATS-optimized cover letter for the candidate based on their resume data and the provided job description.
-    
-    {role_context}{jd_context}
-    
-    Candidate's Parsed Resume Data: {redacted_parsed_data}
-    Candidate's Raw Resume Text: {redacted_text}
-    
-    Guidelines:
-    1. Do not invent any experience, skills, or education that are not explicitly stated or strongly implied by the candidate's resume.
-    2. Bridge the gap between the candidate's skills/experience and the specific requirements mentioned in the Job Description.
-    3. Use a confident, professional, and engaging tone.
-    4. Format the output as plain text with paragraphs. Do not include a header block with addresses (we will generate that in the PDF).
-    5. Start directly with the salutation (e.g., "Dear Hiring Manager," or "To the Hiring Team,").
-    6. Conclude with a professional sign-off (e.g., "Sincerely," followed by the candidate's name or a placeholder if redacted).
-    7. Do NOT include markdown formatting like bolding (**) in the final text since this will be rendered directly to a PDF text block.
-    """
+### System Instruction
+You are an expert career coach and elite professional cover letter writer.
+Draft an ATS-optimized, high-impact cover letter.
+
+### Context
+{role_context}
+{jd_context}
+
+### Candidate Parsed Profile
+{json.dumps(redacted_parsed_data, indent=2)}
+
+### Candidate Raw Resume Text
+{redacted_text}
+
+### Instructions
+1. Highlight how the candidate's skills and accomplishments directly align with the Job Description requirements.
+2. Bridge experience gaps by framing transferable skills positively.
+3. Maintain a highly confident, professional, and industry-appropriate tone.
+4. Output the letter as clean plain text paragraphs. Do not write contact addresses in the header (the PDF generator takes care of that).
+5. Start directly with an appropriate salutation (e.g., "Dear Hiring Manager," or "To the Hiring Team,").
+6. Conclude with a professional signature (e.g., "Sincerely,", followed by "[REDACTED NAME]" or candidate's name).
+7. CRITICAL: Do NOT output any markdown syntax (such as bolding '**', headers '#', or bullet points) in the content body. It must be 100% clean plain text for direct PDF injection.
+"""
     
     try:
         client = genai.Client()
@@ -161,18 +182,22 @@ def generate_cover_letter(parsed_data: dict, raw_text: str, job_description: str
 
 def rewrite_text(text: str, context: str = None) -> str:
     prompt = f"""
-    You are an expert career coach and resume writer.
-    Your task is to rewrite the following text into a highly professional, ATS-optimized format.
-    Make it impactful, action-oriented, and concise. Do not invent facts, only elevate the language.
-    
-    Context about this text (e.g. 'This is a professional summary' or 'This is an experience bullet point'):
-    {context or 'No specific context provided.'}
-    
-    Original Text:
-    {text}
-    
-    Return ONLY the rewritten text, nothing else. No quotation marks or explanations.
-    """
+### System Instruction
+You are an expert resume writer and career coach.
+Rewrite the target text into a highly professional, ATS-optimized, and impactful format.
+Make it concise, action-oriented, and tailored to the context provided. Do not invent any new facts.
+
+### Context / Placement
+{context or 'Resume element / Bullet point'}
+
+### Target Text to Rewrite
+"{text}"
+
+### Instructions
+1. Elevate the language using strong, professional action verbs.
+2. Focus on readability and direct professional impact.
+3. Return ONLY the rewritten text itself. Do not include any explanations, surrounding quotes, preamble, or notes.
+"""
     
     try:
         client = genai.Client()
@@ -207,24 +232,30 @@ def generate_mock_interview(parsed_data: dict, raw_text: str, target_role: str =
     if redacted_parsed_data.get("phone"):
         redacted_parsed_data["phone"] = "[REDACTED PHONE]"
         
-    role_context = f"The candidate is applying for the role of: **{target_role}**." if target_role else "The candidate is applying for a role based on their skills."
-    jd_context = f"\n\nHere is the Job Description for the target role:\n{job_description}\n" if job_description else ""
+    role_context = f"Target Role: {target_role}" if target_role else "Target Role: General (not specified)"
+    jd_context = f"\nTarget Job Description:\n{job_description}" if job_description else ""
     
     prompt = f"""
-    You are an expert technical interviewer and hiring manager.
-    Your task is to generate 5 to 7 highly tailored mock interview questions for this candidate based on their resume and the target role/job description.
-    
-    {role_context}{jd_context}
-    
-    Candidate's Parsed Resume Data: {redacted_parsed_data}
-    Candidate's Raw Resume Text: {redacted_text}
-    
-    Guidelines:
-    1. Ask a mix of technical, behavioral, and situational questions.
-    2. Focus on areas where the candidate claims expertise, but also probe into potential weaknesses or gaps compared to the job description.
-    3. Make the questions realistic, challenging, and specific to the technologies or experiences listed in their resume.
-    4. For each question, provide 2-3 brief "expected answer hints" - key concepts or structural points (like STAR method) the candidate should include in a strong answer.
-    """
+### System Instruction
+You are an expert technical interviewer and seasoned hiring manager.
+Generate 5 to 7 highly tailored, challenging mock interview questions.
+
+### Context
+{role_context}
+{jd_context}
+
+### Candidate Parsed Profile
+{json.dumps(redacted_parsed_data, indent=2)}
+
+### Candidate Raw Resume Text
+{redacted_text}
+
+### Instructions
+1. Output a balanced mix of technical, behavioral, and situational questions.
+2. Align questions with their specific field (e.g. system architecture/performance for tech, clinical protocols/patient care for medicine/health).
+3. Tailor questions to probe both their highlighted areas of strength and potential experience gaps relative to the job requirements.
+4. For each question, provide 2-3 brief "expected answer hints" (e.g. key technical keywords or STAR structural points) they should hit.
+"""
     
     try:
         client = genai.Client()
@@ -256,17 +287,20 @@ def evaluate_candidate_fit(parsed_data: dict, job_description: str) -> dict:
         redacted_parsed_data["phone"] = "[REDACTED PHONE]"
 
     prompt = f"""
-    You are an expert technical recruiter and hiring manager.
-    Evaluate the following candidate's parsed resume data against the provided Job Description.
+### System Instruction
+You are an expert technical recruiter and senior hiring manager.
+Evaluate the candidate's parsed resume details against the job requirements.
 
-    Job Description:
-    {job_description}
+### Job Description
+{job_description}
 
-    Candidate's Resume Data:
-    {redacted_parsed_data}
+### Candidate Parsed Profile
+{json.dumps(redacted_parsed_data, indent=2)}
 
-    Provide a match score out of 100 and a brief 2-3 sentence summary explaining your reasoning.
-    """
+### Instructions
+1. Calculate a realistic compatibility score out of 100 based on core skills, level of experience, and role alignment.
+2. Provide a concise 2-3 sentence professional summary explaining your matching decision, citing key strengths or missing requirements.
+"""
 
     try:
         client = genai.Client()
@@ -305,25 +339,28 @@ def generate_outreach_email(parsed_data: dict, raw_text: str, job_description: s
         tone_instruction = "professional, polite, and respectful"
         
     prompt = f"""
-    You are an expert technical recruiter.
-    Draft an email to the candidate (whose name is {parsed_data.get('name', 'the candidate')}) regarding the position of **{target_role}**.
-    The purpose of the email is: {email_type.upper().replace('_', ' ')}.
-    The tone should be {tone_instruction}.
-    
-    If it's an interview or outreach email, briefly highlight 1 or 2 specific, impressive things from their resume that caught your eye, connecting it to the job description.
-    If it's a rejection email, keep it brief, polite, and do not mention specific flaws unless helpful and encouraging.
-    
-    Job Description:
-    {job_description or 'No specific description provided.'}
-    
-    Candidate's Resume Data:
-    {redacted_parsed_data}
-    
-    Guidelines:
-    1. Output ONLY the email subject line and body. No pleasantries before or after.
-    2. Format it clearly with a "Subject: " line at the top.
-    3. Use placeholders like [Insert Company Name] or [Link to Calendar] where appropriate.
-    """
+### System Instruction
+You are an expert recruiter. Write a professional outreach or status update email to the candidate.
+
+### Context
+- Candidate Name: {parsed_data.get('name', 'Candidate')}
+- Target Role: {target_role}
+- Email Type: {email_type.upper().replace('_', ' ')}
+- Email Tone: {tone_instruction}
+
+### Job Description
+{job_description or 'No specific description provided.'}
+
+### Candidate Parsed Profile
+{json.dumps(redacted_parsed_data, indent=2)}
+
+### Instructions
+1. For outreach/interview emails: Highlight 1-2 impressive matching skills or experience bullets from their resume that show alignment with the job description.
+2. For rejection emails: Be respectful, polite, encouraging, and brief.
+3. Output ONLY the subject line starting with "Subject: " followed by the email body.
+4. Do not prefix with notes, preamble, or comments.
+5. Use placeholders like [Insert Company Name] or [Insert Calendar Link] where context needs insertion.
+"""
 
     try:
         client = genai.Client()
@@ -358,16 +395,39 @@ def transcribe_audio(file_bytes: bytes, mime_type: str = "audio/mpeg") -> str:
     try:
         client = genai.Client()
         uploaded = client.files.upload(file=tmp_path)
+        prompt_instruction = """
+### System Instruction
+You are a highly accurate audio transcriber and structured data parser.
+Analyze the audio recording of the candidate talking about their profile.
+
+### Task
+1. Generate a verbatim, clean transcription of the audio content.
+2. Extract all professional details mentioned (job titles, companies, dates, achievements, skills, education, projects, certifications).
+3. Output the results strictly as a JSON object matching the requested schema (no markdown formatting blocks, preamble, or notes).
+
+### Output Schema Shape
+{
+  "transcript": "Verbatim transcript of the voice clip...",
+  "extracted": {
+    "experience": [
+      {
+        "job_title": "...",
+        "company": "...",
+        "dates": "...",
+        "bullet_points": ["..."]
+      }
+    ],
+    "skills": ["..."],
+    "education": ["..."],
+    "projects": "...",
+    "certifications": "...",
+    "summary": "..."
+  }
+}
+"""
         response = client.models.generate_content(
             model='gemini-2.5-flash',
-            contents=[
-                "You are a professional resume assistant. The following audio is a person talking about their work experience, skills, projects, and accomplishments. "
-                "Transcribe and extract ALL structured information mentioned: job titles, companies, dates, responsibilities, achievements, skills, education, projects, certifications. "
-                "Return ONLY a JSON object with this shape (no markdown fences):\n"
-                '{"transcript": "...", "extracted": {"experience": [{"job_title":"","company":"","dates":"","bullet_points":[]}], '
-                '"skills": [], "education": [], "projects": "", "certifications": "", "summary": ""}}',
-                uploaded,
-            ],
+            contents=[prompt_instruction, uploaded],
             config=types.GenerateContentConfig(temperature=0.1),
         )
         return response.text
@@ -403,23 +463,22 @@ def enhance_resume_with_audio(parsed_data: dict, raw_text: str, audio_transcript
             redacted[field] = f"[CANDIDATE_{field.upper()}]"
 
     prompt = f"""
-You are an elite resume writer and career coach.
-You have two sources of information about a candidate:
+### System Instruction
+You are an elite professional resume writer and career coach.
+Your task is to merge existing resume details with dynamic voice transcripts into a single optimized resume.
 
-1. EXISTING PARSED RESUME DATA (JSON):
+### Candidate Existing Profile
 {json.dumps(redacted, indent=2)}
 
-2. AUDIO TRANSCRIPT / EXTRACTED AUDIO DATA:
+### Candidate Voice Transcript / Explanations
 {audio_transcript}
 
-Your task: Produce a single, comprehensive, ATS-optimized resume data object by:
-- Merging ALL experience entries from both sources (no duplicates)
-- Rewriting every bullet point to start with a strong action verb and include measurable impact
-- Combining all skills from both sources, correctly categorized
-- Generating a powerful professional summary
-- Preserving contact info placeholders exactly as given
-
-Return a complete enhanced resume object.
+### Instructions
+1. Merge experience entries from both sources seamlessly, avoiding any duplicate listings.
+2. Rewrite all work experience bullet points to begin with strong, industry-appropriate action verbs and include metrics/measurable outcomes.
+3. Combine, filter, and correctly categorize all skills into 'technical', 'soft', and 'tools'.
+4. Draft an impactful professional summary (2-3 sentences) summarizing their combined experience.
+5. Retain original contact information placeholders exactly.
 """
 
     try:
@@ -456,21 +515,23 @@ class InterviewAnswerEvaluation(BaseModel):
 def evaluate_interview_answer(question: str, expected_hints: List[str], answer_text: str) -> dict:
     """Evaluate candidate's interview answer using Gemini."""
     prompt = f"""
-You are an expert technical and behavioral interviewer evaluating a candidate's response to the following question.
+### System Instruction
+You are an expert technical and behavioral interviewer evaluating a candidate's response to an interview question.
+Analyze the response objectively and provide constructive feedback.
 
-QUESTION:
+### Interview Question
 "{question}"
 
-EXPECTED KEY POINTS / HINTS:
+### Expected Key Points / Hints
 {json.dumps(expected_hints, indent=2)}
 
-CANDIDATE'S TRANSCRIPTION:
+### Candidate Transcription
 "{answer_text}"
 
-Evaluate the response objectively. Return the evaluation JSON structured with:
-- Constructive feedback detailing what was strong, what could be added, and structural tips.
-- An honest score out of 10.
-- An example of how the candidate could have phrased the response much more impactfully (e.g., using STAR technique).
+### Instructions
+1. Provide detailed constructive feedback highlighting strengths, missed opportunities, and structural points.
+2. Calculate a realistic score out of 10.
+3. Rewrite the response using the STAR technique (Situation, Task, Action, Result) to demonstrate optimal phrasing.
 """
     try:
         client = genai.Client()
@@ -508,23 +569,24 @@ def evaluate_ats_match(parsed_data: dict, raw_text: str, job_description: str) -
             redacted_parsed_data[field] = "[REDACTED]"
 
     prompt = f"""
-You are an expert ATS (Applicant Tracking System) optimizer and career coach.
-Analyze the candidate's resume details and raw text against the target Job Description.
+### System Instruction
+You are an expert ATS (Applicant Tracking System) optimizer and professional resume auditor.
+Analyze the candidate's resume against the Job Description.
 
-TARGET JOB DESCRIPTION:
+### Job Description
 {job_description}
 
-CANDIDATE'S RESUME DATA:
+### Candidate Parsed Profile
 {json.dumps(redacted_parsed_data, indent=2)}
 
-CANDIDATE'S RAW RESUME TEXT:
+### Candidate Raw Resume Text
 {redacted_text}
 
-Perform a deep analysis:
-1. Identify key hard/soft skills matching between both.
-2. Identify major skills, frameworks, tools, or requirements in the Job Description that are missing from the resume.
-3. Compute an ATS match score (0-100) based on keyword coverage and depth.
-4. Draft 3 tailored experience bullet points the candidate could add to their resume. These bullets must naturally incorporate the missing keywords while aligning with their existing professional experience background.
+### Instructions
+1. Calculate a realistic ATS compatibility score out of 100 based on keyword overlap, role alignment, and experience.
+2. Identify core skill keywords present in both the resume and Job Description.
+3. Identify major tool, technology, or domain keywords mentioned in the Job Description but missing from the resume.
+4. Draft 3 high-impact experience bullet points incorporating the missing keywords naturally, tailored to the candidate's existing background.
 """
     try:
         client = genai.Client()
@@ -559,18 +621,20 @@ def generate_speech_suggestions(parsed_data: dict) -> dict:
             redacted_data[field] = "[REDACTED]"
             
     prompt = f"""
-You are an expert career coach and resume builder. 
-Your goal is to guide candidates in recording a voice clip describing their professional experience.
-To ensure the voice recording is highly relevant to their field and helps create a "goated" resume, generate exactly 3 tailored, industry-specific speech suggestions based on their resume profile below.
+### System Instruction
+You are an expert career coach and professional resume designer.
+To ensure the voice recording is highly relevant to their field, generate exactly 3 tailored, industry-specific speech suggestions based on their resume profile.
 
-For tech candidates, ask about system architecture, stack decisions, or metrics.
-For medical/health candidates, ask about patient volume, clinical procedures, or patient care.
+For tech candidates, ask about system architecture, stack decisions, or performance metrics.
+For medical/health candidates, ask about clinical procedures, patient volume, or care protocols.
 For other fields, tailor it specifically to their core responsibilities.
 
-CANDIDATE PROFILE:
+### Candidate Parsed Profile
 {json.dumps(redacted_data, indent=2)}
 
-Generate a clean JSON response containing a list of 3 highly-actionable, customized speech suggestions to prompt them.
+### Instructions
+1. Generate exactly 3 highly actionable, customized speech suggestions to prompt them.
+2. Provide tailored industry-specific prompts matching their specific sector.
 """
     try:
         client = genai.Client()
