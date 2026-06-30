@@ -539,9 +539,12 @@ async def roast_my_resume(
     current_user: models.User = Depends(get_current_user)
 ):
     """Get a savage Simon Cowell-style roast of a resume."""
-    resume = db.query(models.Resume).filter(
-        models.Resume.id == id, models.Resume.user_id == current_user.id
-    ).first()
+    if current_user.role == "recruiter":
+        resume = db.query(models.Resume).filter(models.Resume.id == id).first()
+    else:
+        resume = db.query(models.Resume).filter(
+            models.Resume.id == id, models.Resume.user_id == current_user.id
+        ).first()
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
 
