@@ -19,4 +19,6 @@ services:
         value: "8000"
       - key: SECRET_KEY
         generateValue: true
+      - key: FRONTEND_URL
+        value: "https://resume-parser-ai-red.vercel.app"
 
