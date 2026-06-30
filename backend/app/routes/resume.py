@@ -7,7 +7,7 @@ from ..schemas import schemas
 from .auth import get_current_user
 from ..parsers.resume.main import extract_text_from_pdf, extract_text_from_docx, parse_resume_text
 from starlette.concurrency import run_in_threadpool
-from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text, generate_mock_interview
+from ..ai.gemini import generate_feedback, generate_cover_letter, rewrite_text, generate_mock_interview, transcribe_audio, enhance_resume_with_audio
 from ..parsers.ocr import local_ocr_image, local_ocr_pdf
 import os
 import shutil
@@ -310,3 +310,61 @@ def download_resume_original(
 
     filename = os.path.basename(resume.original_file_path)
     return FileResponse(path=resume.original_file_path, filename=filename)
+
+
+ALLOWED_AUDIO_TYPES = {
+    "audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav",
+    "audio/webm", "audio/ogg", "audio/m4a", "audio/mp4",
+    "audio/x-m4a", "video/webm",  # browser MediaRecorder often uses video/webm
+}
+
+@router.post("/{id}/enhance-audio", response_model=schemas.AudioEnhanceResponse)
+async def enhance_resume_with_audio_route(
+    id: str,
+    audio: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Accept an audio recording, transcribe it with Gemini, merge with existing parsed data, save and return enhanced JSON."""
+    resume = db.query(models.Resume).filter(
+        models.Resume.id == id, models.Resume.user_id == current_user.id
+    ).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    parsed = db.query(models.ParsedData).filter(models.ParsedData.resume_id == id).first()
+    if not parsed:
+        raise HTTPException(status_code=404, detail="Parsed data not found")
+
+    # Validate content type (browser sometimes sends octet-stream)
+    content_type = audio.content_type or ""
+    if content_type not in ALLOWED_AUDIO_TYPES and not content_type.startswith("audio/"):
+        # Accept anyway if filename looks like audio – ponytail: lenient, the API will reject bad files itself
+        ext = os.path.splitext(audio.filename or "")[1].lower()
+        if ext not in {".mp3", ".wav", ".webm", ".ogg", ".m4a", ".mp4"}:
+            raise HTTPException(status_code=400, detail=f"Unsupported audio format: {content_type}")
+
+    audio_bytes = await audio.read()
+    if len(audio_bytes) > 50 * 1024 * 1024:  # 50 MB hard cap
+        raise HTTPException(status_code=413, detail="Audio file too large (max 50 MB)")
+
+    raw_text = getattr(parsed, "raw_text", None) or ""
+
+    # Transcribe then enhance — both are blocking/network calls, run in threadpool
+    mime = content_type or "audio/mpeg"
+
+    def _process():
+        transcript = transcribe_audio(audio_bytes, mime)
+        return enhance_resume_with_audio(parsed.parsed_json or {}, raw_text, transcript)
+
+    enhanced_json = await run_in_threadpool(_process)
+
+    if "error" in enhanced_json and len(enhanced_json) <= 2:
+        raise HTTPException(status_code=500, detail=enhanced_json["error"])
+
+    # Persist the enhanced data
+    parsed.parsed_json = enhanced_json
+    flag_modified(parsed, "parsed_json")
+    db.commit()
+
+    return schemas.AudioEnhanceResponse(parsed_json=enhanced_json)

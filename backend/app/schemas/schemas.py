@@ -153,3 +153,6 @@ class QuickScanResponse(BaseModel):
     results_count: Optional[int] = 0
     class Config:
         from_attributes = True
+
+class AudioEnhanceResponse(BaseModel):
+    parsed_json: Dict[str, Any]

@@ -337,3 +337,111 @@ def generate_outreach_email(parsed_data: dict, raw_text: str, job_description: s
         return response.text.strip()
     except Exception as e:
         return f"Subject: Error Generating Email\n\nError: {str(e)}"
+
+
+# ── Audio transcription ────────────────────────────────────────────────────────
+
+def transcribe_audio(file_bytes: bytes, mime_type: str = "audio/mpeg") -> str:
+    """Upload audio bytes to Gemini Files API and return a structured transcript."""
+    import tempfile, os
+    # Write to a temp file so the SDK can upload it
+    suffix = ".mp3"
+    if "webm" in mime_type: suffix = ".webm"
+    elif "wav" in mime_type: suffix = ".wav"
+    elif "m4a" in mime_type or "mp4" in mime_type: suffix = ".m4a"
+    elif "ogg" in mime_type: suffix = ".ogg"
+
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+        tmp.write(file_bytes)
+        tmp_path = tmp.name
+
+    try:
+        client = genai.Client()
+        uploaded = client.files.upload(file=tmp_path)
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=[
+                "You are a professional resume assistant. The following audio is a person talking about their work experience, skills, projects, and accomplishments. "
+                "Transcribe and extract ALL structured information mentioned: job titles, companies, dates, responsibilities, achievements, skills, education, projects, certifications. "
+                "Return ONLY a JSON object with this shape (no markdown fences):\n"
+                '{"transcript": "...", "extracted": {"experience": [{"job_title":"","company":"","dates":"","bullet_points":[]}], '
+                '"skills": [], "education": [], "projects": "", "certifications": "", "summary": ""}}',
+                uploaded,
+            ],
+            config=types.GenerateContentConfig(temperature=0.1),
+        )
+        return response.text
+    finally:
+        os.unlink(tmp_path)
+
+
+class EnhancedResumeData(BaseModel):
+    name: str = Field(description="Candidate's full name from existing resume data.")
+    email: str = Field(description="Candidate's email.")
+    phone: str = Field(description="Candidate's phone number.")
+    linkedin: str = Field(description="LinkedIn URL if available.")
+    github: str = Field(description="GitHub or portfolio URL if available.")
+    location: str = Field(description="Candidate's location.")
+    summary: str = Field(description="A powerful 2-3 sentence professional summary combining resume and audio info.")
+    structured_experience: List[ExperienceEntry] = Field(
+        description="Complete, optimized work experience merging resume and audio. Rewrite all bullet points to be impact-driven and ATS-optimized."
+    )
+    skills_categorized: dict = Field(
+        description="Skills object with keys 'technical', 'soft', 'tools' each containing a list of strings. Merge skills from both resume and audio."
+    )
+    education: str = Field(description="Education section text, preserved from original resume.")
+    projects: str = Field(description="Projects section, merged from resume and audio if applicable.")
+    certifications: str = Field(description="Certifications from resume and audio.")
+
+
+def enhance_resume_with_audio(parsed_data: dict, raw_text: str, audio_transcript: str) -> dict:
+    """Merge existing parsed resume data with audio transcript and return an enhanced parsed_json."""
+    # Redact PII before sending
+    redacted = parsed_data.copy()
+    for field in ("name", "email", "phone"):
+        if redacted.get(field):
+            redacted[field] = f"[CANDIDATE_{field.upper()}]"
+
+    prompt = f"""
+You are an elite resume writer and career coach.
+You have two sources of information about a candidate:
+
+1. EXISTING PARSED RESUME DATA (JSON):
+{json.dumps(redacted, indent=2)}
+
+2. AUDIO TRANSCRIPT / EXTRACTED AUDIO DATA:
+{audio_transcript}
+
+Your task: Produce a single, comprehensive, ATS-optimized resume data object by:
+- Merging ALL experience entries from both sources (no duplicates)
+- Rewriting every bullet point to start with a strong action verb and include measurable impact
+- Combining all skills from both sources, correctly categorized
+- Generating a powerful professional summary
+- Preserving contact info placeholders exactly as given
+
+Return a complete enhanced resume object.
+"""
+
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=EnhancedResumeData,
+                temperature=0.2,
+            ),
+        )
+        enhanced = json.loads(response.text)
+        # Restore real PII from original parsed_data
+        for field in ("name", "email", "phone", "linkedin", "github", "location"):
+            if parsed_data.get(field):
+                enhanced[field] = parsed_data[field]
+        # Carry over fields the schema doesn't touch
+        for field in ("education_entries", "experience_years", "section_order", "visible_sections", "section_labels"):
+            if parsed_data.get(field) is not None:
+                enhanced.setdefault(field, parsed_data[field])
+        return enhanced
+    except Exception as e:
+        return {"error": str(e), **parsed_data}
