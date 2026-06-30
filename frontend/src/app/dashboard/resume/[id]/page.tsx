@@ -306,8 +306,21 @@ export default function ResumeViewer() {
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [targetRole, setTargetRole] = useState(urlRole || "");
   const [jobDescription, setJobDescription] = useState(urlJd || "");
-  const [activeTab, setActiveTab] = useState<'strengths' | 'improvements' | 'action_plan' | 'rewrites' | 'cover_letter' | 'mock_interview'>('strengths');
+  const [activeTab, setActiveTab] = useState<'strengths' | 'improvements' | 'action_plan' | 'rewrites' | 'cover_letter' | 'mock_interview' | 'ats_match'>('strengths');
   const [pdfTheme, setPdfTheme] = useState<'modern' | 'harvard' | 'executive'>('modern');
+
+  // ATS Matcher State
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [atsMatch, setAtsMatch] = useState<any>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = sessionStorage.getItem(`ats_match_${id}`);
+        if (cached) return JSON.parse(cached);
+      } catch { /* ignore */ }
+    }
+    return null;
+  });
+  const [loadingAtsMatch, setLoadingAtsMatch] = useState(false);
   const [coverLetter, setCoverLetter] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       return sessionStorage.getItem(`cover_letter_${id}`) || null;
@@ -494,6 +507,27 @@ export default function ResumeViewer() {
       console.error('Failed to generate mock interview', err);
     } finally {
       setLoadingMockInterview(false);
+    }
+  };
+
+  const generateAtsMatch = async () => {
+    if (!jobDescription.trim()) {
+      alert("Please paste a Job Description in the left panel first.");
+      return;
+    }
+    setLoadingAtsMatch(true);
+    try {
+      const response = await api.post(`/api/resume/${id}/ats-match`, {
+        job_description: jobDescription,
+        target_role: targetRole || null
+      });
+      setAtsMatch(response.data);
+      sessionStorage.setItem(`ats_match_${id}`, JSON.stringify(response.data));
+    } catch (err) {
+      console.error('Failed to generate ATS Match report', err);
+      alert("Failed to analyze ATS match.");
+    } finally {
+      setLoadingAtsMatch(false);
     }
   };
 
@@ -879,6 +913,12 @@ export default function ResumeViewer() {
                       >
                         <FileText className="w-4 h-4" /> Cover Letter
                       </button>
+                      <button 
+                        onClick={() => setActiveTab('ats_match')}
+                        className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${activeTab === 'ats_match' ? 'bg-muted text-foreground flex items-center gap-2' : 'text-muted-foreground hover:text-muted-foreground hover:bg-muted/50 flex items-center gap-2'}`}
+                      >
+                        <Target className="w-4 h-4" /> ATS Matcher
+                      </button>
                     </div>
 
                     {/* Tab Content */}
@@ -1235,7 +1275,136 @@ export default function ResumeViewer() {
                         </div>
                       )}
 
+                      {activeTab === 'ats_match' && (
+                        <div className="space-y-6 animate-in fade-in duration-300">
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                              <Target className="w-5 h-5 text-primary" /> ATS Job Matcher & Keywords
+                            </h3>
+                          </div>
+
+                          {!atsMatch ? (
+                            <div className="text-center py-12 bg-muted rounded-xl border border-dashed border-border flex flex-col items-center justify-center">
+                              <Target className="w-12 h-12 text-muted-foreground mb-4 opacity-50" />
+                              <h4 className="text-foreground font-medium mb-2">Analyze Resume vs Job Description</h4>
+                              <p className="text-sm text-muted-foreground max-w-md mb-6 text-center">
+                                Evaluate your resume matching rate, find exactly which keywords are missing, and generate draft fixes.
+                              </p>
+                              
+                              <div className="w-full max-w-md space-y-4 mb-6">
+                                <div className="text-left space-y-1.5">
+                                  <label className="text-xs font-semibold text-muted-foreground">Job Description</label>
+                                  <textarea
+                                    value={jobDescription}
+                                    onChange={(e) => setJobDescription(e.target.value)}
+                                    placeholder="Paste job description here to check compatibility..."
+                                    className="w-full h-32 px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none resize-none custom-scrollbar"
+                                  />
+                                </div>
+                              </div>
+
+                              <Button
+                                onClick={generateAtsMatch}
+                                disabled={loadingAtsMatch || !jobDescription.trim()}
+                                className="bg-primary hover:bg-primary/90 text-white shadow-sm h-10 px-6 rounded-lg font-semibold flex items-center gap-2"
+                              >
+                                {loadingAtsMatch ? (
+                                  <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Running ATS Scan...</>
+                                ) : (
+                                  <><Sparkles className="w-4 h-4" /> Scan Compatibility</>
+                                )}
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="space-y-6">
+                              <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-muted/50 border border-border rounded-2xl">
+                                <CircularProgress value={atsMatch.match_score} color={atsMatch.match_score > 70 ? "#10B981" : atsMatch.match_score > 40 ? "#F59E0B" : "#EF4444"} size={110} strokeWidth={10} />
+                                <div className="flex-1 space-y-2 text-center md:text-left">
+                                  <h4 className="text-lg font-bold text-foreground">ATS Match Compatibility</h4>
+                                  <p className="text-xs text-muted-foreground leading-relaxed">
+                                    Your profile has a <span className="font-bold text-foreground">{atsMatch.match_score}%</span> keyword match rate for this role. Use the suggestions below to bridge the gap.
+                                  </p>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => setAtsMatch(null)}
+                                    className="text-xs h-8 bg-transparent"
+                                  >
+                                    Reset / Re-run scan
+                                  </Button>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Matched Keywords */}
+                                <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+                                  <span className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider flex items-center gap-1.5">
+                                    <CheckCircle2 className="w-4 h-4" /> Matched Keywords
+                                  </span>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {atsMatch.matched_keywords?.map((kw: string, i: number) => (
+                                      <span key={i} className="text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+                                        {kw}
+                                      </span>
+                                    ))}
+                                    {(!atsMatch.matched_keywords || atsMatch.matched_keywords.length === 0) && (
+                                      <span className="text-xs text-muted-foreground italic">No matching keywords found.</span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Missing Keywords */}
+                                <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+                                  <span className="text-[11px] font-bold text-rose-500 uppercase tracking-wider flex items-center gap-1.5">
+                                    <AlertTriangle className="w-4 h-4" /> Missing Keywords
+                                  </span>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {atsMatch.missing_keywords?.map((kw: string, i: number) => (
+                                      <span key={i} className="text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1 rounded-full">
+                                        {kw}
+                                      </span>
+                                    ))}
+                                    {(!atsMatch.missing_keywords || atsMatch.missing_keywords.length === 0) && (
+                                      <span className="text-xs text-emerald-400 font-semibold italic">Perfect coverage! No missing keywords.</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Suggested Bullet Fixes */}
+                              <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
+                                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                                  <Sparkles className="w-4 h-4 text-primary" /> Tailored Experience Bullets (Quick Fixes)
+                                </span>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                  Incorporate these bullets into your work experiences in the Resume Builder to automatically hit missing ATS keywords naturally.
+                                </p>
+
+                                <div className="space-y-3">
+                                  {atsMatch.suggested_bullet_fixes?.map((bullet: string, i: number) => (
+                                    <div key={i} className="flex gap-3 items-start justify-between bg-muted/40 p-4 rounded-xl border border-border">
+                                      <p className="text-xs font-medium text-foreground leading-relaxed flex-1">
+                                        • {bullet}
+                                      </p>
+                                      <button
+                                        onClick={() => {
+                                          navigator.clipboard.writeText(bullet);
+                                          alert("Copied suggested bullet point to clipboard!");
+                                        }}
+                                        className="text-[10px] font-bold text-primary hover:underline bg-primary/10 hover:bg-primary/20 px-2 py-1.5 rounded transition-all shrink-0 ml-3"
+                                      >
+                                        Copy
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                     </div>
+
                   </div>
                 )}
                 
