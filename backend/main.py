@@ -49,7 +49,7 @@ if is_prod and (not auth_service.SECRET_KEY or auth_service.SECRET_KEY in ("your
         "for production. Please set a strong, random SECRET_KEY in your environment."
     )
 
-app = FastAPI(title="MyAIProfile API")
+app = FastAPI(title="VinentoAI API")
 
 # Build CORS origins list — always include localhost for dev,
 # plus the deployed Vercel frontend URL from environment variable.

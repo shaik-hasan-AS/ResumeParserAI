@@ -100,7 +100,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
       >
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <span className="text-2xl font-bold text-foreground tracking-tight">MyAIProfile</span>
+            <span className="text-2xl font-bold text-foreground tracking-tight">VinentoAI</span>
           </Link>
 
           {/* Tab Switcher */}

@@ -15,26 +15,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://myaiprofile.ai'),
+  metadataBase: new URL('https://vinentoai-backend.onrender.com'),
   title: {
-    default: "MyAIProfile - ATS-Optimized AI Resume Builder",
-    template: "%s | MyAIProfile"
+    default: "VinentoAI - ATS-Optimized AI Resume Builder & Screener",
+    template: "%s | VinentoAI"
   },
   description: "Instantly optimize your resume for any ATS. Get hired faster with AI-powered keyword analysis, actionable feedback, and dynamic bullet rewrites.",
-  keywords: ["resume builder", "ATS optimization", "AI resume parser", "job search", "career", "resume feedback", "ATS score"],
-  authors: [{ name: "MyAIProfile Team" }],
-  creator: "MyAIProfile",
+  keywords: ["resume builder", "ATS optimization", "AI resume parser", "job search", "career", "resume feedback", "ATS score", "recruiter", "screener"],
+  authors: [{ name: "VinentoAI Team" }],
+  creator: "VinentoAI",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://myaiprofile.ai",
-    title: "MyAIProfile - ATS-Optimized AI Resume Builder",
+    url: "https://vinentoai-backend.onrender.com",
+    title: "VinentoAI - ATS-Optimized AI Resume Builder & Screener",
     description: "Instantly optimize your resume for any ATS. Get hired faster with AI-powered keyword analysis, actionable feedback, and dynamic bullet rewrites.",
-    siteName: "MyAIProfile",
+    siteName: "VinentoAI",
   },
   twitter: {
     card: "summary_large_image",
-    title: "MyAIProfile - ATS-Optimized AI Resume Builder",
+    title: "VinentoAI - ATS-Optimized AI Resume Builder & Screener",
     description: "Instantly optimize your resume for any ATS. Get hired faster with AI-powered keyword analysis, actionable feedback, and dynamic bullet rewrites.",
   },
 };

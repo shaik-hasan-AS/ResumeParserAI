@@ -26,7 +26,7 @@ export default function Home() {
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-sm">
             <FileText className="w-5 h-5 text-foreground" />
           </div>
-          <span className="text-xl font-bold text-foreground tracking-tight">MyAIProfile</span>
+          <span className="text-xl font-bold text-foreground tracking-tight">VinentoAI</span>
         </div>
         
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
@@ -66,7 +66,7 @@ export default function Home() {
         >
           <h1 className="text-6xl md:text-7xl lg:text-8xl font-serif tracking-tight text-foreground mb-6 leading-tight">
             Unleash your potential with <br className="hidden md:block" />
-            <span className="text-primary">MyAIProfile</span>
+            <span className="text-primary">VinentoAI</span>
           </h1>
           
           <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
@@ -118,7 +118,7 @@ export default function Home() {
               <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
             </div>
             <div className="mx-auto w-64 h-6 rounded-md bg-muted/50 flex items-center justify-center text-[10px] text-muted-foreground font-medium border border-border">
-              myaiprofile.ai/dashboard
+              vinentoai.com/dashboard
             </div>
           </div>
           
@@ -269,7 +269,7 @@ export default function Home() {
             {/* Free Tier */}
             <div className="bg-card border border-border rounded-lg p-8 shadow-sm flex flex-col hover:border-primary/50 transition-all">
               <h3 className="text-xl font-bold text-foreground mb-2">Basic</h3>
-              <p className="text-muted-foreground text-sm mb-6">Perfect for trying out MyAIProfile.</p>
+              <p className="text-muted-foreground text-sm mb-6">Perfect for trying out VinentoAI.</p>
               <div className="mb-6">
                 <span className="text-4xl font-extrabold text-foreground">$0</span>
                 <span className="text-muted-foreground"> / forever</span>
@@ -329,7 +329,7 @@ export default function Home() {
             <div className="w-6 h-6 rounded border border-border/50 flex items-center justify-center">
               <FileText className="w-3 h-3 text-muted-foreground" />
             </div>
-            <span className="text-sm font-semibold text-muted-foreground">MyAIProfile</span>
+            <span className="text-sm font-semibold text-muted-foreground">VinentoAI</span>
           </div>
           
           <div className="flex gap-6 text-sm text-muted-foreground">
@@ -338,7 +338,7 @@ export default function Home() {
             <Link href="#" className="hover:text-foreground transition-colors">Contact</Link>
           </div>
           
-          <p className="text-sm text-muted-foreground">© 2026 MyAIProfile. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">© 2026 VinentoAI. All rights reserved.</p>
         </div>
       </footer>
     </div>

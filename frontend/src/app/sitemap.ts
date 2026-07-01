@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://myaiprofile.ai';
+  const baseUrl = 'https://resume-parser-ai-red.vercel.app';
 
   return [
     {
