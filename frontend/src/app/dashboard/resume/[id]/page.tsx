@@ -8,6 +8,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import ResumeHTML from '@/components/ResumeHTML';
 import CoverLetterHTML from '@/components/CoverLetterHTML';
 import { Download, Copy } from 'lucide-react';
+import { generateResumeDocx } from '@/lib/resumeDocx';
 
 
 
@@ -630,16 +631,34 @@ export default function ResumeViewer() {
 
   // `generateFeedback` is now defined above
 
-  const handleDownloadDocx = () => {
-    const htmlContent = document.getElementById('resume-html-content')?.outerHTML;
-    if (!htmlContent) return alert('Content not found');
-    const preHtml = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Resume</title></head><body>`;
-    const postHtml = "</body></html>";
-    const html = preHtml + htmlContent + postHtml;
-    const url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
-    const fileName = `${parsedData?.name ? parsedData.name.replace(/\s+/g, '_') : 'Resume'}.doc`;
-    const link = document.createElement('a');
-    link.href = url; link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  const handleDownloadDocx = async () => {
+    try {
+      const blob = await generateResumeDocx({
+        parsedData,
+        overrides,
+        aiRewrites: structData?.bullet_point_rewrites,
+        structuredExperience: structData?.structured_experience,
+        theme: pdfTheme,
+        aiSummary: structData?.professional_summary,
+        customAccentColor: parsedData?.customizations?.accentColor,
+        customFontSize: parsedData?.customizations?.fontSize,
+        customSpacing: parsedData?.customizations?.spacing,
+        customFontFamily: parsedData?.customizations?.fontFamily,
+      });
+
+      const fileName = `${parsedData?.name ? parsedData.name.replace(/\s+/g, '_') : 'Resume'}.docx`;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to generate DOCX', err);
+      alert('Failed to generate DOCX resume.');
+    }
   };
 
   const handlePrintPDF = (target: 'resume' | 'cover_letter') => {
