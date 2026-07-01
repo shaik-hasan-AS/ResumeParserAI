@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Swords, Trophy, Skull, Zap, ShieldAlert, ThumbsUp } from "lucide-react";
+import { ArrowLeft, LayoutDashboard, FileText, Trophy, Zap, ShieldAlert, ThumbsUp } from "lucide-react";
 import api from "@/lib/api";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -48,7 +48,7 @@ function ResumeCard({
     <div className={`flex-1 rounded-2xl border-2 ${colors.border} ${colors.bg} p-6 space-y-4 transition-all duration-300`}>
       <div className="flex items-center gap-3">
         <span className={`text-xs font-bold px-3 py-1 rounded-full border ${colors.badge}`}>
-          {corner === "red" ? "🔴 CORNER 1" : "🔵 CORNER 2"}
+          {corner === "red" ? "Option 1" : "Option 2"}
         </span>
         <h2 className={`text-lg font-bold ${colors.title}`}>Candidate {slot}</h2>
       </div>
@@ -119,9 +119,9 @@ export default function BattlePage() {
   }, []);
 
   const fight = async () => {
-    if (!selected1 || !selected2) return setError("Select a resume for both corners.");
+    if (!selected1 || !selected2) return setError("Select a resume for both slots.");
     if (selected1 === selected2) return setError("Choose two different resumes.");
-    if (!jobDescription.trim()) return setError("Paste a job description to battle against.");
+    if (!jobDescription.trim()) return setError("Paste a job description to compare against.");
     setError("");
     setLoading(true);
     setResult(null);
@@ -131,8 +131,7 @@ export default function BattlePage() {
       );
       setResult(data);
     } catch (e: unknown) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setError((e as any)?.response?.data?.detail || "Battle failed. Try again.");
+      setError((e as any)?.response?.data?.detail || "Comparison failed. Try again.");
     } finally {
       setLoading(false);
     }
@@ -154,9 +153,9 @@ export default function BattlePage() {
             </Button>
             <div>
               <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <Swords className="w-6 h-6 text-violet-400" /> Resume Battle
+                <LayoutDashboard className="w-6 h-6 text-violet-400" /> Resume Comparison
               </h1>
-              <p className="text-muted-foreground text-sm mt-0.5">Two resumes. One job. One winner.</p>
+              <p className="text-muted-foreground text-sm mt-0.5">Compare two resumes side-by-side against a job specification.</p>
             </div>
           </div>
           <ThemeToggle />
@@ -168,10 +167,7 @@ export default function BattlePage() {
 
           {/* Center VS */}
           <div className="flex flex-col items-center justify-center gap-4 py-4 lg:py-0 lg:w-24 shrink-0">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
-              <Swords className="w-7 h-7 text-white" />
-            </div>
-            <span className="text-2xl font-black text-foreground/30 tracking-widest">VS</span>
+            <span className="text-2xl font-black text-foreground/20 tracking-widest">VS</span>
           </div>
 
           <ResumeCard slot={2} resumes={resumes} selected={selected2} onSelect={setSelected2} corner="blue" />
@@ -180,12 +176,12 @@ export default function BattlePage() {
         {/* Job Description */}
         <div className="space-y-3">
           <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-            <Zap className="w-4 h-4 text-yellow-400" /> Job Description (required)
+            <Zap className="w-4 h-4 text-violet-400" /> Job Description (required)
           </label>
           <textarea
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
-            placeholder="Paste the full job description here. The more detail, the more accurate the battle result..."
+            placeholder="Paste the full job description here. The more detail, the more accurate the comparison result..."
             rows={6}
             className="w-full px-4 py-3 bg-muted border border-border rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-foreground placeholder:text-muted-foreground text-sm resize-y"
           />
@@ -197,21 +193,20 @@ export default function BattlePage() {
           </p>
         )}
 
-        {/* Fight Button */}
+        {/* Compare Button */}
         <button
           onClick={fight}
           disabled={loading}
-          className="w-full py-5 rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-black text-xl tracking-wider shadow-2xl shadow-violet-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
+          className="w-full py-5 rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold text-lg tracking-wide shadow-xl shadow-violet-500/20 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
         >
           {loading ? (
             <>
               <div className="w-6 h-6 border-3 border-white/40 border-t-white rounded-full animate-spin" />
-              AI is judging...
+              Analyzing candidates...
             </>
           ) : (
             <>
-              <Swords className="w-6 h-6" />
-              ⚔️ BATTLE
+              Compare Resumes
             </>
           )}
         </button>
@@ -221,12 +216,12 @@ export default function BattlePage() {
           <div className="space-y-6 animate-in slide-in-from-bottom-6 duration-500">
 
             {/* Winner Banner */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-900/60 via-yellow-900/40 to-amber-900/60 border border-amber-500/40 p-8 text-center space-y-3">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(251,191,36,0.08)_0%,_transparent_70%)]" />
-              <Trophy className="w-12 h-12 text-amber-400 mx-auto" />
-              <h2 className="text-3xl font-black text-amber-100">Candidate {result.winner} Wins</h2>
-              <p className="text-amber-200/80 text-sm max-w-lg mx-auto">{result.winner_verdict}</p>
-              <p className="text-amber-400/60 text-xs">{winnerName}</p>
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-950/40 via-indigo-950/30 to-violet-950/40 border border-violet-500/30 p-8 text-center space-y-3">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(139,92,246,0.06)_0%,_transparent_70%)]" />
+              <Trophy className="w-12 h-12 text-violet-400 mx-auto" />
+              <h2 className="text-2xl font-bold text-foreground">Highest Match Score: Candidate {result.winner}</h2>
+              <p className="text-muted-foreground text-sm max-w-lg mx-auto">{result.winner_verdict}</p>
+              <p className="text-muted-foreground/60 text-xs">{winnerName}</p>
             </div>
 
             {/* Score Cards */}
@@ -234,16 +229,16 @@ export default function BattlePage() {
               {([1, 2] as const).map((n) => {
                 const isWinner = result.winner === n;
                 const score = n === 1 ? result.candidate_1_score : result.candidate_2_score;
-                const color = isWinner ? "#f59e0b" : n === 1 ? "#f87171" : "#60a5fa";
+                const color = isWinner ? "#a78bfa" : n === 1 ? "#f87171" : "#60a5fa";
                 const name = (n === 1 ? resumes.find((r) => r.id === selected1) : resumes.find((r) => r.id === selected2))?.original_file_path.split("/").pop() || `Candidate ${n}`;
                 return (
-                  <div key={n} className={`rounded-2xl border p-6 space-y-4 ${isWinner ? "border-amber-500/40 bg-amber-500/5" : "border-border bg-card"}`}>
+                  <div key={n} className={`rounded-2xl border p-6 space-y-4 ${isWinner ? "border-violet-500/30 bg-violet-500/5" : "border-border bg-card"}`}>
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Candidate {n}</p>
                         <p className="text-sm font-semibold text-foreground truncate max-w-[140px]">{name}</p>
                       </div>
-                      {isWinner ? <Trophy className="w-5 h-5 text-amber-400" /> : <Skull className="w-5 h-5 text-muted-foreground" />}
+                      {isWinner ? <Trophy className="w-5 h-5 text-violet-400" /> : <FileText className="w-5 h-5 text-muted-foreground" />}
                     </div>
                     <div className="flex items-center gap-4">
                       <ScoreRing score={score} color={color} />
@@ -263,7 +258,7 @@ export default function BattlePage() {
 
                     {/* Fatal Flaw */}
                     <div className="bg-rose-500/5 border border-rose-500/20 rounded-lg p-3 space-y-1">
-                      <p className="text-xs font-bold text-rose-400 flex items-center gap-1"><Skull className="w-3 h-3" /> Fatal Flaw</p>
+                      <p className="text-xs font-bold text-rose-400 flex items-center gap-1"><ShieldAlert className="w-3 h-3" /> Critical Gaps</p>
                       <p className="text-xs text-rose-300/80">{n === 1 ? result.candidate_1_fatal_flaw : result.candidate_2_fatal_flaw}</p>
                     </div>
                   </div>
@@ -275,8 +270,8 @@ export default function BattlePage() {
             {result.loser_redemption.length > 0 && (
               <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-yellow-400" />
-                  Candidate {loserNum}&apos;s Redemption Plan — How to Win Next Time
+                  <Zap className="w-4 h-4 text-violet-400" />
+                  Development Recommendations for Candidate {loserNum}
                 </h3>
                 <ol className="space-y-2">
                   {result.loser_redemption.map((tip, i) => (

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, FileText, Target, CheckCircle, Upload, Sparkles, Rocket, Flame, Swords, ArrowRight, ShieldCheck, Mail, Cpu, X } from 'lucide-react';
+import { LayoutDashboard, FileText, Target, CheckCircle, Upload, Sparkles, Rocket, ArrowRight, ShieldCheck, Mail, Cpu, X, FileSearch, Sparkle } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useState, useEffect } from 'react';
 
@@ -51,7 +51,7 @@ export default function Home() {
               </Link>
             ) : (
               <>
-                <Link href="/login" className="hidden sm:inline-block">
+                <Link href="/login">
                   <Button variant="ghost" className="text-muted-foreground hover:text-foreground rounded-xl px-4 h-10">Log in</Button>
                 </Link>
                 <Link href="/register">
@@ -66,19 +66,8 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center pt-16 pb-20 px-4 z-10">
+      <main className="flex-1 flex flex-col items-center pt-24 pb-20 px-4 z-10">
         
-        {/* Banner Announcement */}
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-xs font-semibold text-primary mb-8"
-        >
-          <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full uppercase font-bold">New</span>
-          Introducing Roast Mode & Resume Battle Arena 🔥
-        </motion.div>
-
         {/* Hero */}
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
@@ -87,12 +76,12 @@ export default function Home() {
           className="text-center max-w-4xl mx-auto px-4"
         >
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-foreground mb-6 leading-[1.15] bg-gradient-to-b from-foreground to-foreground/80 bg-clip-text">
-            Build Resumes That Beat <br className="hidden md:block" />
-            <span className="bg-gradient-to-r from-violet-500 via-indigo-500 to-purple-500 bg-clip-text text-transparent">Any ATS Pipeline</span>
+            Build Resumes That Pass <br className="hidden md:block" />
+            <span className="bg-gradient-to-r from-violet-500 via-indigo-500 to-purple-500 bg-clip-text text-transparent">Modern ATS Filters</span>
           </h1>
           
           <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-            Instantly optimize your resume for recruiters and ATS systems. Get hired faster with AI matching, Simon Cowell-style roasts, and recruiter screening insights.
+            Optimize your resume for enterprise recruitment platforms. Leverage professional AI critiques, key term alignment metrics, and comparative evaluation parameters.
           </p>
 
           <motion.div 
@@ -111,12 +100,12 @@ export default function Home() {
               <>
                 <Link href="/register">
                   <Button size="lg" className="w-full sm:w-auto text-base h-13 px-8 bg-primary hover:bg-primary/95 text-white rounded-xl shadow-lg shadow-primary/25 transition-all">
-                    Start Building Free
+                    Start Optimizing Free
                   </Button>
                 </Link>
-                <Link href="/login?demo=recruiter">
+                <Link href="/login">
                   <Button size="lg" variant="outline" className="w-full sm:w-auto text-base h-13 px-8 rounded-xl border-border text-foreground hover:bg-muted/50 transition-all bg-transparent">
-                    Demo Recruiter Login
+                    Sign In
                   </Button>
                 </Link>
               </>
@@ -139,7 +128,7 @@ export default function Home() {
               <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
             </div>
             <div className="mx-auto w-72 h-6 rounded-lg bg-muted/40 flex items-center justify-center text-[10px] text-muted-foreground/80 font-medium border border-border/40">
-              vinentoai.com/dashboard/battle
+              vinentoai.com/dashboard/compare
             </div>
           </div>
           
@@ -148,8 +137,8 @@ export default function Home() {
             {/* Left Sidebar Mock */}
             <div className="w-full md:w-1/3 h-full rounded-2xl bg-muted/20 border border-border/40 flex flex-col gap-4 p-5 shadow-inner">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-red-500 flex items-center justify-center text-white font-bold shadow-md shadow-orange-500/10">
-                  <Flame className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold shadow-md shadow-violet-500/10">
+                  <Sparkles className="w-5 h-5" />
                 </div>
                 <div className="space-y-1.5">
                   <div className="w-20 h-3 bg-foreground/20 rounded-full" />
@@ -162,7 +151,7 @@ export default function Home() {
               <div className="w-5/6 h-3 bg-foreground/10 rounded-full" />
               
               <div className="mt-auto grid grid-cols-2 gap-2">
-                <div className="h-7 bg-primary/20 rounded-lg flex items-center justify-center text-[10px] text-primary font-semibold border border-primary/20">Active</div>
+                <div className="h-7 bg-primary/20 rounded-lg flex items-center justify-center text-[10px] text-primary font-semibold border border-primary/20">Analysis</div>
                 <div className="h-7 bg-muted/40 rounded-lg border border-border/40" />
               </div>
             </div>
@@ -180,7 +169,7 @@ export default function Home() {
               </div>
               
               <div className="flex gap-4">
-                <div className="flex-1 h-9 bg-primary/10 rounded-lg border border-primary/30 flex items-center justify-center text-xs font-semibold text-primary">ATS Summary</div>
+                <div className="flex-1 h-9 bg-primary/10 rounded-lg border border-primary/30 flex items-center justify-center text-xs font-semibold text-primary">Resume Comparison</div>
                 <div className="flex-1 h-9 bg-muted/30 rounded-lg border border-border/40" />
                 <div className="flex-1 h-9 bg-muted/30 rounded-lg border border-border/40" />
               </div>
@@ -203,10 +192,10 @@ export default function Home() {
         <div id="features" className="mt-36 w-full max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-4">
-              Everything You Need to Land the Role
+              Enterprise Grade Resume Optimization
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Equipped with smart AI features to get recruiters highlighting your candidate profile.
+              Empowering candidates with the same evaluation frameworks used by top recruitment teams.
             </p>
           </div>
 
@@ -215,24 +204,24 @@ export default function Home() {
               <div className="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center mb-6 text-violet-500 border border-violet-500/20">
                 <Target className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold text-foreground mb-3">ATS Precision Analysis</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Match your resume exactly to the target job description keywords so you never get filtered out by automatic screens.</p>
+              <h3 className="text-lg font-bold text-foreground mb-3">ATS Alignment Analysis</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">Map skills and work history against key job parameters to pass screening algorithms with precision.</p>
             </div>
             
             <div className="flex flex-col items-start p-8 rounded-2xl bg-card/40 border border-border/60 hover:border-primary/40 hover:bg-muted/10 transition-all shadow-sm">
               <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center mb-6 text-orange-500 border border-orange-500/20">
-                <Flame className="w-6 h-6" />
+                <FileSearch className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold text-foreground mb-3">Savage Roast Mode 🔥</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Get brutally honest, section-by-section critiques of your resume with concrete improvement tips to cut the fluff.</p>
+              <h3 className="text-lg font-bold text-foreground mb-3">Actionable AI Critique</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">Obtain structured, objective feedback detailing structural deficits, formatting issues, and spelling optimizations.</p>
             </div>
             
             <div className="flex flex-col items-start p-8 rounded-2xl bg-card/40 border border-border/60 hover:border-primary/40 hover:bg-muted/10 transition-all shadow-sm">
               <div className="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center mb-6 text-indigo-500 border border-indigo-500/20">
-                <Swords className="w-6 h-6" />
+                <LayoutDashboard className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold text-foreground mb-3">Resume Battle Arena ⚔️</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Compare two candidate resumes side-by-side against a job specification to find the winner verdict instantly.</p>
+              <h3 className="text-lg font-bold text-foreground mb-3">Resume Comparison</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">Compare two resume variations side-by-side against a role specification to determine the highest performing version.</p>
             </div>
           </div>
         </div>
@@ -240,8 +229,8 @@ export default function Home() {
         {/* How It Works Section */}
         <div id="how-it-works" className="mt-36 w-full max-w-6xl">
           <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">How it works</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Get your resume ATS-ready in three simple steps.</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">How It Works</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Get your resume optimized in three structured steps.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
@@ -249,24 +238,24 @@ export default function Home() {
               <div className="w-14 h-14 rounded-2xl bg-card border border-border shadow-sm flex items-center justify-center mb-6">
                 <Upload className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-lg font-bold text-foreground mb-2">1. Upload Resume</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">Upload your PDF/DOCX. Our OCR scanner parses your skills and work history in seconds.</p>
+              <h3 className="text-lg font-bold text-foreground mb-2">1. Upload Documents</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">Upload your PDF or DOCX file. Our engine parses experience, formatting and key terms instantly.</p>
             </div>
             
             <div className="flex flex-col items-center text-center">
               <div className="w-14 h-14 rounded-2xl bg-card border border-border shadow-sm flex items-center justify-center mb-6">
                 <Cpu className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-lg font-bold text-foreground mb-2">2. Match & Roast</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">Compare against a job requirements description or run Roast Mode to get Simon Cowell critiques.</p>
+              <h3 className="text-lg font-bold text-foreground mb-2">2. Analyze & Review</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">Scan against target roles to identify keyword alignment scores, parsing issues, and structural gaps.</p>
             </div>
             
             <div className="flex flex-col items-center text-center">
               <div className="w-14 h-14 rounded-2xl bg-card border border-border shadow-sm flex items-center justify-center mb-6">
                 <Rocket className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-lg font-bold text-foreground mb-2">3. Download & Win</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">Export cover letters or optimized resumes with Harvard or Executive PDF and Word DOCX templates.</p>
+              <h3 className="text-lg font-bold text-foreground mb-2">3. Refine & Export</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">Apply recommended updates and export optimized resumes in standard Harvard or Executive formats.</p>
             </div>
           </div>
         </div>
@@ -274,8 +263,8 @@ export default function Home() {
         {/* Pricing Section */}
         <div id="pricing" className="mt-36 w-full max-w-5xl mb-20">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Simple, transparent pricing</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Start for free, upgrade when you need more power.</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Transparent Pricing</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Start with basic capabilities, upgrade for advanced features.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
@@ -289,13 +278,13 @@ export default function Home() {
               </div>
               <ul className="space-y-4 mb-8 flex-1">
                 <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <CheckCircle className="w-4.5 h-4.5 text-primary shrink-0" /> 1 Resume parsing per day
+                  <CheckCircle className="w-4.5 h-4.5 text-primary shrink-0" /> 1 Document scan per day
                 </li>
                 <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <CheckCircle className="w-4.5 h-4.5 text-primary shrink-0" /> Basic ATS Score & Feedback
+                  <CheckCircle className="w-4.5 h-4.5 text-primary shrink-0" /> Core ATS score and basic feedback
                 </li>
                 <li className="flex items-center gap-3 text-sm text-muted-foreground/60">
-                  <X className="w-4.5 h-4.5 text-muted-foreground/40 shrink-0" /> No Roast Mode or Battle Arena
+                  <X className="w-4.5 h-4.5 text-muted-foreground/40 shrink-0" /> Advanced comparison and critique
                 </li>
               </ul>
               <Link href="/register">
@@ -307,23 +296,23 @@ export default function Home() {
             <div className="bg-card/50 backdrop-blur-md border-2 border-primary rounded-2xl p-8 shadow-lg flex flex-col relative overflow-hidden transition-all">
               <div className="absolute top-0 right-0 bg-primary text-white text-[10px] font-extrabold px-3.5 py-1.5 rounded-bl-xl uppercase tracking-wider">POPULAR</div>
               <h3 className="text-lg font-bold text-foreground mb-2">Pro</h3>
-              <p className="text-muted-foreground text-xs mb-6">For serious job seekers & recruiters.</p>
+              <p className="text-muted-foreground text-xs mb-6">For detailed job seekers and recruiters.</p>
               <div className="mb-6">
                 <span className="text-4xl font-black text-foreground">$15</span>
                 <span className="text-muted-foreground text-sm"> / month</span>
               </div>
               <ul className="space-y-4 mb-8 flex-1 text-sm">
                 <li className="flex items-center gap-3 text-foreground/90">
-                  <CheckCircle className="w-4.5 h-4.5 text-primary shrink-0" /> Unlimited resume parsing & OCR
+                  <CheckCircle className="w-4.5 h-4.5 text-primary shrink-0" /> Unlimited document parsing and scans
                 </li>
                 <li className="flex items-center gap-3 text-foreground/90">
-                  <CheckCircle className="w-4.5 h-4.5 text-primary shrink-0" /> Savage Roast Mode 🔥
+                  <CheckCircle className="w-4.5 h-4.5 text-primary shrink-0" /> Comprehensive AI Critique reports
                 </li>
                 <li className="flex items-center gap-3 text-foreground/90">
-                  <CheckCircle className="w-4.5 h-4.5 text-primary shrink-0" /> Resume Battle Arena ⚔️
+                  <CheckCircle className="w-4.5 h-4.5 text-primary shrink-0" /> Side-by-side Resume Comparison
                 </li>
                 <li className="flex items-center gap-3 text-foreground/90">
-                  <CheckCircle className="w-4.5 h-4.5 text-primary shrink-0" /> Cover letter & Email generator
+                  <CheckCircle className="w-4.5 h-4.5 text-primary shrink-0" /> Tailored cover letter generator
                 </li>
               </ul>
               <Link href="/register">

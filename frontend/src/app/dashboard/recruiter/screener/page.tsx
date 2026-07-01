@@ -109,7 +109,7 @@ export default function ScreenerDashboard() {
             onClick={() => router.push('/dashboard/battle')} 
             className="py-2 px-4 text-muted-foreground hover:text-foreground font-medium transition-colors"
           >
-            ⚔️ Battle Arena
+            Resume Comparison
           </button>
         </div>
 

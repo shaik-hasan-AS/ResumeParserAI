@@ -705,18 +705,18 @@ export default function ResumeViewer() {
             <Button
               onClick={roastMyResume}
               disabled={loadingRoast}
-              className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white h-9 px-4 rounded-lg font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/20"
+              className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white h-9 px-4 rounded-lg font-semibold flex items-center gap-2 shadow-lg shadow-violet-500/20"
             >
               {loadingRoast
-                ? <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Roasting...</>
-                : <><Flame className="w-4 h-4" />Roast Me</>}
+                ? <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Analyzing...</>
+                : <><Sparkles className="w-4 h-4" />AI Critique</>}
             </Button>
 
             <Button
               onClick={() => router.push('/dashboard/battle')}
               className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white h-9 px-4 rounded-lg font-semibold flex items-center gap-2 shadow-lg shadow-violet-500/20"
             >
-              <Swords className="w-4 h-4" /> Battle
+              <FileText className="w-4 h-4" /> Compare Resumes
             </Button>
 
             <ThemeToggle />
@@ -1508,71 +1508,71 @@ export default function ResumeViewer() {
       </div>
     </div>
 
-    {/* ── Roast Panel ──────────────────────────────────────────────── */}
+    {/* ── AI Critique Panel ──────────────────────────────────────────────── */}
     {showRoast && (
       <div className="max-w-7xl mx-auto px-4 md:px-8 pb-16 animate-in slide-in-from-bottom-4 duration-500">
-        <div className="bg-gradient-to-br from-orange-950/80 via-red-950/60 to-background border border-orange-500/30 rounded-2xl p-8 shadow-2xl shadow-orange-900/20 space-y-6">
+        <div className="bg-gradient-to-br from-violet-950/80 via-indigo-950/60 to-background border border-violet-500/30 rounded-2xl p-8 shadow-2xl shadow-violet-900/20 space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-500/20 rounded-xl">
-                <Flame className="w-6 h-6 text-orange-400" />
+              <div className="p-2 bg-violet-500/20 rounded-xl">
+                <Sparkles className="w-6 h-6 text-violet-400" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-orange-100">Resume Roast 🔥</h2>
-                <p className="text-xs text-orange-400/70">Simon Cowell has entered the chat</p>
+                <h2 className="text-xl font-bold text-foreground">AI Critique Report</h2>
+                <p className="text-xs text-muted-foreground">Comprehensive evaluation of content alignment, structure, and formatting.</p>
               </div>
             </div>
-            <button onClick={() => setShowRoast(false)} className="text-orange-400/60 hover:text-orange-300 text-2xl font-light transition-colors">✕</button>
+            <button onClick={() => setShowRoast(false)} className="text-muted-foreground/60 hover:text-foreground text-2xl font-light transition-colors">✕</button>
           </div>
 
           {loadingRoast ? (
             <div className="flex flex-col items-center gap-4 py-12">
               <div className="relative">
-                <div className="w-16 h-16 rounded-full bg-orange-500/10 border-2 border-orange-500/30 flex items-center justify-center">
-                  <Flame className="w-8 h-8 text-orange-400 animate-pulse" />
+                <div className="w-16 h-16 rounded-full bg-violet-500/10 border-2 border-violet-500/30 flex items-center justify-center">
+                  <Sparkles className="w-8 h-8 text-violet-400 animate-pulse" />
                 </div>
               </div>
-              <p className="text-orange-300 font-medium animate-pulse">Preparing the roast...</p>
-              <p className="text-orange-400/50 text-sm">Gemini is reading your resume and judging silently</p>
+              <p className="text-violet-300 font-medium animate-pulse">Generating critique report...</p>
+              <p className="text-muted-foreground text-sm">Analyzing experience alignment, language precision, and formatting standards</p>
             </div>
           ) : roast && (
             <div className="space-y-6">
-              {/* Cringe Score */}
-              <div className="flex items-center gap-4 p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl">
-                <div className="text-center">
-                  <div className="text-4xl font-black text-orange-400">{roast.cringe_score}</div>
-                  <div className="text-xs text-orange-400/70 font-medium uppercase tracking-wider">Cringe Score</div>
+              {/* Score */}
+              <div className="flex items-center gap-6 p-5 bg-violet-500/10 border border-violet-500/20 rounded-xl">
+                <div className="text-center shrink-0">
+                  <div className="text-4xl font-black text-violet-400">{Math.max(0, 100 - (roast.cringe_score || 0))}</div>
+                  <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-1">Optimization Rating</div>
                 </div>
-                <div className="flex-1 text-orange-100 font-semibold text-lg leading-snug italic">
+                <div className="flex-1 text-foreground font-medium text-base leading-relaxed">
                   &ldquo;{roast.overall_roast}&rdquo;
                 </div>
               </div>
 
-              {/* Section Roasts */}
+              {/* Section Critiques */}
               {roast.section_roasts?.length > 0 && (
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-orange-400/70">Section-by-Section Takedown</h3>
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Detailed Section Critiques</h3>
                   {roast.section_roasts.map((item: {section: string; critique: string; fix: string}, i: number) => (
-                    <div key={i} className="bg-red-950/40 border border-red-500/20 rounded-xl p-4 space-y-2">
+                    <div key={i} className="bg-muted/40 border border-border/80 rounded-xl p-4 space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-orange-400 font-bold text-sm">🎯 {item.section}</span>
+                        <span className="text-foreground font-bold text-sm">{item.section}</span>
                       </div>
-                      <p className="text-orange-100/90 text-sm leading-relaxed">{item.critique}</p>
-                      <p className="text-emerald-400 text-xs font-medium">💡 Fix: {item.fix}</p>
+                      <p className="text-muted-foreground text-sm leading-relaxed">{item.critique}</p>
+                      <p className="text-violet-400 text-xs font-semibold">Recommendation: {item.fix}</p>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* Redemption Arc */}
+              {/* Action Steps */}
               {roast.redemption_arc?.length > 0 && (
-                <div className="bg-emerald-950/40 border border-emerald-500/20 rounded-xl p-4 space-y-3">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-400/70">Redemption Arc — What Would Actually Help</h3>
+                <div className="bg-violet-950/30 border border-violet-500/20 rounded-xl p-5 space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-violet-400">Recommended Enhancements</h3>
                   <ul className="space-y-2">
                     {roast.redemption_arc.map((tip: string, i: number) => (
-                      <li key={i} className="flex gap-3 text-sm text-emerald-100/90">
-                        <span className="text-emerald-400 font-bold shrink-0">{i + 1}.</span>
+                      <li key={i} className="flex gap-3 text-sm text-muted-foreground">
+                        <span className="text-violet-400 font-bold shrink-0">{i + 1}.</span>
                         {tip}
                       </li>
                     ))}
