@@ -678,18 +678,20 @@ export default function ResumeViewer() {
               <p className="text-muted-foreground mt-1 text-sm">Review extracted details and AI evaluation</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3">
             {parsedData && (
-              <div className="flex items-center gap-3 bg-muted border border-border p-1.5 rounded-xl">
-                <select 
-                  value={pdfTheme} 
-                  onChange={(e) => setPdfTheme(e.target.value as 'modern' | 'harvard' | 'executive')}
-                  className="bg-transparent text-sm font-medium text-foreground outline-none border-none cursor-pointer pl-2 pr-1"
-                >
-                  <option value="modern" className="bg-background text-foreground">Modern Professional</option>
-                  <option value="harvard" className="bg-background text-foreground">Harvard Format</option>
-                  <option value="executive" className="bg-background text-foreground">Executive</option>
-                </select>
+              <>
+                <div className="flex items-center bg-muted border border-border p-1.5 rounded-xl">
+                  <select 
+                    value={pdfTheme} 
+                    onChange={(e) => setPdfTheme(e.target.value as 'modern' | 'harvard' | 'executive')}
+                    className="bg-transparent text-sm font-medium text-foreground outline-none border-none cursor-pointer pl-2 pr-1"
+                  >
+                    <option value="modern" className="bg-background text-foreground">Modern Professional</option>
+                    <option value="harvard" className="bg-background text-foreground">Harvard Format</option>
+                    <option value="executive" className="bg-background text-foreground">Executive</option>
+                  </select>
+                </div>
                 <Button
                   onClick={() => handlePrintPDF('resume')}
                   className="bg-primary hover:bg-primary/90 text-white shadow-sm h-9 px-4 rounded-lg font-semibold flex items-center gap-2"
@@ -697,7 +699,6 @@ export default function ResumeViewer() {
                   <Download className="w-4 h-4" />
                   Resume PDF
                 </Button>
-                <div className="w-px h-6 bg-border" />
                 <Button 
                   onClick={handleDownloadDocx}
                   className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-9 px-4 rounded-lg font-semibold flex items-center gap-2"
@@ -705,29 +706,25 @@ export default function ResumeViewer() {
                   <Download className="w-4 h-4" />
                   Resume DOCX
                 </Button>
-                <div className="w-px h-6 bg-border" />
                 <Button 
                   onClick={() => router.push(`/dashboard/battle?resume_id_1=${id}`)}
                   variant="outline"
-                  className="border-primary/40 text-primary hover:bg-primary/10 h-9 px-4 rounded-lg font-semibold flex items-center gap-2 bg-transparent"
+                  className="border-primary/20 text-primary hover:bg-primary/5 h-9 px-4 rounded-lg font-semibold flex items-center gap-2 bg-transparent"
                 >
                   <Swords className="w-4 h-4 text-violet-400" />
                   Compare Resume
                 </Button>
                 {coverLetter && (
-                  <>
-                    <div className="w-px h-6 bg-border" />
-                    <Button
-                      onClick={() => handlePrintPDF('cover_letter')}
-                      variant="outline"
-                      className="border-primary/40 text-primary hover:bg-primary/10 h-9 px-4 rounded-lg font-semibold flex items-center gap-2 bg-transparent"
-                    >
-                      <FileText className="w-4 h-4" />
-                      Cover Letter PDF
-                    </Button>
-                  </>
+                  <Button
+                    onClick={() => handlePrintPDF('cover_letter')}
+                    variant="outline"
+                    className="border-primary/20 text-primary hover:bg-primary/5 h-9 px-4 rounded-lg font-semibold flex items-center gap-2 bg-transparent"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Cover Letter PDF
+                  </Button>
                 )}
-              </div>
+              </>
             )}
             <Button
               variant="outline"
