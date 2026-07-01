@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, LayoutDashboard, FileText, Trophy, Zap, ShieldAlert, ThumbsUp } from "lucide-react";
@@ -105,7 +105,7 @@ function ScoreRing({ score, color }: { score: number; color: string }) {
   );
 }
 
-export default function BattlePage() {
+function BattlePageContent() {
   const router = useRouter();
   const [resumes, setResumes] = useState<Resume[]>([]);
   const searchParams = useSearchParams();
@@ -291,5 +291,17 @@ export default function BattlePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function BattlePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    }>
+      <BattlePageContent />
+    </Suspense>
   );
 }

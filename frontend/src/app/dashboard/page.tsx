@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { CloudUpload, FileText, ArrowRight, X, Clock, ExternalLink, Target, TrendingUp, Award, BarChart2, Trash2 } from 'lucide-react';
@@ -169,7 +169,7 @@ function ATSAnalyticsBoard({ resumes }: { resumes: Resume[] }) {
 }
 
 // ── Main Page ────────────────────────────────────────────────────────────────
-export default function Dashboard() {
+function DashboardContent() {
   const searchParams = useSearchParams();
   const [file, setFile] = useState<File | null>(null);
   const [label, setLabel] = useState("");
@@ -512,6 +512,18 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }
 
