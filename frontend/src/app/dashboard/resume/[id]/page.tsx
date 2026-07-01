@@ -1565,8 +1565,8 @@ export default function ResumeViewer() {
 
     {/* ── AI Critique Panel ──────────────────────────────────────────────── */}
     {showRoast && (
-      <div className="max-w-7xl mx-auto px-4 md:px-8 pb-16 animate-in slide-in-from-bottom-4 duration-500">
-        <div className="bg-gradient-to-br from-violet-950/80 via-indigo-950/60 to-background border border-violet-500/30 rounded-2xl p-8 shadow-2xl shadow-violet-900/20 space-y-6">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm overflow-y-auto">
+        <div className="bg-gradient-to-br from-violet-950/95 via-indigo-950/95 to-background border border-violet-500/30 rounded-2xl p-8 shadow-2xl shadow-violet-900/40 space-y-6 max-w-3xl w-full my-8 relative animate-in zoom-in-95 duration-200">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
