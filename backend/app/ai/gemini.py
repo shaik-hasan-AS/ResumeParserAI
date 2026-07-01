@@ -87,7 +87,7 @@ If a Job Description is provided, calculate the score based on keyword match, re
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -170,7 +170,7 @@ Draft an ATS-optimized, high-impact cover letter.
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=0.4,
@@ -202,7 +202,7 @@ Make it concise, action-oriented, and tailored to the context provided. Do not i
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=0.3,
@@ -260,7 +260,7 @@ Generate 5 to 7 highly tailored, challenging mock interview questions.
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -305,7 +305,7 @@ Evaluate the candidate's parsed resume details against the job requirements.
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -365,7 +365,7 @@ You are an expert recruiter. Write a professional outreach or status update emai
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=0.5,
@@ -426,7 +426,7 @@ Analyze the audio recording of the candidate talking about their profile.
 }
 """
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=[prompt_instruction, uploaded],
             config=types.GenerateContentConfig(temperature=0.1),
         )
@@ -484,7 +484,7 @@ Your task is to merge existing resume details with dynamic voice transcripts int
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -536,7 +536,7 @@ Analyze the response objectively and provide constructive feedback.
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -591,7 +591,7 @@ Analyze the candidate's resume against the Job Description.
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -639,7 +639,7 @@ For other fields, tailor it specifically to their core responsibilities.
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -702,7 +702,7 @@ Do NOT make things up. Do NOT be generic. Read the actual content and tear it ap
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -771,7 +771,7 @@ Be specific — reference actual content from each resume. No generic commentary
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
