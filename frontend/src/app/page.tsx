@@ -114,7 +114,7 @@ export default function Home() {
                     Start Building Free
                   </Button>
                 </Link>
-                <Link href="/login">
+                <Link href="/login?demo=recruiter">
                   <Button size="lg" variant="outline" className="w-full sm:w-auto text-base h-13 px-8 rounded-xl border-border text-foreground hover:bg-muted/50 transition-all bg-transparent">
                     Demo Recruiter Login
                   </Button>

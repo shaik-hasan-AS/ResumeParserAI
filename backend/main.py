@@ -33,6 +33,29 @@ try:
                 conn.execute(text(query))
             except Exception:
                 pass
+                
+    # Seeding demo accounts for quick client evaluations
+    from sqlalchemy.orm import Session as DBSession
+    from app.services import auth as auth_service
+    from app.models import models
+    with DBSession(engine) as session:
+        try:
+            cand = session.query(models.User).filter(models.User.email == "candidate@vinentoai.com").first()
+            if not cand:
+                hashed = auth_service.get_password_hash("password123")
+                new_cand = models.User(name="Demo Candidate", email="candidate@vinentoai.com", password_hash=hashed, role="candidate")
+                session.add(new_cand)
+            rec = session.query(models.User).filter(models.User.email == "recruiter@vinentoai.com").first()
+            if not rec:
+                hashed = auth_service.get_password_hash("password123")
+                new_rec = models.User(name="Demo Recruiter", email="recruiter@vinentoai.com", password_hash=hashed, role="recruiter")
+                session.add(new_rec)
+            session.commit()
+            print("Database demo accounts seeded successfully.")
+        except Exception as se:
+            print(f"Error seeding demo accounts: {se}")
+            session.rollback()
+            
     print("Database tables created successfully or already exist.")
 except Exception as e:
     # ponytail: capture single connection timeout/failure and proceed so uvicorn starts
