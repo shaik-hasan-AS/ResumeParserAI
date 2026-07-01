@@ -73,7 +73,10 @@ def get_user_resumes(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    resumes = db.query(models.Resume).options(joinedload(models.Resume.feedback)).filter(models.Resume.user_id == current_user.id).order_by(models.Resume.uploaded_at.desc()).all()
+    if current_user.role == "recruiter":
+        resumes = db.query(models.Resume).options(joinedload(models.Resume.feedback)).order_by(models.Resume.uploaded_at.desc()).all()
+    else:
+        resumes = db.query(models.Resume).options(joinedload(models.Resume.feedback)).filter(models.Resume.user_id == current_user.id).order_by(models.Resume.uploaded_at.desc()).all()
     return resumes
 
 
@@ -512,6 +515,12 @@ async def resume_battle(
     """Head-to-head AI comparison: two resumes, one job, one winner."""
     if resume_id_1 == resume_id_2:
         raise HTTPException(status_code=400, detail="Select two different resumes to battle.")
+
+    if current_user.role != "recruiter":
+        res_1 = db.query(models.Resume).filter(models.Resume.id == resume_id_1, models.Resume.user_id == current_user.id).first()
+        res_2 = db.query(models.Resume).filter(models.Resume.id == resume_id_2, models.Resume.user_id == current_user.id).first()
+        if not res_1 or not res_2:
+            raise HTTPException(status_code=403, detail="You do not have permission to access one or both of these resumes.")
 
     parsed_1 = db.query(models.ParsedData).filter(
         models.ParsedData.resume_id == resume_id_1

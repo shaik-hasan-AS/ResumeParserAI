@@ -105,6 +105,12 @@ export default function ScreenerDashboard() {
           >
             Quick ATS Screener
           </button>
+          <button 
+            onClick={() => router.push('/dashboard/battle')} 
+            className="py-2 px-4 text-muted-foreground hover:text-foreground font-medium transition-colors"
+          >
+            ⚔️ Battle Arena
+          </button>
         </div>
 
         <header className="flex justify-between items-center bg-card p-6 rounded-lg shadow-sm border border-border">
