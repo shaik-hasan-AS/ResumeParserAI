@@ -83,14 +83,19 @@ def get_user_resumes(
 @router.post("/upload", response_model=schemas.ResumeResponse, dependencies=[Depends(rate_limit(10, 60))])
 async def upload_resume(
     file: UploadFile = File(...),
+    label: str | None = Form(None),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
     file_bytes = await validate_uploaded_file(file, 10)
         
     file_id = str(uuid.uuid4())
-    file_extension = os.path.splitext(file.filename)[1]
-    file_path = os.path.join(UPLOAD_DIR, f"{file_id}{file_extension}")
+    original_filename = os.path.basename(file.filename) if file.filename else "resume.pdf"
+    if label and label.strip():
+        safe_label = "".join(c for c in label if c.isalnum() or c in " -_[]").strip()
+        file_path = os.path.join(UPLOAD_DIR, f"{file_id}_[[{safe_label}]]_{original_filename}")
+    else:
+        file_path = os.path.join(UPLOAD_DIR, f"{file_id}_{original_filename}")
 
     # Save to disk (best-effort; Railway filesystem is ephemeral)
     with open(file_path, "wb") as buffer:
@@ -342,6 +347,10 @@ def download_resume_original(
         raise HTTPException(status_code=404, detail="Original file no longer exists on server")
 
     filename = os.path.basename(resume.original_file_path)
+    if "_" in filename:
+        parts = filename.split("_", 1)
+        if len(parts[0]) == 36:  # Length of standard UUID
+            filename = parts[1]
     return FileResponse(path=resume.original_file_path, filename=filename)
 
 
@@ -567,3 +576,36 @@ async def roast_my_resume(
         parsed.raw_text or ""
     )
     return result
+
+
+@router.delete("/{id}")
+def delete_resume(
+    id: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    resume = db.query(models.Resume).filter(models.Resume.id == id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+        
+    if current_user.role != "recruiter" and resume.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this resume")
+
+    # Try removing file on disk if it exists
+    if resume.original_file_path and os.path.exists(resume.original_file_path):
+        try:
+            os.remove(resume.original_file_path)
+        except Exception as e:
+            pass
+
+    # Delete related tables to prevent foreign key errors
+    db.query(models.ParsedData).filter(models.ParsedData.resume_id == id).delete()
+    db.query(models.Feedback).filter(models.Feedback.resume_id == id).delete()
+    db.query(models.Application).filter(models.Application.resume_id == id).delete()
+    db.query(models.QuickScanResult).filter(models.QuickScanResult.resume_id == id).delete()
+
+    # Delete the main Resume row
+    db.delete(resume)
+    db.commit()
+
+    return {"status": "success", "message": "Resume deleted successfully"}

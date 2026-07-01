@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import api from '@/lib/api';
 import { Briefcase, ArrowLeft, Building2, Send, CheckCircle2, Clock } from 'lucide-react';
+import { cleanFilename, getResumeLabel } from '../page';
 
 interface JobListing {
   id: string;
@@ -111,7 +112,7 @@ export default function CandidateJobsBoard() {
                 className="bg-muted text-foreground text-sm rounded-lg px-3 py-2 border border-border outline-none focus:ring-1 focus:ring-primary flex-1 max-w-xs"
               >
                 {resumes.map(r => (
-                  <option key={r.id} value={r.id}>{r.original_file_path.split('/').pop()}</option>
+                  <option key={r.id} value={r.id}>{getResumeLabel(r.original_file_path)}</option>
                 ))}
               </select>
               {resumes.length === 0 && (
@@ -147,18 +148,34 @@ export default function CandidateJobsBoard() {
                         <div className="flex items-center gap-2 text-emerald-500 font-semibold text-sm bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20 w-full justify-center">
                           <CheckCircle2 className="w-4 h-4" /> Application Submitted
                         </div>
-                      ) : (
+                      ) : resumes.length === 0 ? (
                         <Button 
-                          onClick={() => handleApply(job.id)} 
-                          disabled={isApplying || resumes.length === 0}
-                          className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl shadow-sm h-11 font-semibold flex items-center gap-2"
+                          onClick={() => router.push(`/dashboard?role=${encodeURIComponent(job.title)}&jd=${encodeURIComponent(job.description)}`)} 
+                          className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl shadow-sm h-11 font-semibold flex items-center justify-center gap-2"
                         >
-                          {isApplying ? (
-                            <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Evaluating Match...</>
-                          ) : (
-                            <><Send className="w-4 h-4" /> 1-Click Apply</>
-                          )}
+                          <Send className="w-4 h-4" /> Upload Resume to Apply
                         </Button>
+                      ) : (
+                        <div className="flex flex-col sm:flex-row gap-2 w-full">
+                          <Button 
+                            onClick={() => handleApply(job.id)} 
+                            disabled={isApplying}
+                            className="flex-1 bg-primary hover:bg-primary/90 text-white rounded-xl shadow-sm h-11 font-semibold flex items-center justify-center gap-2"
+                          >
+                            {isApplying ? (
+                              <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Evaluating Match...</>
+                            ) : (
+                              <><Send className="w-4 h-4" /> 1-Click Apply</>
+                            )}
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={() => router.push(`/dashboard?role=${encodeURIComponent(job.title)}&jd=${encodeURIComponent(job.description)}`)}
+                            className="rounded-xl px-4 border-primary/20 text-primary hover:bg-primary/10 h-11 text-xs"
+                          >
+                            Optimize New Resume
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </div>

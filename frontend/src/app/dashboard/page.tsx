@@ -1,14 +1,14 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { CloudUpload, FileText, ArrowRight, X, Clock, ExternalLink, Target, TrendingUp, Award, BarChart2 } from 'lucide-react';
+import { CloudUpload, FileText, ArrowRight, X, Clock, ExternalLink, Target, TrendingUp, Award, BarChart2, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import api from '@/lib/api';
 
 interface Resume {
-  id: number;
+  id: string;
   original_file_path: string;
   uploaded_at: string;
   feedback?: { score: number };
@@ -19,6 +19,38 @@ function scoreColor(score: number) {
   if (score >= 80) return { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30', bar: '#10b981' };
   if (score >= 60) return { bg: 'bg-amber-500/15',   text: 'text-amber-400',   border: 'border-amber-500/30',   bar: '#f59e0b' };
   return              { bg: 'bg-rose-500/15',    text: 'text-rose-400',    border: 'border-rose-500/30',    bar: '#f43f5e' };
+}
+
+export function cleanFilename(path: string) {
+  const raw = path.split('/').pop() || '';
+  let name = raw;
+  if (raw.includes('_')) {
+    const parts = raw.split('_');
+    if (parts[0].length === 36) {
+      name = parts.slice(1).join('_');
+    }
+  }
+  if (name.startsWith('[[') && name.includes(']]_')) {
+    const idx = name.indexOf(']]_');
+    return name.substring(idx + 3);
+  }
+  return name;
+}
+
+export function getResumeLabel(path: string) {
+  const raw = path.split('/').pop() || '';
+  let name = raw;
+  if (raw.includes('_')) {
+    const parts = raw.split('_');
+    if (parts[0].length === 36) {
+      name = parts.slice(1).join('_');
+    }
+  }
+  if (name.startsWith('[[') && name.includes(']]_')) {
+    const idx = name.indexOf(']]_');
+    return name.substring(2, idx);
+  }
+  return name;
 }
 
 // ── Analytics Board ──────────────────────────────────────────────────────────
@@ -116,7 +148,7 @@ function ATSAnalyticsBoard({ resumes }: { resumes: Resume[] }) {
                   <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">
-                      {resume.original_file_path.split('/').pop()}
+                      {getResumeLabel(resume.original_file_path)}
                     </p>
                     <p className="text-xs text-muted-foreground">{formatDate(resume.uploaded_at)}</p>
                   </div>
@@ -138,10 +170,19 @@ function ATSAnalyticsBoard({ resumes }: { resumes: Resume[] }) {
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 export default function Dashboard() {
+  const searchParams = useSearchParams();
   const [file, setFile] = useState<File | null>(null);
+  const [label, setLabel] = useState("");
   const [targetRole, setTargetRole] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const role = searchParams.get('role');
+    const jd = searchParams.get('jd');
+    if (role) setTargetRole(role);
+    if (jd) setJobDescription(jd);
+  }, [searchParams]);
   const [resumes, setResumes] = useState<Resume[]>(() => {
     // Restore from cache immediately — no flash on navigation
     if (typeof window !== 'undefined') {
@@ -176,11 +217,30 @@ export default function Dashboard() {
   }, []);
 
 
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to delete this resume? All associated ATS matching reports, cover letters, and analytical data will be permanently removed.")) {
+      return;
+    }
+    try {
+      await api.delete(`/api/resume/${id}`);
+      const updated = resumes.filter(r => r.id !== id);
+      setResumes(updated);
+      sessionStorage.setItem('dashboard_resumes', JSON.stringify(updated));
+    } catch (err) {
+      console.error("Failed to delete resume", err);
+      alert("Failed to delete resume.");
+    }
+  };
+
   const handleUpload = async () => {
     if (!file) return;
     setLoading(true);
     const formData = new FormData();
     formData.append('file', file);
+    if (label.trim()) {
+      formData.append('label', label);
+    }
 
     try {
       const response = await api.post('/api/resume/upload', formData);
@@ -219,12 +279,80 @@ export default function Dashboard() {
         {/* Analytics Board — only shows when resumes with scores exist */}
         {!loadingResumes && <ATSAnalyticsBoard resumes={resumes} />}
 
+        {/* Onboarding Welcome Section — shows when user has 0 resumes */}
+        {!loadingResumes && resumes.length === 0 && (
+          <div className="bg-gradient-to-r from-primary/10 via-violet-500/5 to-indigo-500/10 border border-primary/20 rounded-2xl p-6 md:p-8 shadow-sm space-y-6 animate-in fade-in duration-500">
+            <div className="max-w-2xl">
+              <h2 className="text-xl md:text-2xl font-extrabold text-foreground tracking-tight">
+                Welcome to VinentoAI! 🚀
+              </h2>
+              <p className="text-muted-foreground mt-2 text-sm md:text-base leading-relaxed">
+                Optimize your resume, match it against real job descriptions, and prepare for interviews using our suite of AI tools. Here is how to get started:
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { step: '1', title: 'Upload Resume', desc: 'Drop your PDF or DOCX file to extract and parse your professional profile.' },
+                { step: '2', title: 'ATS Analysis', desc: 'Get detailed feedback, strengths, gaps, and improvements on your content.' },
+                { step: '3', title: 'Target Match', desc: 'Paste a job description to instantly evaluate keyword matches and score.' },
+                { step: '4', title: 'Mock Interview', desc: 'Practice answering custom interview questions with voice recorders.' }
+              ].map(({ step, title, desc }) => (
+                <div key={step} className="bg-card/60 backdrop-blur-sm border border-border rounded-xl p-4 flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/25 text-primary text-xs font-black">
+                      {step}
+                    </span>
+                    <h3 className="font-bold text-sm text-foreground">{title}</h3>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-8">
-            <div className="bg-card border border-border shadow-sm rounded-lg p-8 flex flex-col gap-6">
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* Step 1: Target Job */}
+            <div className="bg-card border border-border shadow-sm rounded-lg p-8 flex flex-col gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-foreground">1. Target Job Details (Highly Recommended)</h2>
+                <p className="text-sm text-muted-foreground">Pasting a job description enables instant AI ATS matching and customized feedback.</p>
+              </div>
               
-              <div className="mb-2">
-                <h2 className="text-xl font-bold text-foreground">Upload Document</h2>
+              <div className="space-y-3">
+                <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-2">
+                  <Target className="w-4 h-4 text-primary" /> Target Role
+                </label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Senior Software Engineer"
+                  value={targetRole}
+                  onChange={(e) => setTargetRole(e.target.value)}
+                  className="w-full px-4 py-3 bg-muted border border-border rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-foreground font-medium placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" /> Job Description
+                </label>
+                <textarea 
+                  placeholder="Paste the full job description here to evaluate keyword overlap, missing skills, and score your match..."
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  maxLength={5000}
+                  className="w-full px-4 py-3 bg-muted border border-border rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-foreground font-medium placeholder:text-muted-foreground min-h-[140px] resize-y custom-scrollbar text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Step 2: Upload Document */}
+            <div className="bg-card border border-border shadow-sm rounded-lg p-8 flex flex-col gap-6">
+              <div>
+                <h2 className="text-xl font-bold text-foreground">2. Upload Document</h2>
                 <p className="text-sm text-muted-foreground">Supported formats are PDF and DOCX.</p>
               </div>
 
@@ -281,31 +409,17 @@ export default function Dashboard() {
                 </div>
               )}
 
-              {/* Target Role Input */}
+              {/* Resume Label Input */}
               <div className="space-y-3 mt-4">
                 <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-2">
-                  <Target className="w-4 h-4 text-primary" /> Target Role (Optional)
+                  <FileText className="w-4 h-4 text-primary" /> Resume Label (Optional)
                 </label>
                 <input 
                   type="text" 
-                  placeholder="e.g. Senior Software Engineer"
-                  value={targetRole}
-                  onChange={(e) => setTargetRole(e.target.value)}
+                  placeholder="e.g. Frontend Dev V2"
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
                   className="w-full px-4 py-3 bg-muted border border-border rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-foreground font-medium placeholder:text-muted-foreground"
-                />
-              </div>
-
-              {/* Job Description Input */}
-              <div className="space-y-3 mt-4">
-                <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-primary" /> Job Description (Optional)
-                </label>
-                <textarea 
-                  placeholder="Paste the full job description here..."
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                  maxLength={5000}
-                  className="w-full px-4 py-3 bg-muted border border-border rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-foreground font-medium placeholder:text-muted-foreground min-h-[120px] resize-y custom-scrollbar text-sm"
                 />
               </div>
               
@@ -318,7 +432,7 @@ export default function Dashboard() {
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    Uploading...
+                    Analyzing & parsing with AI...
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
@@ -371,14 +485,23 @@ export default function Dashboard() {
                           )}
                           <div>
                             <h4 className="font-medium text-foreground text-sm truncate max-w-[150px]">
-                              {resume.original_file_path.split('/').pop()}
+                              {getResumeLabel(resume.original_file_path)}
                             </h4>
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {formatDate(resume.uploaded_at)}
                             </p>
                           </div>
                         </div>
-                        <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors mt-1" />
+                        <div className="flex items-center gap-2 mt-1">
+                          <button
+                            onClick={(e) => handleDelete(resume.id, e)}
+                            className="p-1.5 hover:bg-rose-500/10 rounded-lg text-muted-foreground hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Delete resume"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                          <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </div>
                       </div>
                     </div>
                   ))

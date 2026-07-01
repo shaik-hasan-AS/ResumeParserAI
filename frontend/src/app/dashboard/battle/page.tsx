@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, LayoutDashboard, FileText, Trophy, Zap, ShieldAlert, ThumbsUp } from "lucide-react";
 import api from "@/lib/api";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { cleanFilename, getResumeLabel } from "../page";
 
 interface Resume {
   id: string;
@@ -58,7 +59,7 @@ function ResumeCard({
       ) : (
         <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
           {resumes.map((r) => {
-            const name = r.original_file_path.split("/").pop() || r.id;
+            const name = getResumeLabel(r.original_file_path) || r.id;
             const isSelected = r.id === selected;
             return (
               <button
@@ -82,7 +83,7 @@ function ResumeCard({
 
       {selectedResume && (
         <div className={`px-3 py-2 rounded-lg border ${colors.badge} text-xs`}>
-          ✓ Selected: {selectedResume.original_file_path.split("/").pop()}
+          ✓ Selected: {getResumeLabel(selectedResume.original_file_path)}
         </div>
       )}
     </div>
@@ -107,8 +108,11 @@ function ScoreRing({ score, color }: { score: number; color: string }) {
 export default function BattlePage() {
   const router = useRouter();
   const [resumes, setResumes] = useState<Resume[]>([]);
-  const [selected1, setSelected1] = useState("");
-  const [selected2, setSelected2] = useState("");
+  const searchParams = useSearchParams();
+  const urlResume1 = searchParams.get('resume_id_1') || "";
+  const urlResume2 = searchParams.get('resume_id_2') || "";
+  const [selected1, setSelected1] = useState(urlResume1);
+  const [selected2, setSelected2] = useState(urlResume2);
   const [jobDescription, setJobDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<BattleResult | null>(null);
@@ -138,7 +142,7 @@ export default function BattlePage() {
   };
 
   const winner = result ? (result.winner === 1 ? selected1 : selected2) : null;
-  const winnerName = winner ? (resumes.find((r) => r.id === winner)?.original_file_path.split("/").pop() || "Candidate") : "";
+  const winnerName = winner ? (getResumeLabel(resumes.find((r) => r.id === winner)?.original_file_path || "") || "Candidate") : "";
   const loserNum = result ? (result.winner === 1 ? 2 : 1) : null;
 
   return (
@@ -230,7 +234,7 @@ export default function BattlePage() {
                 const isWinner = result.winner === n;
                 const score = n === 1 ? result.candidate_1_score : result.candidate_2_score;
                 const color = isWinner ? "#a78bfa" : n === 1 ? "#f87171" : "#60a5fa";
-                const name = (n === 1 ? resumes.find((r) => r.id === selected1) : resumes.find((r) => r.id === selected2))?.original_file_path.split("/").pop() || `Candidate ${n}`;
+                const name = getResumeLabel((n === 1 ? resumes.find((r) => r.id === selected1) : resumes.find((r) => r.id === selected2))?.original_file_path || "") || `Candidate ${n}`;
                 return (
                   <div key={n} className={`rounded-2xl border p-6 space-y-4 ${isWinner ? "border-violet-500/30 bg-violet-500/5" : "border-border bg-card"}`}>
                     <div className="flex items-center justify-between">
